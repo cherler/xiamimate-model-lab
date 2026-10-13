@@ -1,0 +1,7 @@
+{
+  "version":"coverage-uncertainty-v1",
+  "evidence":"retrospective_development",
+  "public_export_allowed":false,
+  "dressipi":{"base_run":"dressipi-20261013T085519500339Z","base_sessions":100000,"train_sessions":3000,"validation_sessions":1000,"variants":{"original":{"topk":100,"idf_k":0},"wide":{"topk":300,"idf_k":0},"wide_idf":{"topk":300,"idf_k":200}},"new_features":false,"parameter_search":false,"idf":"log((1+catalogue_size)/(1+attribute_document_frequency))+1; weighted Jaccard over chronological views with 0.8 decay; ties frozen purchase count then ID"},
+  "m5":{"base_run":"m5-20261013T043740793990Z","origins":[1801,1829,1857,1885],"max_label_day":1913,"levels":[0.8,0.9],"models":["weekday_mean_8w","lgbm_tweedie_core"],"horizon":28,"scale":"sqrt(1+past_56_day_mean)","calibration":"expanding earlier nonoverlapping complete forecast residuals; item/category and horizon-week pools; aggregate residual pools separate by series","quantile":"order statistic ceil((n+1)*coverage), reject if rank > n","stability_groups":"category; zero fraction in past 56 days >= 0.5; forecast weeks 1..4","parameter_search":false}
+}
