@@ -1,8 +1,9 @@
 """Pinned data import; deliberately never extracts private-test sales."""
 import hashlib
 import json
-import subprocess
+import urllib.request
 import zipfile
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -33,7 +34,36 @@ def prepare():
     archive = RAW / 'm5.zip'
     if not archive.exists() or archive.stat().st_size != ARCHIVE_SIZE:
         url = json.loads(SOURCES.read_text())['m5']['data_mirror']
-        subprocess.run(['curl', '-fL', '-C', '-', '--retry', '2', '--max-time', '1200', url, '-o', str(archive)], check=True)
+        # Bounded chunks avoid losing the entire download to a long connection timeout.
+        parts = RAW / 'download-parts'
+        parts.mkdir(exist_ok=True)
+        size = 2 * 1024 * 1024
+
+        def fetch(start):
+            stop = min(start + size, ARCHIVE_SIZE) - 1
+            path = parts / str(start)
+            if path.exists() and path.stat().st_size == stop - start + 1:
+                return path
+            for attempt in range(3):
+                try:
+                    req = urllib.request.Request(url, headers={'Range': f'bytes={start}-{stop}'})
+                    with urllib.request.urlopen(req, timeout=60) as response:
+                        if response.status != 206 or response.headers.get('Content-Range') != f'bytes {start}-{stop}/{ARCHIVE_SIZE}':
+                            raise ValueError('server did not honor exact byte range')
+                        content = response.read()
+                    if len(content) != stop - start + 1:
+                        raise ValueError('incomplete download chunk')
+                    path.write_bytes(content)
+                    print(f'downloaded M5 bytes {start}-{stop}', flush=True)
+                    return path
+                except Exception:
+                    if attempt == 2:
+                        raise
+        with ThreadPoolExecutor(max_workers=4) as pool:
+            downloaded = list(pool.map(fetch, range(0, ARCHIVE_SIZE, size)))
+        with archive.open('wb') as out:
+            for path in downloaded:
+                out.write(path.read_bytes())
     content = archive.read_bytes()
     git_hash = hashlib.sha1(f'blob {len(content)}\0'.encode() + content).hexdigest()
     if git_hash != ARCHIVE_GIT_BLOB:
