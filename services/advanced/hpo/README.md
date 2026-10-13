@@ -32,4 +32,4 @@ September-November UCI outcomes have already been seen in earlier work. These ar
 
 The initial LightGCN worker terminated at native-library initialization (exit 139) before a trial completed; that study directory remains preserved. Initializing Torch before the LightGBM OpenMP library resolved the conflict; the replacement is a separately named study, not a hidden successful trial.
 
-Future phases (not implemented): cross-model selection on a common validation objective, broader feature/pipeline search, resource-cost objectives, external task queue and AutoDL GPU execution. Automatic training is currently offline; visiting the website cannot start a job.
+Phase 2 now implements a bounded cross-model/feature-group comparison and accuracy/cost selection on common validation cohorts; see `../automl/README.md`. Broader joint feature/pipeline/hyperparameter search, external task queues and AutoDL GPU execution remain unimplemented. Automatic training is currently offline; visiting the website cannot start a job.

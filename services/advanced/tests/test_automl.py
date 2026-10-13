@@ -33,6 +33,17 @@ class FeatureTests(unittest.TestCase):
         self.assertNotIn('log_item_price',[FEATURES[i] for i in REC_GROUPS['text']])
         self.assertEqual(len(forecast_columns('history',24)),37)
         self.assertEqual(len(forecast_columns('calendar',24)),41)
+    def test_forecast_preparation_ignores_future_targets_in_inputs(self):
+        from automl.prepare import forecast_inputs
+        dates=pd.date_range('2011-01-01',periods=100)
+        frame=pd.DataFrame(dict(date=dates,item='A',time_idx=np.arange(100),quantity=np.arange(100.),log_price=2.))
+        cfg={'train_start':'2011-01-01','train_end':'2011-03-01'}
+        before,rows,_=forecast_inputs(frame,cfg,['2011-03-02'],True)
+        frame.loc[frame.date>=pd.Timestamp('2011-03-02'),'quantity']=999999.
+        after,changed,_=forecast_inputs(frame,cfg,['2011-03-02'],True)
+        for k in ['x','train_x','train_y']:np.testing.assert_array_equal(before[k],after[k])
+        self.assertNotEqual(rows[0]['actual'],changed[0]['actual'])
+
     def test_feature_parity_and_future_poison(self):
         from forecast import tree_features
         history=np.arange(70.)
