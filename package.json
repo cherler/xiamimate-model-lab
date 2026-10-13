@@ -39,6 +39,7 @@
     "prepare:m5": "uv run python -m services.competitions.m5_data",
     "train:m5": "uv run python -m services.competitions.m5_run develop",
     "final:m5": "uv run python -m services.competitions.m5_run final",
-    "verify:m5": "uv run python -m services.competitions.m5_verify"
+    "verify:m5": "uv run python -m services.competitions.m5_verify",
+    "verify:m5-weights": "uv run python scripts/verify-m5-weights.py"
   }
 }

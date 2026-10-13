@@ -25,6 +25,7 @@ Preparation can proceed without data: session-disjoint temporal evaluation, MRR@
 
 ```sh
 npm run prepare:m5
+npm run verify:m5-weights
 npm run train:m5
 npm run verify:m5
 # After reviewing frozen development selection; one recorded reserved-window access:
@@ -33,3 +34,7 @@ npm run verify:m5
 ```
 
 The import verifies the pinned archive Git blob and records SHA-256 for each whitelisted CSV. It never extracts `sales_test_evaluation.csv`. Development loads sales columns only through d_1913; reserved predictions and selection are persisted before d_1914–1941 labels are loaded. A store/origin access ledger survives run changes. Verification recomputes saved metrics without rereading reserved labels. Every run snapshots code, protocol, source/data/dependency hashes, cohort, predictions, models and costs. No competition export command is provided while public-use rights are unresolved.
+
+`verify:m5-weights` independently compares last-28-day revenue weights for all 30,490 bottom series with archived organizer validation weights; it reads no validation/private target labels. It is an arithmetic audit, not full-scope model evaluation.
+
+Dressipi preparation now includes `dressipi.py` and `dressipi-protocol.json`: schema checks, whole-session date splits, all-session MRR/Recall, train-only co-occurrence, popularity and anonymous attribute baselines. Tests use invented fixtures only and do not imply measured Dressipi accuracy. No SIHG4SR training or downloaded dataset exists yet. Original v2 environment is pinned for a future isolated Linux run (Python 3.8 / Torch 1.10 / DGL 0.7.2 / CUDA 11.3); compatibility and hardware requirements remain untested.
