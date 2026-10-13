@@ -36,3 +36,4 @@ apps/web/selection-results/
 artifacts/competition-runs/
 artifacts/competition-*.json
 artifacts/competition-*.log
+apps/web/m5-results/
