@@ -16,6 +16,8 @@ verify(run)
 report = json.loads((run / 'report.json').read_text())
 if 'final' not in report:
     raise ValueError('complete reserved-window evaluation before generating final research notes')
+if report['config']['protocol'] != 'm5-local-core-v1' or report['config']['store'] != 'CA_1':
+    raise ValueError('this research-note template describes the frozen v1 CA_1 pilot only')
 names = {'seasonal_naive': '上周同日', 'weekday_median_8w': '八周同星期中位数',
          'weekday_mean_8w': '八周同星期均值', 'lgbm_tweedie_core': 'LightGBM Tweedie 核心版'}
 calendar = pd.read_csv(RAW / 'calendar.csv')
