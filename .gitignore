@@ -28,3 +28,5 @@ artifacts/advanced-runs/
 artifacts/advanced-*.json
 artifacts/advanced-*.log
 apps/web/advanced-results/
+artifacts/advanced-studies/
+apps/web/tuning-results/

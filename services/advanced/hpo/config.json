@@ -1,0 +1,12 @@
+{
+  "version": "hpo-v1", "seed": 42, "threads": 2,
+  "evidence": "development_after_prior_feedback",
+  "recommendation": {"training_origins": ["2011-06-01", "2011-07-01"], "validation_origin": "2011-08-01", "label_end": "2011-09-01"},
+  "forecast": {"train_end": "2011-08-01", "validation_end": "2011-09-01", "epochs": 60, "patience": 10},
+  "budgets": {"lightgbm": {"trials": 12, "seconds": 900}, "lightgcn": {"trials": 8, "seconds": 1200}, "tft": {"trials": 8, "seconds": 1500}},
+  "search_spaces": {
+    "lightgbm": {"num_leaves": [7, 15, 31, 63], "learning_rate": [0.01, 0.15], "n_estimators": [300, 500, 800], "min_child_samples": [10, 100], "reg_lambda": [0.01, 20.0], "colsample_bytree": [0.7, 1.0]},
+    "lightgcn": {"dimensions": [32, 64], "layers": [1, 2, 3], "learning_rate": [0.0005, 0.01], "regularization": [0.000001, 0.001], "batch_size": [4096, 8192], "epochs": 200, "patience_checks": 6},
+    "tft": {"hidden_size": [16, 32, 64], "encoder_days": [28, 56], "learning_rate": [0.0003, 0.005], "dropout": [0.1, 0.3], "normalization": ["linear", "softplus"], "lag_features": [false, true], "batch_size": [64, 128]}
+  }
+}
