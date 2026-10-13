@@ -1,0 +1,32 @@
+{
+  "protocol": "m5-local-core-v1",
+  "scope": "CA_1_all_items",
+  "store": "CA_1",
+  "horizon": 28,
+  "validation_origins": [1857, 1885],
+  "sealed_origin": 1913,
+  "training_window": 1095,
+  "models": ["seasonal_naive", "weekday_median_8w", "weekday_mean_8w", "lgbm_tweedie_core"],
+  "selection_metric": "scope_wrmsse",
+  "rounds": 1000,
+  "params": {
+    "objective": "tweedie",
+    "tweedie_variance_power": 1.1,
+    "learning_rate": 0.05,
+    "num_leaves": 127,
+    "min_data_in_leaf": 255,
+    "feature_fraction": 0.5,
+    "bagging_fraction": 0.5,
+    "bagging_freq": 1,
+    "max_bin": 100,
+    "boost_from_average": false,
+    "seed": 1995,
+    "num_threads": 2,
+    "deterministic": true,
+    "force_col_wise": true,
+    "verbosity": -1
+  },
+  "publication": "local_research_only_pending_data_rights",
+  "reproduction_level": "independent_resource_adapted_champion_core_not_full_ensemble",
+  "reference_commit": "18e4e776cfa1ded3b387fabe008c6c2c44922007"
+}

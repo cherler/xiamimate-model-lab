@@ -1,0 +1,36 @@
+{
+  "checked_at": "2026-10-13",
+  "m5": {
+    "official": "https://github.com/Mcompetitions/M5-methods",
+    "rules": "https://www.kaggle.com/competitions/m5-forecasting-accuracy/rules",
+    "reference_commit": "18e4e776cfa1ded3b387fabe008c6c2c44922007",
+    "reference_path": "Code of Winning Methods/A1",
+    "reference_rank": 1,
+    "reference_code_license": "No explicit top-level license found in organizer snapshot; independent implementation, no vendored source",
+    "data_mirror": "https://raw.githubusercontent.com/Nixtla/m5-forecasts/72b8e7fd3b565b3c538adcb1d1a05117d8562d7e/datasets/m5.zip",
+    "mirror_documentation": "https://github.com/Nixtla/datasetsforecast/blob/main/datasetsforecast/m5.py",
+    "data_license": "Subject to Competition Rules. Official rules page inaccessible during audit; no commercial-use grant inferred from mirror or software license.",
+    "public_export_allowed": false,
+    "status": "local_research_reproduction"
+  },
+  "dressipi": {
+    "official": "https://www.recsyschallenge.com/2022/",
+    "data_access": "https://dressipi.com/downloads/recsys-datasets/",
+    "data_terms": "https://www.recsyschallenge.com/2022/Dressipi2022_TC.pdf",
+    "terms_note": "Page 2 restricts dataset commercialization/transfer/derivative works; post-challenge availability is for recommender research. Download is described as agreement to terms. No dataset downloaded or terms accepted by this project.",
+    "public_export_allowed": false,
+    "status": "blocked_on_data_access_and_appropriate_use_permission",
+    "champion": "zzh: Industrial Solution in Fashion-domain Recommendation by an Efficient Pipeline using GNN and Lightgbm",
+    "champion_source": "https://recsys.acm.org/challenges/",
+    "champion_code_status": "Exact winning repository not verified; no champion reproduction claim",
+    "available_reference": {
+      "repository": "https://github.com/Intel-bigdata/recsys2022_intel_submission",
+      "commit": "72a9d8970b09f641e2e89adadcd5b86b9a9770a2",
+      "rank": 4,
+      "reported_mrr": 0.20762,
+      "model": "SIHG4SR heterogeneous GNN ensemble",
+      "code_license": "MIT",
+      "note": "Published result only, not our score. MIT on code does not license Dressipi data."
+    }
+  }
+}
