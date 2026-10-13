@@ -1,3 +1,4 @@
+import { renderForecastCoverage } from './coverage-studies.js';
 import { renderM5Details } from './m5-details.js';
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pct = v => v == null ? '不适用' : `${(v * 100).toFixed(2)}%`;
@@ -55,9 +56,11 @@ export async function renderM5(host,isCurrent) {
   }
   const [overview,catalog]=await Promise.all([resource('overview'),resource('catalog')]);if(!isCurrent())return;
   if(overview.run_id!==manifest.run_id || catalog.length!==overview.scope.series)throw new Error('案例版本或商品范围不一致');
+  const coverage=manifest.resources.coverage?await resource('coverage'):null;if(!isCurrent())return;
+  if(coverage&&(coverage.report.base_run_id!==manifest.run_id||coverage.report.status!=='complete_development'||coverage.report.public_export_allowed!==false))throw new Error('预测区间实验版本不一致');
   const params=new URLSearchParams(location.hash.split('?')[1]||'');
   const view=params.get('view')||'experience';
-  if(['models','report','training'].includes(view))return renderM5Details(host,overview,manifest,M5_NAMES,view);
+  if(['models','report','training'].includes(view)){renderM5Details(host,overview,manifest,M5_NAMES,view);if(coverage&&view==='report')renderForecastCoverage(host,coverage,manifest);return;}
   let origin=overview.windows.some(w=>w.origin===Number(params.get('window')))?Number(params.get('window')):1913;
   let model=Object.hasOwn(M5_NAMES,params.get('model'))?params.get('model'):'lgbm_tweedie_core';
   let level=['store','category','item'].includes(params.get('level'))?params.get('level'):'store';
@@ -65,6 +68,7 @@ export async function renderM5(host,isCurrent) {
   let category=Object.hasOwn(CATEGORY,params.get('category')) && params.get('category')!=='store'?params.get('category'):'FOODS';
   let baseline=Object.hasOwn(M5_NAMES,params.get('baseline')) && params.get('baseline')!=='lgbm_tweedie_core'?params.get('baseline'):frozenBaseline(overview), generation=0, day=0;
   host.innerHTML=`<div class="breadcrumb">销量预测<span>/</span>M5 零售案例</div><header class="m5-heading"><div><h1>M5 商品销量预测</h1><p>选择门店、品类或商品，比较未来 28 天的保存预测、实际销量与基线。</p></div><span class="badge">本地研究预览</span></header><p class="m5-context">M5 零售数据 · CA_1 门店 · 全部 3,049 个商品 · 本地 CPU 实训与结果回放</p><section class="m5-workbench" aria-label="M5 预测工作台"><div class="m5-controls"><label>评估窗口<select id="m5-window">${overview.windows.map(w=>`<option value="${w.origin}">${w.kind==='reserved_consumed'?'冻结后保留窗口':'开发窗口'} · ${w.dates[0]}～${w.dates[27]}</option>`).join('')}</select></label><label>预测模型<select id="m5-model">${Object.entries(M5_NAMES).map(([id,name])=>`<option value="${id}">${name}</option>`).join('')}</select></label><label>对照基线<select id="m5-baseline">${Object.entries(M5_NAMES).filter(([id])=>id!=='lgbm_tweedie_core').map(([id,name])=>`<option value="${id}">${name}</option>`).join('')}</select></label></div><div class="m5-granularity" role="group" aria-label="查看销量粒度">${[['store','门店总量'],['category','品类合计'],['item','商品明细']].map(([id,name])=>`<button data-level="${id}">${name}</button>`).join('')}</div><div id="m5-detail-controls" class="m5-detail-controls"><label id="m5-category-label">品类<select id="m5-category">${Object.entries(CATEGORY).filter(([id])=>id!=='store').map(([id,name])=>`<option value="${id}">${name}（${id}）</option>`).join('')}</select></label><label id="m5-search-label">查找商品<input id="m5-search" type="search" placeholder="输入商品编号，如 FOODS_1_001"/></label><label id="m5-item-label">商品<select id="m5-item"></select></label></div><div id="m5-plot"></div></section><section id="m5-comparison" class="m5-section"></section><section id="m5-method" class="m5-section"></section><section class="m5-section m5-reading"><h2>评估指标与适用范围</h2><div><article><h3>层级误差与商品日误差</h3><p>层级误差同时考察商品、部门、品类与门店汇总。商品日 WAPE 则统计每个商品每天的绝对误差。两者目标不同，不能互相替代，也不能用 1 − WAPE 表示准确率。</p></article><article><h3>不同指标下的模型表现</h3><p>中位数在商品日 WAPE 上仍有优势，但会明显低估总量。商品误差可能在汇总时相互抵消，门店总量与单品表现需要分别评估。</p></article><article><h3>离线评估范围</h3><p>本例采用竞赛方法中的非递归门店建模思路，是自行训练的缩减实现。只有一个门店与一次保留窗口，没有证明线上补货收益，也不能外推到所有门店。</p></article></div></section><footer class="showcase-source"><p>数据与方法来源：<a href="https://github.com/Mcompetitions/M5-methods" target="_blank" rel="noreferrer">M5 官方资料</a>。本页仅展示本项目训练结果与同范围基线，不展示官方获奖成绩。</p><details><summary>评估边界、运行记录与使用范围</summary><p>两个开发窗口用于比较方案，方案冻结后读取一次 2016-04-25～2016-05-22 保留窗口。该窗口现已消耗；它是竞赛公开验证时段，不是私榜成绩。单门店 scope WRMSSE 也不是完整竞赛得分。</p><p>未来日历、节假日及提供的周价格按竞赛已知条件使用；实际业务中需要确认这些信息能否提前取得。商品只有真实编号与品类，没有补造商品名称或图片。</p><p>本页为本地研究预览。数据对外使用许可待核实，尚未随网站公开发布。</p><p>运行 ${esc(manifest.run_id)}；数据包 ${esc(manifest.version)}。训练和逐条预测均已核验。<a href="./m5-results/${manifest.resources.overview.path}" download="M5-本地研究报告.json">下载本地案例报告</a></p></details></footer>`;
+  if(coverage)renderForecastCoverage(host,coverage,manifest,true);
   function sync(){
    const q=new URLSearchParams({case:'m5',view:'experience',window:String(origin),model,baseline,level});if(level!=='store')q.set('category',category);if(level==='item')q.set('item',item.id);
    history.replaceState(null,'',`#forecast?${q}`);

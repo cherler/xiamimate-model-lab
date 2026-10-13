@@ -20,3 +20,7 @@
 @media(max-width:620px){.case-views{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 10px;overflow:visible}.case-views a{padding:12px 3px;white-space:normal;text-align:center;font-size:13px}}
 .dressipi-funnel{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:22px;margin:24px 0}.dressipi-funnel>div{min-width:0}.dressipi-funnel span{display:block;min-height:38px;font-size:13px;color:#536f82}.dressipi-funnel strong{display:block;font-size:25px;font-weight:600;margin:8px 0 14px}.dressipi-funnel small{display:block;font-size:12px;font-weight:400;color:#536f82;margin-top:8px}#dressipi-group-table{margin-top:20px}
 @media(max-width:850px){.dressipi-funnel{grid-template-columns:1fr 1fr}}@media(max-width:420px){.dressipi-funnel{gap:22px 16px}.dressipi-funnel strong{font-size:23px}}
+
+.coverage-study{border-top:2px solid #c3dce5;padding-top:28px;margin-top:36px}.coverage-study h3{margin-top:28px}.coverage-summary{max-width:78ch;line-height:1.8}.coverage-chart-scroll{overflow-x:auto;margin:18px 0}.coverage-chart-scroll svg{display:block;width:100%;min-width:520px;font:12px var(--font-body, sans-serif);fill:#527183}.coverage-study .advanced-duel h3{font-size:17px}.coverage-study .m5-controls{flex-wrap:wrap}
+
+@media(max-width:600px){.coverage-chart-scroll svg{font-size:16px}}
