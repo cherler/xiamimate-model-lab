@@ -62,7 +62,7 @@ for fold in report['folds'] + [report['final']]:
         lines.append(f'| d_{fold["origin"]} | {cost["train_rows"]:,} | {cost["feature_seconds"]:.1f}秒 | {cost["fit_seconds"]:.1f}秒 | {cost["predict_seconds"]:.1f}秒 |')
 lines += ['', '本机 CPU 两线程，单次耗时不等于生产延迟或云端报价。原始数据、模型、逐条预测、源码快照与访问日志存放于忽略 Git 的实验目录。', '',
           '- `npm run verify:m5`：从保存预测重算指标和开发选优，不重新打开保留标签。',
-          '- `npm run verify:m5-weights`：全体 30,490 个底层序列的销售额权重与归档权重最大差约 5×10⁻¹³；不读取私榜标签。',
+          '- `npm run verify:m5-weights`：全体 30,490 个底层序列的销售额权重与归档权重最大差约 5×10⁻¹³；实际 float32 训练数值路径约 7.64×10⁻¹¹。只验证权重计算，不读取私榜标签。',
           '- 训练前两次数据格式适配失败留存记录，均未拟合模型或开启保留标签。', '',
           '## Dressipi 当前状态与剩余工作', '',
           '- 已完成会话边界检查、时间切分、MRR@100／Recall@100、热门／共现／匿名属性基线，以及测试。测试使用人工小样本，不是 Dressipi 模型效果。',
