@@ -14,20 +14,20 @@ function heading(page,title,subtitle) {
 }
 function learn() {
   const lessons = [
-    ['先建立比较对象', '为什么要先跑一个热门推荐或上周同期基线？', '在同一开发验证范围比较准确度、偏差与训练成本。第三轮补入个人复购、零预测和中位数，让复杂模型接受更有竞争力的基线检验。', '#recommend'],
+    ['先建立比较对象', '为什么要先跑一个热门推荐或上周同期基线？', '在同一开发验证范围比较准确度、偏差与训练成本。第三轮补入个人复购、零预测和中位数，比较复杂模型是否带来额外改善。', '#recommend'],
     ['比较推荐算法', '复杂算法能胜过个人复购吗？', '选择同一顾客，比较个人高频、近期加权复购、ALS、EASE 与融合。展开依据，再查看历史活跃度与新商品／复购目标诊断。复杂算法带来的额外增益需要单独衡量。', '#recommend'],
     ['比较预测目标', '为什么更复杂的模型仍可能低估销量？', 'Ridge 拟合对数销量，反变换后可能压低尖峰。LightGBM 在原始数量上比较平方误差、Poisson 与 Tweedie。切换商品和窗口，检查 WAPE 改善时总量偏差是否仍然明显。', '#forecast'],
     ['定义预测任务', '逐日销量与一周总销量，是同一个问题吗？', '第三轮分别保留 28 天逐日任务和每周更新的 7 天总量任务。目标、更新频率、MAE 单位都不同，不能把两张表 WAPE 的差值作为模型提升。开发筛选未通过也必须保留。', '#forecast'],
     ['从行为构造特征', '哪些信息在做决策的那一刻已经知道？', '以时间边界构造购买历史、频次或滞后销量，避免把后来的结果提前提供给模型。', '#forecast'],
     ['检查效果是否虚高', '为什么随机切分有时会产生误导？', '训练样本的完整预测标签必须早于验证起点。当前三个窗口用于选参与比较，只是开发验证；不能把反复观察过的窗口重新称为独立测试。源数据核验脚本会重建目标并回放保存的预测。', '#evidence'],
-    ['把模型放进经营规则', '为什么推荐更准不一定代表更赚钱？', '改变排除规则、探索比例或补货提前期，观察结果变化；进一步的收益估计需要成本假设。', '#recommend'],
-    ['让系统可以交付', '如何连接业务、处理失败并保留证据？', '定义输入输出、冷启动、降级和版本日志。训练与请求服务分离，保留重现过程。', '#delivery'],
+    ['推荐规则与补货模拟', '为什么推荐更准不一定代表更赚钱？', '改变排除规则、探索比例或补货提前期，观察结果变化；进一步的收益估计需要成本假设。', '#recommend'],
+    ['部署与交接', '如何连接业务、处理失败并保留证据？', '定义输入输出、冷启动、降级和版本日志。训练与请求服务分离，保留重现过程。', '#delivery'],
   ];
-  main.innerHTML = heading('learn', '沿着一个项目，理解每一步。', '业务案例与技术拆解共用同一条流程。以下教学入口对应 UCI 历史开发实验；Ta Feng 独立测试可在案例目录切换查看。') + `<div class="lesson-list">${lessons.map(([title, question, body, link], i) => `<details ${i === 0 ? 'open' : ''}><summary><span class="lesson-number">${i + 1}</span><div><h2>${title}</h2><p>${question}</p></div><span class="lesson-plus">+</span></summary><div class="lesson-body"><p>${body}</p><a class="outline small" href="${link}?case=uci">打开 UCI 真实案例</a></div></details>`).join('')}</div>`;
+  main.innerHTML = heading('learn', '推荐与预测项目教学', '按任务定义、特征构造、基线比较和效果评估组织课程。以下示例对应 UCI 开发实验，Ta Feng、M5 和 Dressipi 的数据说明可在各案例中查看。') + `<div class="lesson-list">${lessons.map(([title, question, body, link], i) => `<details ${i === 0 ? 'open' : ''}><summary><span class="lesson-number">${i + 1}</span><div><h2>${title}</h2><p>${question}</p></div><span class="lesson-plus">+</span></summary><div class="lesson-body"><p>${body}</p><a class="outline small" href="${link}?case=uci">打开 UCI 真实案例</a></div></details>`).join('')}</div>`;
 }
 
 function delivery() {
-  main.innerHTML = heading('delivery', '从一个问题，到可以接入的系统。', '先定义目标与数据条件，再确定模型、接口和交付范围。') + `<section class="delivery-intro"><h2>按你的业务阶段，定义交付内容。</h2><button class="primary contact-open">整理我的需求</button></section><div class="delivery-options">${[['数据可行性评估', '先确定数据能回答什么', ['数据质量与字段梳理', '业务任务与评估口径', '基线结果和实施建议']], ['模型与交互原型', '让方案可以运行和比较', ['可运行模型与实验记录', '接口或批量结果样例', '演示页面与评估报告']], ['业务接入与教学', '让系统能够交接和复核', ['数据更新、降级与日志方案', '部署文档与效果复核流程', '项目讲解与实践辅导']]].map(([t, sub, items]) => `<article><h2>${t}</h2><p>${sub}</p><ul>${items.map(x => `<li>${x}</li>`).join('')}</ul></article>`).join('')}</div><section class="technical-panel"><div class="section-heading"><h2>接口形态</h2><span class="badge">本地接口 · 已实现</span></div><div class="tech-columns"><div><h3>推荐请求</h3><pre>POST /api/v1/recommendations
+  main.innerHTML = heading('delivery', '定制服务与交付范围', '先定义目标与数据条件，再确定模型、接口和交付范围。') + `<section class="delivery-intro"><h2>可选服务</h2><button class="primary contact-open">整理我的需求</button></section><div class="delivery-options">${[['数据可行性评估', '数据条件与实施建议', ['数据质量与字段梳理', '业务任务与评估口径', '基线结果和实施建议']], ['模型与交互原型', '模型原型与评估报告', ['可运行模型与实验记录', '接口或批量结果样例', '演示页面与评估报告']], ['业务接入与教学', '部署文档与项目讲解', ['数据更新、降级与日志方案', '部署文档与效果复核流程', '项目讲解与实践辅导']]].map(([t, sub, items]) => `<article><h2>${t}</h2><p>${sub}</p><ul>${items.map(x => `<li>${x}</li>`).join('')}</ul></article>`).join('')}</div><section class="technical-panel"><div class="section-heading"><h2>接口形态</h2><span class="badge">本地接口 · 已实现</span></div><div class="tech-columns"><div><h3>推荐请求</h3><pre>POST /api/v1/recommendations
 {
   "customer_id": "new",
   "strategy": "als",
