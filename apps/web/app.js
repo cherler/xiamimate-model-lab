@@ -1,9 +1,10 @@
+import { renderAutoML } from './automl.js';
 import { renderAdvanced } from './advanced.js';
 import { renderModelGuide } from './model-guide.js';
 import { loadManifest, renderShowcase } from './showcase.js';
 import { renderCase, cancelCase } from './real-cases.js';
 const main = document.querySelector('#main');
-const labels = { advanced: '进阶模型实验', recommend: '电商商品推荐', forecast: '销量预测', evidence: '效果报告', models: '模型解读', learn: '教学拆解', delivery: '交付方式' };
+const labels = { automl: 'AutoML 实验室', advanced: '进阶模型实验', recommend: '电商商品推荐', forecast: '销量预测', evidence: '效果报告', models: '模型解读', learn: '教学拆解', delivery: '交付方式' };
 function heading(page,title,subtitle) {
   return `<div class="breadcrumb">模型工坊<span>/</span>${labels[page]}</div><div class="page-heading"><div><h1>${title}</h1><p>${subtitle}</p></div></div><div class="prototype-note"><span class="status-dot"></span>独立案例项目 · 推荐与销量预测已接入真实公开数据训练；线上业务收益尚未验证。</div>`;
 }
@@ -64,7 +65,7 @@ function route() {
   document.querySelectorAll('[data-page]').forEach(a => { a.classList.toggle('active', a.dataset.page === page); if (a.dataset.page === page) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   document.querySelectorAll('[data-section]').forEach(a => a.classList.toggle('active', a.dataset.section === (['models', 'learn', 'delivery'].includes(page) ? page : 'case')));
   cancelCase();
-  if (['recommend','forecast','evidence'].includes(page)) casePage(page, token); else if (page==='advanced') renderAdvanced(main,()=>token===routeGeneration); else if (page==='models') renderModelGuide(main,()=>token===routeGeneration); else ({learn,delivery})[page]();
+  if (['recommend','forecast','evidence'].includes(page)) casePage(page, token); else if (page==='automl') renderAutoML(main,()=>token===routeGeneration); else if (page==='advanced') renderAdvanced(main,()=>token===routeGeneration); else if (page==='models') renderModelGuide(main,()=>token===routeGeneration); else ({learn,delivery})[page]();
   document.title = `${labels[page]} · 模型工坊`;
   window.scrollTo(0, 0);
 }

@@ -23,7 +23,7 @@ npm run export:advanced
 npm run test:deep
 ```
 
-已有完整产物时仅需导出；不要为补旧展示包重新训练 Ta Feng。新模型保存于独立 `artifacts/advanced-runs/`，新页面资源位于 `apps/web/advanced-results/`，二者均不入 Git。构建现在必须同时通过原展示包和进阶包校验。详细协议、数据边界与复现说明见 [进阶实验说明](services/advanced/README.md)。未使用 AutoDL 或云端付费资源。
+已有完整产物时仅需导出；不要为补旧展示包重新训练 Ta Feng。新模型保存于独立 `artifacts/advanced-runs/`，新页面资源位于 `apps/web/advanced-results/`，二者均不入 Git。构建必须通过原展示包、进阶包和 AutoML 调优包校验。详细协议、数据边界与复现说明见 [进阶实验说明](services/advanced/README.md)。未使用 AutoDL 或云端付费资源。
 
 ## 运行
 
@@ -60,7 +60,7 @@ Ta Feng 增加购买购物日数、最近购买、历史排序与点击联动，
 
 导航「模型解读」或 `#models`：18 组说明、34 个案例内方法，覆盖 Ta Feng 全部 14 种最终评估方法，以及 UCI 的 EASE、13 种逐日预测方法和 6 种周预测方法。同一算法在不同案例／任务中分别计数，不代表 34 种算法。按任务展示输入、处理、输出、适用范围与限制；量化成绩读取同一展示清单内的报告并核验哈希，不复制手填数字。UCI 样本与完整评估仍依赖本地 API。
 
-特征地图明确已使用、部分使用、开发候选、仅展示与未使用。样本入口带案例、任务、模型参数，自动定位相应推荐方法或逐日／周度预测。开发检查新增报告映射与覆盖完整性验证，16 项前端／展示测试与 32 项 Python 测试通过；桌面 1440×1000 和手机 390×844 已检查。预测页可直接打开当前方法的解读，解读也能返回对应任务和模型。LightGBM 推荐排序、LightGCN 与 TFT 单独标记为规划，未训练。本轮不改变训练、指标与冻结实验。
+特征地图明确已使用、部分使用、开发候选、仅展示与未使用。样本入口带案例、任务、模型参数，自动定位相应推荐方法或逐日／周度预测。开发检查新增报告映射与覆盖完整性验证，16 项前端／展示测试与 32 项 Python 测试通过；桌面 1440×1000 和手机 390×844 已检查。预测页可直接打开当前方法的解读，解读也能返回对应任务和模型。该轮未改变训练、指标与冻结实验；随后 LightGBM 推荐排序、LightGCN 与 TFT 已在独立进阶实验中实现，见上方进阶实验与下方 AutoML 说明。
 
 ## 第三轮新增能力
 
@@ -132,3 +132,27 @@ npm run verify:tafeng -- final-20261012T010749Z
 ## 数据署名
 
 Chen, D. (2012). **Online Retail II**. UCI Machine Learning Repository. <https://doi.org/10.24432/C5CG6D>，CC BY 4.0。原始数据：<https://archive.ics.uci.edu/dataset/502/online+retail+ii>。本项目进行了去重、订单筛选、时间切分、建模与商品日聚合；实验结论不代表原数据作者的结论。
+
+
+## AutoML 实验室（2026-10-13）
+
+`#automl` 已接入 Optuna：自动超参搜索、提前剪枝、持久化续跑、验证集选优、冻结后回放、完整试验记录、前后指标与真实样本。当前属于 AutoML 的超参优化与有限特征开关阶段，跨模型自动选择、完整特征流水线搜索和 AutoDL 调度尚未实现。框架选择与复现说明见 [调优说明](services/advanced/hpo/README.md)。
+
+本地 CPU 共运行 28 次试验：LightGBM 12 次（4 完成、8 剪枝）、LightGCN 8 次（5 完成、3 剪枝）、TFT 8 次完成。LightGBM 推荐 NDCG@10 从 0.28194 到 0.28109，未改善；LightGCN 三种子 Recall@10 从 10.56%–11.15% 到 11.40%–11.65%，种子 42 的 NDCG 略降，另外两种子改善；TFT WAPE 从 85.84% 到 84.58%，仍弱于同范围中位数 79.94% 与 LightGBM 83.73%。TFT 区间覆盖从 73.41% 到 80.16%，同时平均宽度从 99.77 到 133.05 件，不能只展示覆盖提升。
+
+所有配置按 8 月验证结果选择，9–11 月只用于冻结后的开发回放；由于这些历史结果已被查看，仍不属于独立确认测试。原默认模型、旧成绩、失败记录和 Ta Feng 测试状态保持不变。新增导出资源与模型权重不提交 Git，新环境需要恢复完整产物。
+
+```sh
+# 已有产物时，核验并导出，不重新训练
+npm run verify:tuning
+npm run export:tuning
+npm run check
+npm test
+npm run test:ml
+npm run test:deep
+npm run build
+# 开新研究；不要复用已冻结或代码版本不一致的研究名
+npm run tune:lightgcn -- --name next-study --phase search --trials 8
+```
+
+页面验收包括桌面 1440×1000、手机 390×844、三模型切换、剪枝试验详情和真实样本。截图见 `design/automl-desktop.png` 与 `design/automl-mobile.png`。

@@ -25,6 +25,17 @@ for(const key of ['ranking','graph','tft','recommendation-samples','forecast-sam
   if(createHash('sha256').update(bytes).digest('hex')!==spec.sha256)throw new Error(`进阶实验校验失败：${key}`);
   if(['ranking','graph','tft'].includes(key)&&JSON.parse(bytes).run_id!==advanced.runs[key])throw new Error(`进阶实验版本不一致：${key}`);
 }
+const tuningAssets=resolve(root,'apps/web/tuning-results');
+let tuning;
+try { tuning=JSON.parse(await readFile(`${tuningAssets}/manifest.json`,'utf8')); }
+catch { throw new Error('请先运行 npm run export:tuning，生成完整 AutoML 实验数据。'); }
+for(const kind of ['lightgbm','lightgcn','tft'])for(const key of [kind,`${kind}-samples`]) {
+  const spec=tuning.resources?.[key];
+  if(!spec || !/^[a-f0-9]{16}\/[a-z-]+\.json$/.test(spec.path))throw new Error(`AutoML 资源无效：${key}`);
+  const bytes=await readFile(resolve(tuningAssets,spec.path));
+  if(createHash('sha256').update(bytes).digest('hex')!==spec.sha256)throw new Error(`AutoML 校验失败：${key}`);
+  if(key===kind&&JSON.parse(bytes).run_id!==tuning.runs[kind])throw new Error(`AutoML 版本不一致：${key}`);
+}
 // Build output is disposable; validate all sources before replacing it.
 await rm(`${root}dist`, { recursive: true, force: true });
 await mkdir(`${root}dist`, { recursive: true });
