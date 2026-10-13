@@ -1,0 +1,30 @@
+{
+  "version": "dressipi-research-preparation-v1",
+  "status": "prepared_not_trained",
+  "data_downloaded": false,
+  "public_export_allowed": false,
+  "local_development": {
+    "training_purchases_before": "2021-04-01T00:00:00Z",
+    "validation_start": "2021-04-01T00:00:00Z",
+    "validation_end_exclusive": "2021-05-01T00:00:00Z",
+    "candidates": "all item_features catalogue IDs; never infer candidates from validation purchases",
+    "metric": "MRR@100 across all labeled sessions, including retrieval misses",
+    "secondary_metric": "Recall@100 and candidate target coverage",
+    "split_unit": "whole session; both views and purchase must be inside the relevant time partition",
+    "notes": "Local validation differs from the official random prefix truncation and candidate set, so published leaderboard MRR is not directly comparable. No May or official test results available."
+  },
+  "prepared_baselines": ["purchase_popularity", "view_to_purchase_cooccurrence", "anonymous_attribute_overlap"],
+  "reference_environment": {
+    "repository": "https://github.com/Intel-bigdata/recsys2022_intel_submission",
+    "commit": "72a9d8970b09f641e2e89adadcd5b86b9a9770a2",
+    "rank": 4,
+    "variant": "v2",
+    "environment_file": "v2/conf/environment_gpu.yml",
+    "python": "3.8.12",
+    "pytorch": "1.10.0",
+    "dgl": "0.7.2",
+    "cuda": "11.3",
+    "tested_locally": false,
+    "plan": "Use isolated Linux environment for original code; do not downgrade the existing training environment. AutoDL host/GPU/memory budget requires measured workload and user-provided server access."
+  }
+}
