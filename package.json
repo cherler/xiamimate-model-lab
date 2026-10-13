@@ -47,6 +47,10 @@
     "prepare:dressipi": "uv run python scripts/prepare-dressipi.py",
     "study:dressipi": "uv run python -m services.competitions.dressipi_study",
     "study:retrieval": "uv run python -m services.competitions.coverage_recommend",
-    "study:intervals": "uv run python -m services.competitions.coverage_forecast"
+    "study:intervals": "uv run python -m services.competitions.coverage_forecast",
+    "prepare:classification": "uv run python -m services.classification.run prepare",
+    "train:classification": "uv run python -m services.classification.run develop",
+    "final:classification": "uv run python -m services.classification.run final",
+    "export:classification": "uv run python -m services.classification.run export"
   }
 }

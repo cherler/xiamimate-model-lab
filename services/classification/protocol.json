@@ -6,19 +6,79 @@
   "download": "https://archive.ics.uci.edu/static/public/94/spambase.zip",
   "license": "CC BY 4.0",
   "positive_label": 1,
-  "excluded_features": ["word_freq_george", "word_freq_650", "word_freq_hp", "word_freq_hpl"],
-  "split": {"method": "SHA256(seed:feature_vector), identical retained feature vectors stay together", "buckets": {"train": [0, 6000], "calibration": [6000, 7500], "validation": [7500, 8500], "test": [8500, 10000]}},
+  "excluded_features": [
+    "word_freq_george",
+    "word_freq_650",
+    "word_freq_hp",
+    "word_freq_hpl"
+  ],
+  "split": {
+    "method": "SHA256(seed:feature_vector), identical retained feature vectors stay together",
+    "buckets": {
+      "train": [
+        0,
+        6000
+      ],
+      "calibration": [
+        6000,
+        7500
+      ],
+      "validation": [
+        7500,
+        8500
+      ],
+      "test": [
+        8500,
+        10000
+      ]
+    }
+  },
   "models": {
-    "rules": {"word_freq_free": 0.5, "word_freq_remove": 0.1, "char_freq_$": 0.1, "capital_run_length_longest": 20},
-    "logistic": {"C": 1.0, "max_iter": 3000},
-    "lightgbm": {"n_estimators": 300, "learning_rate": 0.04, "num_leaves": 15, "min_child_samples": 30, "reg_lambda": 1.0, "n_jobs": 2, "verbosity": -1, "deterministic": true, "force_col_wise": true}
+    "rules": {
+      "word_freq_free": 0.5,
+      "word_freq_remove": 0.1,
+      "char_freq_$": 0.1,
+      "capital_run_length_longest": 20
+    },
+    "logistic": {
+      "C": 1.0,
+      "max_iter": 3000
+    },
+    "lightgbm": {
+      "n_estimators": 300,
+      "learning_rate": 0.04,
+      "num_leaves": 15,
+      "min_child_samples": 30,
+      "reg_lambda": 1.0,
+      "n_jobs": 2,
+      "verbosity": -1,
+      "deterministic": true,
+      "force_col_wise": true
+    }
   },
   "preprocess": "train-only median imputation; logistic uses log1p then train-only standard scaling; rule thresholds are predeclared",
   "calibration": "per-model sigmoid on logit(raw_score), fitted on calibration split only; rule raw score is fraction of four triggered conditions, not a probability",
   "model_selection": "highest validation average precision of calibrated scores, lexicographic model ID tie-break",
   "threshold_selection": "per model maximize validation recall under FPR <= 0.02; ties maximize precision then higher threshold; no-positive option allowed",
-  "metrics": ["average_precision", "roc_auc", "brier", "log_loss", "ece_10_equal_width", "precision", "recall", "fpr", "confusion"],
+  "metrics": [
+    "average_precision",
+    "roc_auc",
+    "brier",
+    "log_loss",
+    "ece_10_equal_width",
+    "precision",
+    "recall",
+    "fpr",
+    "confusion"
+  ],
   "capacity": "floor(N * share); stable descending score, feature group then row ID tie-break; hypothetical review queue, not measured benefit",
   "test_policy": "one final read after frozen development output; exclusive access ledger; interactive test thresholds are retrospective scenarios, never new validation",
-  "limitations": ["1999 historical email collection, no chronological or sender identifiers", "exact feature groups kept together; near-duplicate emails cannot be ruled out", "57 extracted attributes only; no original subjects or email bodies", "four known collection-specific indicators excluded; residual collection bias remains", "benchmark class mix is not a deployment prevalence estimate"]
+  "limitations": [
+    "1999 historical email collection, no chronological or sender identifiers",
+    "exact feature groups kept together; near-duplicate emails cannot be ruled out",
+    "57 extracted attributes only; no original subjects or email bodies",
+    "four known collection-specific indicators excluded; residual collection bias remains",
+    "benchmark class mix is not a deployment prevalence estimate"
+  ],
+  "data_sha256": "b1ef93de71f97714d3d7d4f58fc9f718da7bbc8ac8a150eff2778616a8097b12"
 }
