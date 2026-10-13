@@ -48,5 +48,5 @@ if(createHash('sha256').update(selectionBytes).digest('hex')!==selection.sha256 
 await rm(`${root}dist`, { recursive: true, force: true });
 await mkdir(`${root}dist`, { recursive: true });
 await cp(`${root}apps/web`, `${root}dist`, { recursive: true, filter: source => publishableWebPath(resolve(root,'apps/web'),source) });
-console.log('M5 local research data excluded from public build; usage clearance is pending.');
+console.log('M5 and Dressipi local research data excluded from public build; usage clearance is pending.');
 console.log(`Built showcase ${manifest.version}. Ta Feng uses saved results; UCI still requires the local API.`);

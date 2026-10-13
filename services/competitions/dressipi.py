@@ -4,6 +4,7 @@ These baselines and metric adapter are not SIHG4SR and are not a trained result.
 Use only a locally supplied, appropriately authorized dataset.
 """
 from collections import Counter, defaultdict
+from heapq import nsmallest
 import numpy as np
 import pandas as pd
 
@@ -21,8 +22,8 @@ def validate_tables(sessions, purchases, features):
         raise ValueError('sessions and targets do not align')
     if not (set(sessions.item_id) | set(purchases.item_id)).issubset(set(features.item_id)):
         raise ValueError('item features missing for observed items')
-    last_view = sessions.assign(date=pd.to_datetime(sessions.date, utc=True)).groupby('session_id').date.max()
-    purchase_time = pd.to_datetime(purchases.date, utc=True)
+    last_view = sessions.assign(date=pd.to_datetime(sessions.date, utc=True, format='mixed')).groupby('session_id').date.max()
+    purchase_time = pd.to_datetime(purchases.date, utc=True, format='mixed')
     if (purchase_time.to_numpy() < purchases.session_id.map(last_view).to_numpy()).any():
         raise ValueError('purchase precedes a view')
 
@@ -37,8 +38,8 @@ def temporal_split(sessions, purchases, cutoff='2021-04-01', end='2021-05-01'):
     stop = pd.Timestamp(end, tz='UTC')
     views = sessions.copy()
     labels = purchases.copy()
-    views['date'] = pd.to_datetime(views.date, utc=True)
-    labels['date'] = pd.to_datetime(labels.date, utc=True)
+    views['date'] = pd.to_datetime(views.date, utc=True, format='mixed')
+    labels['date'] = pd.to_datetime(labels.date, utc=True, format='mixed')
     spans = views.groupby('session_id').date.agg(['min', 'max'])
     train_ids = set(spans.index[spans['max'] < start]) & set(labels.loc[labels.date < start, 'session_id'])
     valid_ids = set(spans.index[(spans['min'] >= start) & (spans['max'] < stop)]) & set(labels.loc[(labels.date >= start) & (labels.date < stop), 'session_id'])
@@ -103,4 +104,4 @@ class SessionBaselines:
                     scores[candidate] += .8 ** age * count / len(attrs | self.attributes[candidate])
         # Scores never update from another evaluation session; IDs deterministically break ties.
         available = set(candidates) - set(item_sequence)
-        return sorted(available, key=lambda i: (-scores[i], -self.popularity[i], str(i)))[:k]
+        return nsmallest(k, available, key=lambda i: (-scores[i], -self.popularity[i], str(i)))

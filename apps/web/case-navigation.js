@@ -1,7 +1,7 @@
 export const CASES = {
  recommend: [
   {id:'tafeng',label:'Ta Feng · 复购推荐',views:['experience','data','report']},
-  {id:'dressipi',label:'Dressipi · 时尚会话推荐（准备中）',views:['experience','data']},
+  {id:'dressipi',label:'Dressipi · 时尚会话推荐',views:['experience','data']},
   {id:'uci',label:'UCI · 推荐与特征实验',views:['experience','data','advanced','selection','tuning','report']},
  ],
  forecast: [

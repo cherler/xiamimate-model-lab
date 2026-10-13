@@ -17,9 +17,7 @@ Independent implementation of the **nonrecursive store-level core** of the first
 
 ## Dressipi stage
 
-Dataset terms currently block public lead-generation use without appropriate permission. Exact champion repository has not been verified; the verified MIT repository is **fourth place**, not first. No data has been downloaded. The project must not silently accept terms, use a mirror to bypass them, or label anonymous attribute codes as real product names.
-
-Preparation can proceed without data: session-disjoint temporal evaluation, MRR@100/Recall@100, candidate filtering, popularity/co-occurrence baselines and schema validation. Once access and usage are resolved: baseline → attribute-aware LightGBM ranker → SIHG4SR reproduction in an isolated compatible environment → development-only tuning and one frozen evaluation. Report official third-party MRR 0.20762 separately, never as our result. Exact champion replication remains pending verified source availability.
+The pinned third-party training mirror has now been downloaded, verified and used for the independent local CPU pilot below. Public lead-generation use remains disabled pending appropriate permission. Exact champion code has not been verified; no champion/GNN reproduction or third-party score display is claimed. Anonymous attribute codes are used as codes, never invented product names.
 
 ## Local commands
 
@@ -33,8 +31,31 @@ npm run final:m5 -- --run-id m5-<saved-run-id>
 npm run verify:m5
 ```
 
-The import verifies the pinned archive Git blob and records SHA-256 for each whitelisted CSV. It never extracts `sales_test_evaluation.csv`. Development loads sales columns only through d_1913; reserved predictions and selection are persisted before d_1914–1941 labels are loaded. A store/origin access ledger survives run changes. Verification recomputes saved metrics without rereading reserved labels. Every run snapshots code, protocol, source/data/dependency hashes, cohort, predictions, models and costs. No competition export command is provided while public-use rights are unresolved.
+The import verifies the pinned archive Git blob and records SHA-256 for each whitelisted CSV. It never extracts `sales_test_evaluation.csv`. Development loads sales columns only through d_1913; reserved predictions and selection are persisted before d_1914–1941 labels are loaded. A store/origin access ledger survives run changes. Verification recomputes saved metrics without rereading reserved labels. Every run snapshots code, protocol, source/data/dependency hashes, cohort, predictions, models and costs. Local-only export commands verify saved results. Default public builds exclude both competition data bundles.
 
 `verify:m5-weights` independently compares last-28-day revenue weights for all 30,490 bottom series with archived organizer validation weights; it reads no validation/private target labels. It is an arithmetic audit, not full-scope model evaluation.
 
-Dressipi preparation now includes `dressipi.py` and `dressipi-protocol.json`: schema checks, whole-session date splits, all-session MRR/Recall, train-only co-occurrence, popularity and anonymous attribute baselines. Tests use invented fixtures only and do not imply measured Dressipi accuracy. No SIHG4SR training or downloaded dataset exists yet. Original v2 environment is pinned for a future isolated Linux run (Python 3.8 / Torch 1.10 / DGL 0.7.2 / CUDA 11.3); compatibility and hardware requirements remain untested.
+Dressipi preparation now includes `dressipi.py` and `dressipi-protocol.json`: schema checks, whole-session date splits, all-session MRR/Recall, train-only co-occurrence, popularity and anonymous attribute baselines. Tests use invented fixtures only and do not imply measured Dressipi accuracy. SIHG4SR has not been trained; the local CPU pilot below supersedes the initial data-preparation status. Original v2 environment is pinned for a future isolated Linux run (Python 3.8 / Torch 1.10 / DGL 0.7.2 / CUDA 11.3); compatibility and hardware requirements remain untested.
+
+
+## Dressipi local CPU pilot v2 (2026-10-13)
+
+The user requested checking a non-official download. A pinned training-file mirror was located at `yuanhenglee/RecSys-Dressipi`, commit `e91a0ef5d84aab5e000746b6da9e4e0e5ee615ec`. The importer verifies LFS SHA256 / Git-blob identity, retains resumable chunks, downloads only three training CSVs, and records the organizer's later research/education statement separately from historical competition terms. No registration form or terms acceptance is performed. A mirror does not establish commercial redistribution rights; both M5 and Dressipi exports are excluded from default public builds.
+
+The new independent pipeline is **not a champion/GNN port**. It fixes pre-March statistics from at most 100,000 sessions, learns a LightGBM LambdaRank model from at most 3,000 March sessions, then evaluates at most 1,000 April sessions. Complete sessions are assigned chronologically and sampled by SHA256 of session ID, without target-dependent selection. Baselines remain frozen before March. All catalogue IDs are candidates before per-session viewed-item exclusion; retrieval unions top 100 popularity/co-occurrence/anonymous-attribute candidates, with no target injection. Retrieval misses remain zero in full-validation MRR@100 and Recall@100; only positive-containing training queries can train the ranker. This is development evidence, not the official candidate/prefix-truncated test protocol.
+
+```sh
+npm run prepare:dressipi
+npm run train:dressipi
+npm run export:dressipi
+```
+
+Training saves provenance, protocol, catalogue, frozen model checksum, every validation ranking, fixed samples, measured costs, report and file checksums. Export recomputes ranking metrics from saved predictions and verifies sample identity. Frontend lives at `#recommend?case=dressipi`; absent data shows preparation status, never third-party scores. The original `dressipi-protocol.json` remains historical preparation; `dressipi-local.json` defines this bounded pilot. Public publication remains disabled. No existing M5 or Ta Feng holdout is reopened.
+
+Completed local pilot: `dressipi-20261013T085519500339Z`. On 1,000 complete April sessions, LightGBM MRR@100 = 0.08399357 and Recall@100 = 0.365; the strongest baseline MRR is co-occurrence (0.05540824), while anonymous attributes have baseline Recall 0.324. These are sampled development results, with different candidate/training scope from the competition. No official score is included in the UI.
+
+## Frontend case explanations and M5 details
+
+All four datasets now have a task-specific `view=data` page. M5 also has `models`, `report`, and `training` views inside the forecast case. The exporter includes the saved feature gains; the browser normalizes all 42 gains and labels them as training importance, not causal/ablation evidence. Reports preserve the three windows, all four methods and all twelve levels, including repeated levels caused by single-store scope. Training details show measured rows/times and distinguish implemented work from unrun tuning/SHAP/full ensembles. No training or holdout access was performed for these UI additions.
+
+Validation: 38 frontend tests, 49 Python tests, syntax checks and public build passed. Desktop route/selector checks passed. The browser viewport override did not change the background tab from 1280×720, so a new 390 px visual check could not be confirmed in this session; responsive styles are included but this is not counted as a passed mobile check.

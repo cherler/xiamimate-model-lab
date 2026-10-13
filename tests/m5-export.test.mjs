@@ -54,6 +54,6 @@ test('all 3049 item predictions reproduce category/store series and item-day met
 });
 test('public build excludes M5 bundle at directory and file level',()=>{
  const web=resolve('apps/web');
- for(const name of ['m5-results','m5-results/manifest.json',`m5-results/1234567890abcdef/overview.json`])assert.equal(publishableWebPath(web,resolve(web,name)),false);
+ for(const name of ['dressipi-results','dressipi-results/manifest.json','m5-results','m5-results/manifest.json',`m5-results/1234567890abcdef/overview.json`])assert.equal(publishableWebPath(web,resolve(web,name)),false);
  for(const name of ['','m5.js','m5.css','showcase/manifest.json'])assert.equal(publishableWebPath(web,resolve(web,name)),true);
 });

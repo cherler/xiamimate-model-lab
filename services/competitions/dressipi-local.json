@@ -1,0 +1,17 @@
+{
+  "version": "dressipi-local-pilot-v2",
+  "evidence": "development_only",
+  "base_before": "2021-03-01",
+  "ranking_before": "2021-04-01",
+  "validation_end_exclusive": "2021-05-01",
+  "max_base_sessions": 100000,
+  "max_ranking_sessions": 3000,
+  "max_validation_sessions": 1000,
+  "sampling": "lowest SHA256(session_id), independent of target and result",
+  "candidate_catalogue": "all item_features IDs; remove session-viewed items; union 100 popularity + 100 cooccurrence + 100 attributes; never inject target",
+  "max_candidates": 300,
+  "baseline_state": "frozen before March; same candidate generation for ranker and evaluation",
+  "params": {"objective":"lambdarank", "n_estimators":150, "num_leaves":31, "learning_rate":0.05, "min_child_samples":30, "random_state":42, "n_jobs":2, "verbosity":-1},
+  "public_export_allowed": false,
+  "limitations": ["Local chronological April validation, not official leaderboard or independent test", "Bounded CPU pilot; sampled sessions, not full-scale competition", "Independent attribute-aware LightGBM pipeline, not champion or GNN reproduction", "Anonymous attribute codes have no verified human-readable semantics"]
+}

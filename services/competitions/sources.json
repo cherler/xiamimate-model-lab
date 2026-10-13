@@ -17,9 +17,9 @@
     "official": "https://www.recsyschallenge.com/2022/",
     "data_access": "https://dressipi.com/downloads/recsys-datasets/",
     "data_terms": "https://www.recsyschallenge.com/2022/Dressipi2022_TC.pdf",
-    "terms_note": "Page 2 restricts dataset commercialization/transfer/derivative works; post-challenge availability is for recommender research. Download is described as agreement to terms. No dataset downloaded or terms accepted by this project.",
+    "terms_note": "Historical challenge terms and later research/education statement are retained separately. No registration form or terms acceptance performed. Public distribution remains disabled.",
     "public_export_allowed": false,
-    "status": "blocked_on_data_access_and_appropriate_use_permission",
+    "status": "complete_local_development_pilot",
     "champion": "zzh: Industrial Solution in Fashion-domain Recommendation by an Efficient Pipeline using GNN and Lightgbm",
     "champion_source": "https://recsys.acm.org/challenges/",
     "champion_code_status": "Exact winning repository not verified; no champion reproduction claim",
@@ -31,6 +31,19 @@
       "model": "SIHG4SR heterogeneous GNN ensemble",
       "code_license": "MIT",
       "note": "Published result only, not our score. MIT on code does not license Dressipi data."
-    }
+    },
+    "mirror": {
+      "repository": "https://github.com/yuanhenglee/RecSys-Dressipi",
+      "commit": "e91a0ef5d84aab5e000746b6da9e4e0e5ee615ec",
+      "files": [
+        "train_sessions.csv",
+        "train_purchases.csv",
+        "item_features.csv"
+      ],
+      "integrity": "Pinned Git blob / LFS SHA-256; not independently compared to official archive"
+    },
+    "research_rights_reference": "https://groups.google.com/g/recsys-challenge-2022/c/_ga1adC7oeI",
+    "research_rights_note": "Organizer July 7, 2022 statement announces CC BY-NC-SA. User requested third-party source for local research. No commercial distribution grant is inferred.",
+    "local_run": "dressipi-20261013T085519500339Z"
   }
 }
