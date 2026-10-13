@@ -20,3 +20,16 @@ Independent implementation of the **nonrecursive store-level core** of the first
 Dataset terms currently block public lead-generation use without appropriate permission. Exact champion repository has not been verified; the verified MIT repository is **fourth place**, not first. No data has been downloaded. The project must not silently accept terms, use a mirror to bypass them, or label anonymous attribute codes as real product names.
 
 Preparation can proceed without data: session-disjoint temporal evaluation, MRR@100/Recall@100, candidate filtering, popularity/co-occurrence baselines and schema validation. Once access and usage are resolved: baseline → attribute-aware LightGBM ranker → SIHG4SR reproduction in an isolated compatible environment → development-only tuning and one frozen evaluation. Report official third-party MRR 0.20762 separately, never as our result. Exact champion replication remains pending verified source availability.
+
+## Local commands
+
+```sh
+npm run prepare:m5
+npm run train:m5
+npm run verify:m5
+# After reviewing frozen development selection; one recorded reserved-window access:
+npm run final:m5 -- --run-id m5-<saved-run-id>
+npm run verify:m5
+```
+
+The import verifies the pinned archive Git blob and records SHA-256 for each whitelisted CSV. It never extracts `sales_test_evaluation.csv`. Development loads sales columns only through d_1913; reserved predictions and selection are persisted before d_1914–1941 labels are loaded. A store/origin access ledger survives run changes. Verification recomputes saved metrics without rereading reserved labels. Every run snapshots code, protocol, source/data/dependency hashes, cohort, predictions, models and costs. No competition export command is provided while public-use rights are unresolved.

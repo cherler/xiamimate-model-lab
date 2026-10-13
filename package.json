@@ -35,6 +35,10 @@
     "export:tuning": "uv run --project services/advanced python services/advanced/hpo/export_results.py",
     "train:automl": "uv run --project services/advanced python services/advanced/automl/run.py",
     "verify:automl": "uv run --project services/advanced python services/advanced/automl/verify.py",
-    "export:automl": "uv run --project services/advanced python services/advanced/automl/export.py"
+    "export:automl": "uv run --project services/advanced python services/advanced/automl/export.py",
+    "prepare:m5": "uv run python -m services.competitions.m5_data",
+    "train:m5": "uv run python -m services.competitions.m5_run develop",
+    "final:m5": "uv run python -m services.competitions.m5_run final",
+    "verify:m5": "uv run python -m services.competitions.m5_verify"
   }
 }
