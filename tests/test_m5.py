@@ -1,5 +1,8 @@
 import sys
 import unittest
+import tempfile
+import json
+from unittest.mock import patch
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -75,6 +78,37 @@ class M5FeatureTests(unittest.TestCase):
         history = np.tile(np.arange(1, 8), (2, 8))
         for prediction in baselines(history).values():
             np.testing.assert_array_equal(prediction, np.tile(np.arange(1, 8), (2, 4)))
+
+
+class M5HoldoutTests(unittest.TestCase):
+    def test_failed_label_read_consumes_access_and_new_attempt_cannot_reset_it(self):
+        from services.competitions import m5_run
+        with tempfile.TemporaryDirectory() as temp:
+            runs = Path(temp)
+            run = runs / 'm5-fixture'
+            run.mkdir()
+            for name, value in {'inputs.json': {'source': {'a':'b'}, 'data': {'v':1}},
+                                 'protocol.json': {'store':'CA_1', 'sealed_origin':60},
+                                 'selection.json': {'winner':'seasonal_naive'}}.items():
+                (run / name).write_text(json.dumps(value))
+            meta = pd.DataFrame({'item_id':['a']})
+            past = (meta, np.ones((1,60)), pd.DataFrame(), np.ones((1,88)))
+            with patch.object(m5_run, 'RUNS', runs), \
+                 patch.object(m5_run, 'source_hashes', return_value={'a':'b'}), \
+                 patch.object(m5_run, 'data_manifest', return_value={'v':1}), \
+                 patch('services.competitions.m5_verify.verify'), \
+                 patch.object(m5_run, 'load', side_effect=[past, RuntimeError('label read failed')]) as loader:
+                with self.assertRaisesRegex(RuntimeError, 'label read failed'):
+                    m5_run.final(run.name)
+                self.assertEqual(loader.call_args_list[0].args, ('CA_1', 60))
+                self.assertEqual(loader.call_args_list[1].args, ('CA_1', 88))
+                access = json.loads((runs / 'm5-access-CA_1-60.json').read_text())
+                self.assertEqual(access['status'], 'consumed')
+                self.assertTrue((run / 'reserved-predictions.npz').exists())
+                loader.reset_mock()
+                with self.assertRaisesRegex(ValueError, 'already consumed'):
+                    m5_run.final(run.name)
+                loader.assert_not_called()
 
 
 if __name__ == '__main__':

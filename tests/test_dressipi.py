@@ -40,3 +40,11 @@ class DressipiTests(unittest.TestCase):
         before = model.predict([10], [20,30])
         model.predict([20], [20,30])
         self.assertEqual(before, model.predict([10], [20,30]))
+
+    def test_session_straddling_cutoff_is_excluded_from_both_partitions(self):
+        views, targets, _ = self.tables()
+        views = pd.concat([views, pd.DataFrame([(1,20,'2021-04-01')], columns=views.columns)])
+        targets.loc[targets.session_id.eq(1), 'date'] = '2021-04-01'
+        tr, tp, va, vp = temporal_split(views, targets)
+        for table in [tr,tp,va,vp]:
+            self.assertNotIn(1, table.session_id.tolist())
