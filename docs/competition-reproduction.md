@@ -92,3 +92,10 @@ Tweedie 训练目标接近条件均值，层级 RMSSE 对平方误差敏感；�
 - [M5 数据页](https://www.kaggle.com/competitions/m5-forecasting-accuracy/data)：许可依竞赛规则，当前规则正文未能读取，不推定商用许可。
 - [Dressipi 数据说明](https://www.recsyschallenge.com/2022/dataset.html)、[官方条款](https://www.recsyschallenge.com/2022/Dressipi2022_TC.pdf)。
 - [第四名 SIHG4SR 代码](https://github.com/Intel-bigdata/recsys2022_intel_submission)，固定提交 `72a9d8970b09f641e2e89adadcd5b86b9a9770a2`。
+
+
+## M5 前端接入（2026-10-13）
+
+`npm run export:m5` 从运行 `m5-20261013T043740793990Z` 导出本地展示包，入口 `#m5`。不训练、不重新读取原始保留标签；导出前执行完整保存预测核验。页面包含门店、真实品类与全部商品曲线，三窗口／四模型切换，逐日实际值与预测值，全门店同范围统计，以及输入→学习→输出说明。仅报告自身结果，不展示官方获奖成绩。
+
+导出包忽略 Git；默认公开构建排除。资源逐文件 SHA-256 验证，缺失或损坏时明确报错。自动检查逐商品预测汇总能重现品类／门店曲线与商品日 WAPE、偏差；32 项前端测试与 45 项 Python 测试通过。桌面 1440×1000 和手机 390×844 已检查；手机聚焦未来预测，桌面兼有历史。
