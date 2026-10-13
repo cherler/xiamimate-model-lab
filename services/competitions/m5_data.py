@@ -97,7 +97,13 @@ def load(store, max_day):
     if sales.empty or sales.duplicated(['store_id', 'item_id']).any():
         raise ValueError('missing or duplicate series')
     calendar = pd.read_csv(RAW / 'calendar.csv')
-    calendar['day'] = calendar.d.str.removeprefix('d_').astype(int)
+    if 'd' in calendar:
+        calendar['day'] = calendar.d.str.removeprefix('d_').astype(int)
+    else:
+        dates = pd.to_datetime(calendar.date)
+        if str(dates.iloc[0].date()) != '2011-01-29' or not dates.diff().iloc[1:].eq(pd.Timedelta(days=1)).all():
+            raise ValueError('calendar cannot be mapped to competition day indexes')
+        calendar['day'] = np.arange(1, len(calendar) + 1)
     calendar = calendar.sort_values('day').reset_index(drop=True)
     if calendar.day.tolist() != list(range(1, len(calendar) + 1)):
         raise ValueError('calendar day gaps')
