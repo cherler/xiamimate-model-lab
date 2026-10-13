@@ -36,6 +36,13 @@ for(const kind of ['lightgbm','lightgcn','tft'])for(const key of [kind,`${kind}-
   if(createHash('sha256').update(bytes).digest('hex')!==spec.sha256)throw new Error(`AutoML 校验失败：${key}`);
   if(key===kind&&JSON.parse(bytes).run_id!==tuning.runs[kind])throw new Error(`AutoML 版本不一致：${key}`);
 }
+const selectionAssets=resolve(root,'apps/web/selection-results');
+let selection;
+try { selection=JSON.parse(await readFile(`${selectionAssets}/manifest.json`,'utf8')); }
+catch { throw new Error('请先运行 npm run export:automl，生成完整模型选择报告。'); }
+if(!/^[a-f0-9]{16}\/report\.json$/.test(selection.path))throw new Error('模型选择资源无效');
+const selectionBytes=await readFile(resolve(selectionAssets,selection.path));
+if(createHash('sha256').update(selectionBytes).digest('hex')!==selection.sha256 || JSON.parse(selectionBytes).run_id!==selection.run_id)throw new Error('模型选择报告校验失败');
 // Build output is disposable; validate all sources before replacing it.
 await rm(`${root}dist`, { recursive: true, force: true });
 await mkdir(`${root}dist`, { recursive: true });

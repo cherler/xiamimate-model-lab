@@ -30,3 +30,5 @@ artifacts/advanced-*.log
 apps/web/advanced-results/
 artifacts/advanced-studies/
 apps/web/tuning-results/
+
+apps/web/selection-results/

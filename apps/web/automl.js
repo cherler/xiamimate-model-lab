@@ -1,3 +1,4 @@
+import {renderSelection} from './automl-selection.js';
 import {ADVANCED_NAMES} from './advanced.js';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pct=v=>`${(v*100).toFixed(2)}%`,number=v=>Number(v).toLocaleString('zh-CN',{maximumFractionDigits:3});
@@ -23,13 +24,14 @@ function progressChart(trials,direction){
  return `<figure class="automl-progress"><svg viewBox="0 0 640 195" role="img" aria-label="已完成试验的验证成绩及历史最佳成绩"><text x="5" y="28">${number(high)}</text><text x="5" y="157">${number(low)}</text><line x1="50" y1="160" x2="610" y2="160" stroke="#b9cdd5"/><polyline points="${points.map(p=>`${x(p.trial)},${y(p.best)}`).join(' ')}" fill="none" stroke="#087f9d" stroke-width="2"/>${points.map(p=>`<circle cx="${x(p.trial)}" cy="${y(p.value)}" r="4" fill="#a17a30"/><text x="${x(p.trial)}" y="184" text-anchor="middle">${p.trial+1}</text>`).join('')}</svg><figcaption>横轴：试验编号；金点：该次验证成绩；蓝线：截至该次的验证最佳值。仅画完成试验，剪枝／失败仍保留在下表。</figcaption></figure>`;
 }
 export async function renderAutoML(host,isCurrent){
+ if(new URLSearchParams(location.hash.split('?')[1]||'').get('view')!=='tuning')return renderSelection(host,isCurrent);
  host.innerHTML='<p class="loading-copy">正在核验自动调参记录…</p>';
  try{
   const response=await fetch('./tuning-results/manifest.json');if(!response.ok)throw new Error('尚未导出完整调参结果');const manifest=await response.json();
   const data=Object.fromEntries(await Promise.all(Object.entries(manifest.resources).map(async([k,v])=>[k,await resource(v)])));if(!isCurrent())return;
   for(const k of Object.keys(titles))if(data[k].run_id!==manifest.runs[k])throw new Error('调优报告版本不一致');
   let kind='lightgcn',sampleIndex=0,trialIndex=data[kind].search.selection.trial;
-  host.innerHTML=`<div class="breadcrumb">模型工坊<span>/</span>AutoML 实验室</div><div class="page-heading"><div><h1>让每一次调优，都有据可查。</h1><p>Optuna 自动搜索、提前剪枝、验证集选优；展示真实试验记录与调优后的回放结果。</p></div><span class="badge">离线训练 · 保存结果</span></div><p class="showcase-boundary">当前实现的是 AutoML 中的超参搜索与有限特征开关。搜索空间由人工定义；尚未实现全自动业务建模、跨模型自动选择或神经架构搜索。UCI 回放仍是测试后开发证据。</p><ol class="automl-steps">${['固定数据与指标','自动尝试参数','验证集选择配置','冻结后回放比较','保留成功与失败'].map(t=>`<li>${t}</li>`).join('')}</ol><nav class="task-switch" aria-label="调优模型">${Object.entries(titles).map(([k,v])=>`<button data-tuning-model="${k}">${v}</button>`).join('')}</nav><div id="automl-content"></div>`;
+  host.innerHTML=`<div class="breadcrumb">模型工坊<span>/</span>AutoML 实验室</div><div class="page-heading"><div><h1>让每一次调优，都有据可查。</h1><p>Optuna 自动搜索、提前剪枝、验证集选优；展示真实试验记录与调优后的回放结果。</p></div><span class="badge">离线训练 · 保存结果</span></div><p class="showcase-boundary">本页保留第一阶段超参搜索与有限特征开关的完整记录。跨模型与特征选择已在下一阶段单独实现；尚未实现全自动业务建模或神经架构搜索。UCI 回放仍是测试后开发证据。</p><p class="advanced-entry"><a href="#automl">查看第二阶段：模型与特征自动选择 →</a></p><ol class="automl-steps">${['固定数据与指标','自动尝试参数','验证集选择配置','冻结后回放比较','保留成功与失败'].map(t=>`<li>${t}</li>`).join('')}</ol><nav class="task-switch" aria-label="调优模型">${Object.entries(titles).map(([k,v])=>`<button data-tuning-model="${k}">${v}</button>`).join('')}</nav><div id="automl-content"></div>`;
   const content=host.querySelector('#automl-content');
   function draw(){
    host.querySelectorAll('[data-tuning-model]').forEach(b=>{const active=b.dataset.tuningModel===kind;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));});

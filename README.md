@@ -23,7 +23,7 @@ npm run export:advanced
 npm run test:deep
 ```
 
-已有完整产物时仅需导出；不要为补旧展示包重新训练 Ta Feng。新模型保存于独立 `artifacts/advanced-runs/`，新页面资源位于 `apps/web/advanced-results/`，二者均不入 Git。构建必须通过原展示包、进阶包和 AutoML 调优包校验。详细协议、数据边界与复现说明见 [进阶实验说明](services/advanced/README.md)。未使用 AutoDL 或云端付费资源。
+已有完整产物时仅需导出；不要为补旧展示包重新训练 Ta Feng。新模型保存于独立 `artifacts/advanced-runs/`，新页面资源位于 `apps/web/advanced-results/`，二者均不入 Git。构建必须通过原展示包、进阶包、AutoML 调优包和模型选择包校验。详细协议、数据边界与复现说明见 [进阶实验说明](services/advanced/README.md)。未使用 AutoDL 或云端付费资源。
 
 ## 运行
 
@@ -136,7 +136,7 @@ Chen, D. (2012). **Online Retail II**. UCI Machine Learning Repository. <https:/
 
 ## AutoML 实验室（2026-10-13）
 
-`#automl` 已接入 Optuna：自动超参搜索、提前剪枝、持久化续跑、验证集选优、冻结后回放、完整试验记录、前后指标与真实样本。当前属于 AutoML 的超参优化与有限特征开关阶段，跨模型自动选择、完整特征流水线搜索和 AutoDL 调度尚未实现。框架选择与复现说明见 [调优说明](services/advanced/hpo/README.md)。
+第一阶段（现位于 `#automl?view=tuning`）已接入 Optuna：自动超参搜索、提前剪枝、持久化续跑、验证集选优、冻结后回放、完整试验记录、前后指标与真实样本。该阶段覆盖超参优化与有限特征开关。跨模型与分组特征选择已在下述第二阶段实现；任意特征流水线搜索和 AutoDL 调度尚未实现。框架选择与复现说明见 [调优说明](services/advanced/hpo/README.md)。
 
 本地 CPU 共运行 28 次试验：LightGBM 12 次（4 完成、8 剪枝）、LightGCN 8 次（5 完成、3 剪枝）、TFT 8 次完成。LightGBM 推荐 NDCG@10 从 0.28194 到 0.28109，未改善；LightGCN 三种子 Recall@10 从 10.56%–11.15% 到 11.40%–11.65%，种子 42 的 NDCG 略降，另外两种子改善；TFT WAPE 从 85.84% 到 84.58%，仍弱于同范围中位数 79.94% 与 LightGBM 83.73%。TFT 区间覆盖从 73.41% 到 80.16%，同时平均宽度从 99.77 到 133.05 件，不能只展示覆盖提升。
 
@@ -156,3 +156,27 @@ npm run tune:lightgcn -- --name next-study --phase search --trials 8
 ```
 
 页面验收包括桌面 1440×1000、手机 390×844、三模型切换、剪枝试验详情和真实样本。截图见 `design/automl-desktop.png` 与 `design/automl-mobile.png`。
+
+
+## AutoML 第二阶段：模型、特征与成本选择（2026-10-13）
+
+`#automl` 现在是跨模型选择页；`#automl?view=tuning` 保留上一轮 28 次超参试验。新增 **9 个推荐候选、7 个预测候选** 的真实训练与验证，按预设规则给出“验证精度最佳”和“精度相对落后不超过 1% 时成本最低”两个方案，并展示 Pareto 图、全部候选、特征分组消融、冻结后回放与固定基线。
+
+| 任务 | 8 月验证选优 | 9–11 月开发回放 |
+| --- | --- | --- |
+| 推荐 | LightGBM 完整匹配特征；NDCG@10 0.33069，纯行为组 0.30420 | Recall@10 16.39%，NDCG@10 0.28109；不是新的模型精度突破 |
+| 预测·精度最佳 | TFT WAPE 84.82% | WAPE 84.92%，仍未超过同范围中位数基线 79.94% |
+| 预测·成本优先 | LightGBM 历史＋日历，WAPE 85.12% | WAPE 83.43%；验证冻结时选入，未根据回放重新挑选 |
+
+本阶段 TFT 用上一轮参数与固定 5 轮重新训练，采用固定学习率，不使用验证调度器；因此其权重和结果不等于上一轮选定的 checkpoint。所有树特征组共用参数；名称、价格、用户匹配进入不同分组，成绩来自真实验证，不能解释为因果贡献。成本单列共同准备，模型内耗时不含历史 HPO；本机单次耗时不能作为生产延迟或云报价。
+
+```sh
+npm run train:automl
+npm run verify:automl
+npm run export:automl
+npm run build
+```
+
+已有完整产物时只需核验与导出。流程会绑定数据、依赖、父模型与源码，冻结验证选择后再回放；保留失败和历史运行。完整协议与恢复方式见 [第二阶段说明](services/advanced/automl/README.md)。未修改旧默认模型、未接入客户数据、未重开 Ta Feng 最终测试，也没有使用 AutoDL。
+
+本轮验收：26 项前端／导出测试、34 项既有 Python 测试、16 项进阶测试通过；完成指标复算、构建、桌面 1440×1000 与手机 390×844 检查。实际截图：`design/automl-selection-desktop.png`、`design/automl-selection-mobile.png`。
