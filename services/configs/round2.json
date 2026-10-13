@@ -1,0 +1,21 @@
+{
+  "schema_version": 2,
+  "seed": 42,
+  "threads": 2,
+  "origins": ["2011-09-01", "2011-10-01", "2011-11-01"],
+  "evidence_level": "development_validation",
+  "recommendation": {
+    "k": 10, "exclude_purchased": false, "exploration": 0,
+    "selection_metric": "equal-window mean NDCG@10",
+    "itemcf": {"neighbors": 64, "shrinkage": 10},
+    "als": {"factors": [32, 64], "regularization": [0.01, 0.1], "confidence_increment": [1, 10], "iterations": 30},
+    "ease": {"regularization": [10, 100, 1000, 10000]},
+    "stability_seeds": [42, 7, 2026]
+  },
+  "forecast": {
+    "horizon": 28, "items": 12, "minimum_active_days": 100,
+    "selection_metric": "pooled WAPE over all three windows",
+    "lightgbm": {"objectives": ["regression", "poisson", "tweedie"], "num_leaves": [15, 31], "n_estimators": 200},
+    "statistical_timeout_seconds": 90
+  }
+}

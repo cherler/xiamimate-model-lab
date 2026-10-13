@@ -1,0 +1,24 @@
+Use case: product-mockup
+Asset type: final frontend concept image for a Chinese recommendation and forecasting systems portfolio and teaching web app.
+Create one exceptionally polished high-resolution desktop web application concept screenshot, landscape 16:10, straight-on, full interface fills the image, no device frame or perspective, no surrounding desk. Chinese language UI, meticulous readable Simplified Chinese typography.
+Product name exactly "模型工坊", small sublabel "推荐与预测". Standalone professional product aimed at prospective consulting clients and machine-learning learners. This is an interactive working case study, not a generic marketing dashboard.
+
+Visual design: luminous cool white #F7FAFC canvas, deep maritime ink #17324D typography, lake blue #087FA0 active controls, muted mint #DDEDE6 selections, muted steel #8397A6 secondary labels, very restrained warm gold #D3A343 chart comparison line. Modern humanist sans-serif Chinese (PingFang SC / Noto Sans SC feeling), generous but functional spacing. 6-10 px restrained corner radii, ultra subtle borders, almost no shadows. Cohesive thin icon system. NO purple gradient, NO neon, NO dark dashboard, NO giant vanity metric cards, NO illustrations of robots, no excessive rounded card grid.
+
+Layout:
+Top navigation 74px high: blue abstract branching three-dot mark next to "模型工坊", nav "案例体验" (active), "教学拆解", "交付方式". Right light outlined button "定制类似系统".
+Left narrow 188px sidebar below header, with small text "案例目录", active item "商品推荐", second "销量预测", divider, items "效果报告", "接口与部署". At bottom source badge "公开数据案例".
+Main spacious content to right:
+Top breadcrumb "案例体验 / 电商商品推荐".
+Large clear left-aligned heading "让每一次推荐，都有依据。" Beneath concise subtitle "从购买记录到推荐策略，完整看见一个系统如何工作。"
+Right of heading a segmented view control "业务视角" (selected lake blue) and "技术视角".
+
+Primary workbench spanning 70% page height, a purposeful asymmetric three-column composition with light separators:
+LEFT around 23%: label "选择一位顾客"; dropdown "顾客 17850"; compact purchase history timeline with dates and tasteful very small still-life product thumbnails (ceramic mug, linen tote, garden watering can), heading "最近购买", three rows. Small badge "历史记录". These are clearly illustrative demo items not real client claims.
+CENTER around 46%: header "为这位顾客推荐", three strategy tabs "热门商品" "个性化推荐" (active) "购物篮搭配". Four very legible recommendation rows, each with rank number, small realistic product thumbnail on pale background, Chinese product name, a restrained horizontal relevance bar with no numeric purchase probability. Items "陶瓷早餐杯", "棉麻收纳篮", "玻璃花瓶", "桌面托盘". Explanation snippets "与历史购买相似", "常被一起购买". Small "推荐依据" text link on first item.
+RIGHT around 27%: light-blue-tinted vertical business rule panel heading "经营规则". Toggle "排除已购商品" on; slider "推荐数量" set 4; slider "探索更多商品"; fine separator; fallback note "新顾客将使用热门推荐"; full-width lake blue button "更新推荐". A concise summary explaining rules update the list.
+
+Bottom evidence area: two purposeful rectangular sections, larger left "效果如何验证" shows comparison chart of baseline vs candidate with clear legend "热门基线" blue and "候选模型" teal, comparison groups "命中率" "排序质量" "商品覆盖". Very visible small badge "指标示意 · 待真实评估" and caption "同一测试集，比较不同策略". No fabricated real improvement percentages or success claims.
+Smaller right preview "下一个案例：销量预测", tiny elegant actual vs forecast line chart, white background, gold dashed forecast and blue history, label "历史回测 / 未来 28 天" with understated text button "查看案例".
+Small unobtrusive page-bottom label "界面概念图 · 演示数据".
+Overall should look like a finished premium real working software UI with excellent density and alignment. Chinese text spelling is important. Focus on workbench, meaningful controls, source and evidence honesty, not marketing fluff.

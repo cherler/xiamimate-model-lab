@@ -1,0 +1,26 @@
+{
+  "schema_version": 3,
+  "parent_run_id": "retail-20261011T121416Z",
+  "seed": 42,
+  "threads": 2,
+  "evidence_level": "development_validation",
+  "origins": ["2011-09-01", "2011-10-01", "2011-11-01"],
+  "recommendation": {
+    "k": 10, "exclude_purchased": false, "exploration": 0,
+    "decay_days": 90, "hybrid_als_weights": [0.25, 0.5, 0.75],
+    "selection_metric": "equal-window mean NDCG@10",
+    "activity_bins": [0, 5, 20], "basket_bins": [10, 30]
+  },
+  "forecast": {
+    "horizon": 28, "items": 12, "minimum_active_days": 100,
+    "diagnostic_spike_quantile": 0.95,
+    "daily_objectives": ["regression_l1", "regression", "log_regression"],
+    "n_estimators": 200, "num_leaves": 31,
+    "weekly_offsets": [0, 7, 14, 21], "weekly_horizon": 7,
+    "weekly_objectives": ["regression_l1", "regression", "tweedie"],
+    "weekly_leaves": [15, 31], "weekly_training_stride": 1,
+    "statistical_timeout_seconds": 90,
+    "development_gate": {"maximum_absolute_bias": 0.2, "minimum_wape_gain_vs_best_baseline": 0.1, "minimum_winning_windows": 8},
+    "gate_note": "Predeclared development screen only, not a business production acceptance criterion."
+  }
+}

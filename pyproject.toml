@@ -1,0 +1,19 @@
+[project]
+name = "model-lab-training"
+version = "0.2.0"
+description = "Reproducible public retail-data training and evaluation"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "numpy>=2.2,<3",
+  "pandas>=2.2,<3",
+  "scipy>=1.15,<2",
+  "scikit-learn>=1.6,<2",
+  "openpyxl>=3.1,<4",
+  "implicit>=0.7.2,<0.8",
+  "lightgbm>=4.6,<5",
+  "statsforecast>=2,<3",
+  "psutil>=6,<8",
+]
+
+[tool.uv]
+package = false

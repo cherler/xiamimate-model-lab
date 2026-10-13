@@ -1,0 +1,27 @@
+{
+  "name": "xiamimate-model-lab",
+  "version": "0.4.0",
+  "private": true,
+  "type": "module",
+  "description": "独立的推荐与预测系统案例、教学和定制方案工作台",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "node scripts/dev-server.mjs",
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check": "node --check apps/web/app.js && node --check apps/web/real-cases.js && node --check apps/web/demo-engine.js && node --check apps/web/round-two.js && node --check apps/web/round-three.js && node --check apps/web/showcase.js && node --check apps/web/product-labels.js && node --check apps/web/model-guide.js && node --check apps/web/forecast-guide.js",
+    "train": "uv run python services/train.py",
+    "test:ml": "uv run python -m unittest discover -s tests -p 'test_*.py' -v",
+    "train:v2": "uv run python services/train_v2.py",
+    "verify:v2": "uv run python scripts/verify-v2.py",
+    "train:v3": "uv run python services/train_v3.py",
+    "verify:v3": "uv run python scripts/verify-v3.py",
+    "prepare:evaluation": "uv run python scripts/prepare-evaluation.py",
+    "verify:evaluation": "uv run python scripts/prepare-evaluation.py --verify",
+    "train:tafeng": "uv run python services/train_tafeng.py develop",
+    "verify:tafeng": "uv run python scripts/verify-tafeng.py",
+    "export:showcase": "uv run python scripts/export-showcase.py"
+  }
+}

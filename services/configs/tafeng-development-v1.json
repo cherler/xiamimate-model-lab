@@ -1,0 +1,38 @@
+{
+  "seed": 42,
+  "threads": 2,
+  "als": {"factors": 32, "regularization": 0.1, "confidence_increment": 10, "iterations": 30},
+  "itemcf": {"neighbors": 64, "shrinkage": 10},
+  "recommendation_models": {
+    "repurchase": {
+      "personal_frequency": {"kind": "frequency", "baseline": true, "complexity": 0},
+      "personal_recent": {"kind": "recent", "baseline": true, "complexity": 0},
+      "personal_decay_90d": {"kind": "decay90", "baseline": true, "complexity": 1},
+      "decay_30d": {"kind": "decay30", "baseline": false, "complexity": 1},
+      "interval_blend_25": {"kind": "interval_blend", "weight": 0.25, "baseline": false, "complexity": 2},
+      "interval_blend_50": {"kind": "interval_blend", "weight": 0.5, "baseline": false, "complexity": 2},
+      "als_decay_25": {"kind": "als_decay", "weight": 0.25, "baseline": false, "complexity": 3},
+      "als_decay_50": {"kind": "als_decay", "weight": 0.5, "baseline": false, "complexity": 3}
+    },
+    "discovery": {
+      "popular_excluding_history": {"kind": "popular", "baseline": true, "complexity": 0},
+      "itemcf_excluding_history": {"kind": "itemcf", "baseline": true, "complexity": 1},
+      "als_excluding_history": {"kind": "als", "baseline": true, "complexity": 2},
+      "recent_popularity_30d": {"kind": "recent_popularity", "baseline": false, "complexity": 1},
+      "category_popularity": {"kind": "category", "baseline": false, "complexity": 1},
+      "als_itemcf_50": {"kind": "als_itemcf", "weight": 0.5, "baseline": false, "complexity": 3},
+      "als_category_25": {"kind": "als_category", "weight": 0.25, "baseline": false, "complexity": 3}
+    }
+  },
+  "forecast": {
+    "objectives": ["regression_l1", "regression", "tweedie"],
+    "num_leaves": [7, 15],
+    "n_estimators": 200,
+    "learning_rate": 0.05,
+    "min_child_samples": 30,
+    "reg_lambda": 1.0,
+    "statistical_timeout_seconds": 90,
+    "adaptive_candidates": ["history_router", "history_blend"],
+    "selection_note": "Select the lowest-WAPE qualifying learned candidate. If no learned candidate has absolute development bias <= 0.20, release the development-selected strongest baseline and label no qualifying candidate. Exact ties use fewer leaves, then model ID."
+  }
+}

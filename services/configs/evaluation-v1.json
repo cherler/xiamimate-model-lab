@@ -1,0 +1,92 @@
+{
+  "protocol_id": "ta-feng-evaluation-v1",
+  "status": "frozen_before_model_development",
+  "seed": 42,
+  "threads": 2,
+  "source": {
+    "dataset": "Ta Feng Grocery Dataset",
+    "publisher_page": "https://www.kaggle.com/datasets/chiranjivdas09/ta-feng-grocery-dataset",
+    "download_url": "https://www.kaggle.com/api/v1/datasets/download/chiranjivdas09/ta-feng-grocery-dataset?datasetVersionNumber=1",
+    "version": 1,
+    "publisher_declared_license": "CC0: Public Domain",
+    "license_scope": "Kaggle publisher metadata; not a separate verification of original retailer ownership",
+    "archive_sha256": "aacd37a048aa6e5b814d7c5301a27ad6fad7a478c6116b6e24eaeb6ac618516a",
+    "member": "ta_feng_all_months_merged.csv"
+  },
+  "time": {
+    "semantics": "source local calendar dates; timezone unspecified; no invented intraday order",
+    "train": ["2000-11-01", "2001-01-01"],
+    "development": ["2001-01-01", "2001-02-01"],
+    "test": ["2001-02-01", "2001-03-01"],
+    "interval_convention": "start inclusive, end exclusive"
+  },
+  "cleaning": {
+    "positive_quantity_and_sales_price_only": true,
+    "retain_identical_rows_without_invoice_id": true,
+    "basket_key": ["customer", "date"],
+    "purchase_event_key": ["customer", "date", "item"],
+    "forbidden_features": ["AGE_GROUP", "PIN_CODE", "ASSET", "future_sales_price", "future_quantity", "future_product_subclass"]
+  },
+  "recommendation": {
+    "development_origin": "2001-01-01",
+    "test_origin": "2001-02-01",
+    "target": "first shopping-day basket in the following calendar month, not an invoice",
+    "history_updates_within_window": false,
+    "k": 10,
+    "catalog_min_distinct_training_buyers": 2,
+    "negative_sampling": false,
+    "exploration": 0,
+    "primary_cohort": "returning customers with any training purchase and a next shopping-day basket",
+    "cold_start": "separate report; discovery uses popularity fallback; repurchase has no history and is inapplicable",
+    "repurchase": {
+      "candidates": "training catalog intersect customer's full purchased history",
+      "target": "next basket intersect customer's full purchased history",
+      "baselines": ["personal_frequency", "personal_recent", "personal_decay_90d"]
+    },
+    "discovery": {
+      "candidates": "training catalog minus customer's full purchased history",
+      "target": "next basket minus customer's full purchased history",
+      "baselines": ["popular_excluding_history", "itemcf_excluding_history", "als_excluding_history"]
+    },
+    "primary_metric": "mean NDCG@10 over all primary-cohort customers; empty task-target scores zero",
+    "secondary_metrics": ["Recall@10 conditional on nonempty task-target", "Precision@10 with fixed denominator 10", "HitRate@10", "catalog coverage", "candidate shortfall", "OOV target share", "empty task-target share"],
+    "oov_targets": "remain in target denominator and ideal DCG; count as misses",
+    "tie_break": "item ID ascending lexicographically",
+    "selection": "highest development primary metric; exact tie chooses simpler model then model ID",
+    "gain_screen": {"minimum_absolute_ndcg_gain": 0.01, "paired_ci95_lower_bound_above": 0},
+    "uncertainty": {"method": "paired bootstrap by customer, candidate and development-selected strongest baseline", "resamples": 2000, "seed": 42, "scope": "conditional on this single calendar month; no temporal or causal claim"}
+  },
+  "forecast": {
+    "target": "recorded positive sale units over next seven full calendar days",
+    "series_count": 50,
+    "series_selection_end_exclusive": "2001-01-01",
+    "minimum_training_active_days": 14,
+    "series_order": "training units descending then item ID ascending",
+    "history_days": 28,
+    "horizon_days": 7,
+    "development_origins": ["2001-01-01", "2001-01-08", "2001-01-15", "2001-01-22"],
+    "test_origins": ["2001-02-01", "2001-02-08", "2001-02-15", "2001-02-22"],
+    "training_stride_days": 1,
+    "training_label_end": "exclusive end <= prediction origin",
+    "refit": "weekly expanding history; frozen hyperparameters and processing; earlier test observations may enter later origins only after they occur",
+    "test_predictions": "generate all origins in one unattended run before exposing any test metrics",
+    "missing_transaction_day": "zero sales assumption, not proof of zero demand or complete collection",
+    "baseline_family": ["zero", "last_week", "four_week_mean", "four_week_median", "autoets"],
+    "primary_metric": "pooled WAPE across 50 fixed products and four weeks",
+    "secondary_metrics": ["MAE in units per product-week", "aggregate bias", "per-product WAPE", "per-origin WAPE", "zero-volume groups use null WAPE"],
+    "selection": "lowest development WAPE among candidates with absolute aggregate bias <= 0.20; if none, no qualifying candidate",
+    "gain_screen": {"minimum_relative_wape_gain": 0.10, "maximum_absolute_bias": 0.20, "minimum_winning_test_windows": 3, "total_test_windows": 4},
+    "comparator": "strongest nonzero baseline selected by development WAPE; never selected on test",
+    "inference": "four weekly blocks are too few for a robust temporal significance claim; report each week and avoid treating 200 product-weeks as independent",
+    "prediction_intervals": "not included in this point-forecast protocol; must pre-register calibration without final-test labels before any future interval evaluation"
+  },
+  "final_evaluation": {
+    "status": "sealed_not_evaluated",
+    "one_release_for_all_tasks": true,
+    "required_tasks": ["repurchase", "discovery", "weekly_sales"],
+    "freeze_before_open": ["protocol digest", "dataset and split digests", "source and dependency digests", "per-task selected parameters", "development-selected baseline", "feature list", "development result digest"],
+    "one_shot": "exclusive ledger created before test access; failure after access consumes the holdout; no tuning and reopening",
+    "minimum_test_periods": "one month for recommendation, four non-overlapping weeks for forecasting; limited seasonal evidence",
+    "claim_limit": "local project holdout only; public benchmark may have been studied elsewhere; no business ROI or universal generalization"
+  }
+}

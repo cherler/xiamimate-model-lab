@@ -1,0 +1,257 @@
+{
+  "protocol_id": "ta-feng-evaluation-v1",
+  "created_at": "2026-10-12T00:46:29.916424+00:00",
+  "source": {
+    "dataset": "Ta Feng Grocery Dataset",
+    "publisher_page": "https://www.kaggle.com/datasets/chiranjivdas09/ta-feng-grocery-dataset",
+    "download_url": "https://www.kaggle.com/api/v1/datasets/download/chiranjivdas09/ta-feng-grocery-dataset?datasetVersionNumber=1",
+    "version": 1,
+    "publisher_declared_license": "CC0: Public Domain",
+    "license_scope": "Kaggle publisher metadata; not a separate verification of original retailer ownership",
+    "archive_sha256": "aacd37a048aa6e5b814d7c5301a27ad6fad7a478c6116b6e24eaeb6ac618516a",
+    "member": "ta_feng_all_months_merged.csv"
+  },
+  "raw_rows": 817741,
+  "retained_rows": 817741,
+  "removed_invalid_or_nonpositive_rows": 0,
+  "identical_source_rows_retained": 0,
+  "structural_splits": {
+    "train": {
+      "start": "2000-11-01",
+      "end_exclusive": "2001-01-01",
+      "rows": 401838,
+      "calendar_days": 61,
+      "dates_with_records": 61,
+      "missing_record_dates": []
+    },
+    "development": {
+      "start": "2001-01-01",
+      "end_exclusive": "2001-02-01",
+      "rows": 216864,
+      "calendar_days": 31,
+      "dates_with_records": 31,
+      "missing_record_dates": []
+    },
+    "test": {
+      "start": "2001-02-01",
+      "end_exclusive": "2001-03-01",
+      "rows": 199039,
+      "calendar_days": 28,
+      "dates_with_records": 28,
+      "missing_record_dates": []
+    }
+  },
+  "forecast_fixed_items": [
+    "4710421090059",
+    "4711271000014",
+    "4714981010038",
+    "4711663700010",
+    "4710908131589",
+    "4710291112172",
+    "4710094097768",
+    "4710114128038",
+    "4710032501791",
+    "4719090900058",
+    "4714082270041",
+    "4710583996008",
+    "4713985863121",
+    "8712045008539",
+    "4902430493437",
+    "4711080010112",
+    "4710683100015",
+    "4710011401128",
+    "4710088410139",
+    "4711001302104",
+    "4710085104116",
+    "4710154012144",
+    "4710085120628",
+    "4710908131534",
+    "4712019100591",
+    "4710088410610",
+    "4714381003128",
+    "4710628131012",
+    "4710085120680",
+    "4710054380619",
+    "4710018004605",
+    "4710908131824",
+    "4710085172696",
+    "4710063031106",
+    "4710871000165",
+    "4710731060124",
+    "4710088620156",
+    "7610053910787",
+    "4710094699078",
+    "8712045000151",
+    "4710104111569",
+    "4710105002019",
+    "4710114606048",
+    "4719090790000",
+    "0037000445111",
+    "4710685440362",
+    "4710114105046",
+    "4712425010712",
+    "4710011402019",
+    "0037000329169"
+  ],
+  "training_eligible_products": 4741,
+  "target_values_inspected_for_model_selection": "none; no models or evaluation metrics produced",
+  "test_access_scope": "Automated parsing/cleaning, dates, counts, coverage and checksums only; no target aggregates, sample rows or error analysis exposed.",
+  "test_limitations": [
+    "One calendar month; only four weekly origins.",
+    "No invoices or timestamps: use customer shopping-day baskets.",
+    "Missing product-day rows mean assumed zero recorded sales, not observed stock or latent demand.",
+    "Kaggle distributor declares CC0; original retailer authorization was not separately verified."
+  ],
+  "uci_exposure_audit": {
+    "dataset": "UCI Online Retail II",
+    "source_sha256": "bcbe73b35f5b7babf197fb0cb983a11f5d9ff929078d4aa53d171b1f2df2e980",
+    "date_min": "2009-12-01 07:45:00",
+    "date_max": "2011-12-09 12:50:00",
+    "conservative_shared_exposure_end_exclusive": "2011-12-01",
+    "last_date_excluded_as_possibly_partial": "2011-12-09",
+    "remaining_full_calendar_days": 8,
+    "remaining_nonoverlapping_7day_windows": 1,
+    "remaining_full_calendar_months": 0,
+    "decision": "Keep as development case. December is insufficient for the planned final test; do not retroactively carve an earlier independent test.",
+    "audit_scope": "Local saved runs and source configuration only; cannot prove no one has viewed the public data elsewhere.",
+    "runs": [
+      {
+        "run_id": "retail-20261011T084000Z",
+        "report_sha256": "b37fdac3aa31e76098b520234dbb216b29b91ecff955a5ce9e06dc2870c1241b",
+        "recommendation_windows": [
+          {
+            "origin": "2011-09-01",
+            "end_exclusive": "2011-10-01"
+          },
+          {
+            "origin": "2011-10-01",
+            "end_exclusive": "2011-11-01"
+          }
+        ],
+        "daily_windows": [
+          {
+            "origin": "2011-10-01",
+            "end_inclusive": "2011-10-28"
+          },
+          {
+            "origin": "2011-10-29",
+            "end_inclusive": "2011-11-25"
+          }
+        ],
+        "weekly_origins": [],
+        "current_classification": "exposed_development; earlier test labels reused in later rounds"
+      },
+      {
+        "run_id": "retail-20261011T084332Z",
+        "report_sha256": "c2ddc02f89fafefc5ae4b7fb1450f9564ed3e1777dc5ae9f93b4c60a1d32eb7f",
+        "recommendation_windows": [
+          {
+            "origin": "2011-09-01",
+            "end_exclusive": "2011-10-01"
+          },
+          {
+            "origin": "2011-10-01",
+            "end_exclusive": "2011-11-01"
+          }
+        ],
+        "daily_windows": [
+          {
+            "origin": "2011-10-01",
+            "end_inclusive": "2011-10-28"
+          },
+          {
+            "origin": "2011-10-29",
+            "end_inclusive": "2011-11-25"
+          }
+        ],
+        "weekly_origins": [],
+        "current_classification": "exposed_development; earlier test labels reused in later rounds"
+      },
+      {
+        "run_id": "retail-20261011T121005Z",
+        "status": "incomplete; not evidence of an unused period"
+      },
+      {
+        "run_id": "retail-20261011T121416Z",
+        "report_sha256": "bed501c7d0b03de99fd8fa72f7e201ff83893c742ae0c282d3b2812a6d895681",
+        "recommendation_windows": [
+          {
+            "origin": "2011-09-01",
+            "end_exclusive": "2011-10-01"
+          },
+          {
+            "origin": "2011-10-01",
+            "end_exclusive": "2011-11-01"
+          },
+          {
+            "origin": "2011-11-01",
+            "end_exclusive": "2011-12-01"
+          }
+        ],
+        "daily_windows": [
+          {
+            "origin": "2011-09-01",
+            "end_inclusive": "2011-09-28"
+          },
+          {
+            "origin": "2011-10-01",
+            "end_inclusive": "2011-10-28"
+          },
+          {
+            "origin": "2011-11-01",
+            "end_inclusive": "2011-11-28"
+          }
+        ],
+        "weekly_origins": [],
+        "current_classification": "exposed_development; earlier test labels reused in later rounds"
+      },
+      {
+        "run_id": "retail-20261012T001149Z",
+        "report_sha256": "5b7f55030fd626541f44a883cb2269bd3d1e294a20f96be0497a30465a3395b1",
+        "recommendation_windows": [
+          {
+            "origin": "2011-09-01",
+            "end_exclusive": "2011-10-01"
+          },
+          {
+            "origin": "2011-10-01",
+            "end_exclusive": "2011-11-01"
+          },
+          {
+            "origin": "2011-11-01",
+            "end_exclusive": "2011-12-01"
+          }
+        ],
+        "daily_windows": [
+          {
+            "origin": "2011-09-01",
+            "end_inclusive": "2011-09-28"
+          },
+          {
+            "origin": "2011-10-01",
+            "end_inclusive": "2011-10-28"
+          },
+          {
+            "origin": "2011-11-01",
+            "end_inclusive": "2011-11-28"
+          }
+        ],
+        "weekly_origins": [
+          "2011-09-01",
+          "2011-09-08",
+          "2011-09-15",
+          "2011-09-22",
+          "2011-10-01",
+          "2011-10-08",
+          "2011-10-15",
+          "2011-10-22",
+          "2011-11-01",
+          "2011-11-08",
+          "2011-11-15",
+          "2011-11-22"
+        ],
+        "current_classification": "exposed_development; earlier test labels reused in later rounds"
+      }
+    ]
+  }
+}
