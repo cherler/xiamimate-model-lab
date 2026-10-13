@@ -1,3 +1,4 @@
+import { renderDressipiDetails } from './dressipi-details.js';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const DRESSIPI_MODELS={lightgbm:'LightGBM · 属性与行为排序',cooccurrence:'浏览→购买共现',attributes:'匿名属性相似',popularity:'历史购买热门'};
 const pct=v=>`${(v*100).toFixed(2)}%`;
@@ -7,15 +8,19 @@ export async function renderDressipi(host,isCurrent){
  host.innerHTML='<p class="loading-copy">正在读取 Dressipi 本地实验…</p>';
  try{
   const response=await fetch('./dressipi-results/manifest.json',{cache:'no-store'});
-  if(response.status===404){if(isCurrent())host.innerHTML='<section class="report-panel"><span class="badge">准备中 · 尚无本站成绩</span><h1>Dressipi · 会话内商品推荐</h1><p>根据当前浏览顺序与匿名商品属性，预测本次会话将购买的商品。</p><p>训练与评估流程正在准备，真实结果核验后才能体验。</p><a class="text-link" href="#recommend?case=tafeng">体验已完成的 Ta Feng 推荐 →</a></section>';return;}
+  if(response.status===404){if(isCurrent())host.innerHTML='<section class="report-panel"><span class="badge">本地研究案例</span><h1>Dressipi · 会话内商品推荐</h1><p>根据当前浏览顺序与匿名商品属性，预测本次会话将购买的商品。</p><p>当前构建未包含本地研究结果。训练产物核验并导出后，可在本地预览中查看。</p><a class="text-link" href="#recommend?case=tafeng">体验已完成的 Ta Feng 推荐 →</a></section>';return;}
   if(!response.ok)throw new Error('展示清单读取失败');const manifest=await response.json();
   if(manifest.schema!==1||manifest.public_export_allowed!==false||!/^\w[\w-]+$/.test(manifest.run_id))throw new Error('实验清单无效');
-  const loaded=await Promise.all(['report','samples'].map(async key=>{
+  const loaded=await Promise.all(['report','samples',...(manifest.resources.study?['study']:[])].map(async key=>{
    const spec=manifest.resources[key];if(!spec||!/^[a-f0-9]{16}\/[a-z]+\.json$/.test(spec.path))throw new Error('资源路径无效');
    const r=await fetch(`./dressipi-results/${spec.path}`);if(!r.ok)throw new Error('实验文件缺失');const bytes=await r.arrayBuffer();
    const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(v=>v.toString(16).padStart(2,'0')).join('');if(hash!==spec.sha256)throw new Error('实验校验失败');return JSON.parse(new TextDecoder().decode(bytes));
   }));if(!isCurrent())return;
   const [report,bundle]=loaded;if(report.run_id!==manifest.run_id||bundle.run_id!==manifest.run_id||report.status!=='complete_development')throw new Error('版本或运行状态不一致');
+  const study=loaded[2]||null;
+  if(study&&(study.base_run_id!==manifest.run_id||study.status!=='complete_development_study'||study.public_export_allowed!==false))throw new Error('特征实验与首轮版本不一致');
+  const view=new URLSearchParams(location.hash.split('?')[1]||'').get('view');
+  if(['models','report','training'].includes(view))return renderDressipiDetails(host,report,manifest,DRESSIPI_MODELS,view,study);
   const samples=bundle.samples;let model='lightgbm',index=0;
   host.innerHTML=`<div class="breadcrumb">商品推荐<span>/</span>Dressipi 会话推荐</div><div class="page-heading"><div><h1>Dressipi 会话商品推荐</h1><p>浏览顺序、历史共购与匿名属性，共同参与候选召回和排序。</p></div><span class="badge">本地 CPU · 开发实验</span></div><p class="showcase-boundary">2021 年 4 月本地开发验证 · 固定抽取 ${report.cohort.validation_sessions.toLocaleString()} 个完整会话 · 全目录 ${report.cohort.catalogue_items.toLocaleString()} 件商品。不是官方测试或独立确认成绩。</p><div class="showcase-controls"><label>推荐模型<select id="dressipi-model">${Object.entries(DRESSIPI_MODELS).map(([id,name])=>`<option value="${id}">${name}</option>`).join('')}</select></label><label>浏览会话<select id="dressipi-session">${samples.map((s,i)=>`<option value="${i}">会话 ${esc(s.session)} · ${s.sequence.length} 次浏览</option>`).join('')}</select></label></div><div id="dressipi-content"></div><section class="report-panel"><h2>验证集模型对比</h2><div class="table-scroll" tabindex="0" role="region" aria-label="Dressipi 模型评估"><table><thead><tr><th>模型</th><th>MRR@100 ↑</th><th>Recall@100 ↑</th></tr></thead><tbody>${Object.entries(DRESSIPI_MODELS).map(([id,name])=>`<tr><th scope="row">${name}</th><td>${report.models[id]['mrr@100'].toFixed(5)}</td><td>${pct(report.models[id]['recall@100'])}</td></tr>`).join('')}</tbody></table></div><p class="small-note">所有会话均计入分母，未召回真实商品也计为失败。三路候选联合找回率 ${pct(report.retrieval.retrieval_recall)}；候选召回率反映目标商品的可检索程度，MRR 反映最终排序质量。MRR 不是购买概率。</p></section><section class="report-panel"><h2>商品属性与排序流程</h2><ol class="guide-flow"><li><strong>三路召回</strong><p>热门、浏览→购买共现、匿名属性相似各取 100，去重后最多 300 个候选，排除本会话已浏览商品。</p></li><li><strong>特征交叉</strong><p>候选热门度、三路排名和匹配分数、与最后浏览商品的属性交集、Jaccard 相似度、会话长度等 ${report.features.length} 项输入。</p></li><li><strong>排序学习</strong><p>LightGBM LambdaRank 从 3 月会话学习候选顺序，固定参数后在 4 月验证，不把漏召回的真实答案补入候选。</p></li></ol><details><summary>训练范围与时间边界</summary><p>基础统计使用 3 月前的 ${report.cohort.base_sessions.toLocaleString()} 个会话；3 月排序训练预选 ${report.cohort.ranking_sessions.toLocaleString()} 个会话，其中 ${report.cohort.ranking_retrieval_misses.toLocaleString()} 个未召回正样本，不用于拟合排序树。4 月验证保留全部预选会话。各分区按完整会话划分，按会话编号哈希抽样，不按结果挑选。</p><p>这是独立实现的 CPU 小规模实验，尚未实现冠军 GNN 管线；参数未用本次验证成绩调优。验证人群、候选与官方比赛不同，不进行分数对标。</p><p>基础统计与排序拟合共 ${(report.cost.fit_seconds/60).toFixed(1)} 分钟。原始训练数据、模型与逐会话预测保留在本地。</p></details></section><footer class="showcase-source"><p>来源：Dressipi RecSys 2022，使用可追溯第三方训练文件镜像。商品与属性均为匿名编码，不推测品牌、颜色或商品名称。当前仅限本地研究预览，默认公开构建排除此数据包。</p><details><summary>版本与报告</summary><p>${esc(report.run_id)}</p><a href="./dressipi-results/${manifest.resources.report.path}" download>下载本地实验报告</a></details></footer>`;
   const content=host.querySelector('#dressipi-content');
