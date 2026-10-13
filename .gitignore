@@ -42,3 +42,7 @@ apps/web/dressipi-results/
 
 artifacts/ui-details-*.log
 artifacts/m5-export-latest.log
+
+artifacts/classification-runs/
+artifacts/classification-latest.json
+apps/web/classification-results/
