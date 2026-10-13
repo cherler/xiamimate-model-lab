@@ -1,8 +1,9 @@
+import { renderAdvanced } from './advanced.js';
 import { renderModelGuide } from './model-guide.js';
 import { loadManifest, renderShowcase } from './showcase.js';
 import { renderCase, cancelCase } from './real-cases.js';
 const main = document.querySelector('#main');
-const labels = { recommend: '电商商品推荐', forecast: '销量预测', evidence: '效果报告', models: '模型解读', learn: '教学拆解', delivery: '交付方式' };
+const labels = { advanced: '进阶模型实验', recommend: '电商商品推荐', forecast: '销量预测', evidence: '效果报告', models: '模型解读', learn: '教学拆解', delivery: '交付方式' };
 function heading(page,title,subtitle) {
   return `<div class="breadcrumb">模型工坊<span>/</span>${labels[page]}</div><div class="page-heading"><div><h1>${title}</h1><p>${subtitle}</p></div></div><div class="prototype-note"><span class="status-dot"></span>独立案例项目 · 推荐与销量预测已接入真实公开数据训练；线上业务收益尚未验证。</div>`;
 }
@@ -44,7 +45,7 @@ async function casePage(page, token) {
     if (token !== routeGeneration) return;
     const entry = manifest.cases.find(c => c.id === caseId);
     if (!entry) throw new Error('未知案例，请选择目录中的案例。');
-    main.innerHTML = `<section class="case-picker"><label>选择公开案例<select id="case-picker">${manifest.cases.map(c=>`<option value="${c.id}" ${c.id===caseId?'selected':''}>${c.label}</option>`).join('')}</select></label><p>${caseId==='tafeng'?'已核验的模型结果回放，可切换固定样本与模型。':'历史开发验证，保留原有本地推理交互。两案例不可直接计算提升率。'}</p></section><div id="case-content"></div>`;
+    main.innerHTML = `<section class="case-picker"><label>选择公开案例<select id="case-picker">${manifest.cases.map(c=>`<option value="${c.id}" ${c.id===caseId?'selected':''}>${c.label}</option>`).join('')}</select></label><p>${caseId==='tafeng'?'已核验的模型结果回放，可切换固定样本与模型。':'历史开发验证，保留原有本地推理交互。两案例不可直接计算提升率。'}</p></section><p class="advanced-entry"><a class="text-link" href="#advanced${page==='forecast'?'?task=forecast':''}">新增：属性排序、LightGCN 与 TFT · 查看同范围实验与模型解读 →</a></p><div id="case-content"></div>`;
     main.querySelector('#case-picker').onchange=e=>{caseId=e.target.value;location.hash=`${page}?case=${caseId}`;};
     const content = main.querySelector('#case-content');
     if (caseId === 'tafeng') await renderShowcase(page,content,manifest,entry,()=>token===routeGeneration);
@@ -63,7 +64,7 @@ function route() {
   document.querySelectorAll('[data-page]').forEach(a => { a.classList.toggle('active', a.dataset.page === page); if (a.dataset.page === page) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   document.querySelectorAll('[data-section]').forEach(a => a.classList.toggle('active', a.dataset.section === (['models', 'learn', 'delivery'].includes(page) ? page : 'case')));
   cancelCase();
-  if (['recommend','forecast','evidence'].includes(page)) casePage(page, token); else if (page==='models') renderModelGuide(main,()=>token===routeGeneration); else ({learn,delivery})[page]();
+  if (['recommend','forecast','evidence'].includes(page)) casePage(page, token); else if (page==='advanced') renderAdvanced(main,()=>token===routeGeneration); else if (page==='models') renderModelGuide(main,()=>token===routeGeneration); else ({learn,delivery})[page]();
   document.title = `${labels[page]} · 模型工坊`;
   window.scrollTo(0, 0);
 }

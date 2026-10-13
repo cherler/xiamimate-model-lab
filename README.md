@@ -4,9 +4,26 @@
 
 当前后续范围已明确为**模型能力与量化统计展示站**，暂不开发客户数据接入。上线缺口、展示架构、增值项和后续轮次见 [展示站上线规划](docs/launch-roadmap.md)。
 
-当前为第三轮：九种推荐策略、原 28 天逐日强基线、独立的 7 天总销量任务与误差诊断。实际结果见 [第三轮实验说明](docs/experiment-summary-v3.md)，任务边界见 [第三轮计划](docs/round3-plan.md)。[第二轮结果](docs/experiment-summary-v2.md) 与原产物保留。
+历史第三轮：九种推荐策略、原 28 天逐日强基线、独立的 7 天总销量任务与误差诊断。实际结果见 [第三轮实验说明](docs/experiment-summary-v3.md)，任务边界见 [第三轮计划](docs/round3-plan.md)。[第二轮结果](docs/experiment-summary-v2.md) 与原产物保留。
 
 Ta Feng 新案例已经按 [固定评估协议](docs/evaluation/evaluation-protocol.md) 完成训练、开发演练与单次 2 月测试，见 [最终实验报告](docs/tafeng-experiment-results.md)和[模型方法](docs/tafeng-model-methods.md)。复购融合 NDCG 从 0.17904 提升到 0.19067，通过预设增益筛选；新商品发现弱于 ItemCF，周度 LightGBM 低估约 46%，两项未通过。**Ta Feng 三项任务现已接入网页，作为默认案例；UCI 第三轮保留在案例选择中。**
+
+## 进阶模型实验（2026-10-13）
+
+已按顺序完成特征工程与 LightGBM LambdaRank、LightGCN（三个种子）和真实 TFT，均在本地 CPU 训练与评估。打开 `#advanced` 可切换模型、查看历史属性与真实样本、同范围指标、分位数区间及模型解读；`#advanced?task=forecast` 直达预测。本轮全部为 **UCI 测试后开发实验，非独立确认测试**，不能与旧案例直接计算增益。
+
+完整特征排序 Recall@10 16.67%，同范围衰减基线 14.73%；LightGCN 10.56%–11.15%。TFT WAPE 85.84%，未超过八周同星期中位数 79.94%；P10–P90 实际覆盖 73.41%，低于名义 80%。保留失败，模型复杂度不代替效果证明。
+
+```sh
+uv sync --project services/advanced --python 3.12
+npm run train:ranking
+npm run train:graph
+npm run train:tft
+npm run export:advanced
+npm run test:deep
+```
+
+已有完整产物时仅需导出；不要为补旧展示包重新训练 Ta Feng。新模型保存于独立 `artifacts/advanced-runs/`，新页面资源位于 `apps/web/advanced-results/`，二者均不入 Git。构建现在必须同时通过原展示包和进阶包校验。详细协议、数据边界与复现说明见 [进阶实验说明](services/advanced/README.md)。未使用 AutoDL 或云端付费资源。
 
 ## 运行
 
