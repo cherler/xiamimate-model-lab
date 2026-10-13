@@ -1,3 +1,4 @@
+import { renderCaseInfo } from './case-info.js';
 import { CASES, VIEW_NAMES, resolveRoute, caseHref } from './case-navigation.js';
 import { renderDressipi } from './dressipi.js';
 import { renderM5 } from './m5.js';
@@ -48,6 +49,7 @@ async function casePage(page, params, token, routeError) {
   main.querySelector('#case-picker').onchange=e=>{location.hash=caseHref(page,e.target.value);};
   const content=main.querySelector('#case-content'),current=()=>token===routeGeneration;
   if(routeError){content.innerHTML='<section class="report-panel"><h1>案例不存在</h1><p>这个案例不属于当前任务，请选择已有案例。</p></section>';return;}
+  if(view==='data')return renderCaseInfo(content,caseId,page);
   if(caseId==='m5')return renderM5(content,current);
   if(caseId==='dressipi')return renderDressipi(content,current);
   if(view==='advanced')return renderAdvanced(content,current,{task:page,embedded:true});

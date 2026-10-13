@@ -1,16 +1,16 @@
 export const CASES = {
  recommend: [
-  {id:'tafeng',label:'Ta Feng · 复购推荐',views:['experience','report']},
-  {id:'dressipi',label:'Dressipi · 时尚会话推荐（准备中）',views:['experience']},
-  {id:'uci',label:'UCI · 推荐与特征实验',views:['experience','advanced','selection','tuning','report']},
+  {id:'tafeng',label:'Ta Feng · 复购推荐',views:['experience','data','report']},
+  {id:'dressipi',label:'Dressipi · 时尚会话推荐（准备中）',views:['experience','data']},
+  {id:'uci',label:'UCI · 推荐与特征实验',views:['experience','data','advanced','selection','tuning','report']},
  ],
  forecast: [
-  {id:'m5',label:'M5 · 28 天零售预测',views:['experience']},
-  {id:'tafeng',label:'Ta Feng · 周销量预测',views:['experience','report']},
-  {id:'uci',label:'UCI · 销量与深度预测',views:['experience','advanced','selection','tuning','report']},
+  {id:'m5',label:'M5 · 28 天零售预测',views:['experience','data']},
+  {id:'tafeng',label:'Ta Feng · 周销量预测',views:['experience','data','report']},
+  {id:'uci',label:'UCI · 销量与深度预测',views:['experience','data','advanced','selection','tuning','report']},
  ],
 };
-export const VIEW_NAMES={experience:'案例体验',advanced:'进阶模型',selection:'模型选择',tuning:'调优记录',report:'效果报告'};
+export const VIEW_NAMES={data:'案例与数据',models:'特征与模型',training:'训练记录',experience:'案例体验',advanced:'进阶模型',selection:'模型选择',tuning:'调优记录',report:'效果报告'};
 export function resolveRoute(hash){
  const [raw,query='']=hash.replace(/^#/,'').split('?'),params=new URLSearchParams(query);
  let page=raw;
