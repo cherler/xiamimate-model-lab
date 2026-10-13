@@ -1,3 +1,4 @@
+import { renderClassification } from './classification.js';
 import { renderMetricLessons } from './metric-lessons.js';
 import { renderCaseInfo } from './case-info.js';
 import { CASES, VIEW_NAMES, resolveRoute, caseHref } from './case-navigation.js';
@@ -9,7 +10,7 @@ import { renderModelGuide } from './model-guide.js';
 import { loadManifest, renderShowcase } from './showcase.js';
 import { renderCase, cancelCase } from './real-cases.js';
 const main = document.querySelector('#main');
-const labels = { m5: 'M5 预测案例', automl: 'AutoML 实验室', advanced: '进阶模型实验', recommend: '电商商品推荐', forecast: '销量预测', evidence: '效果报告', models: '模型解读', learn: '教学拆解', delivery: '交付方式' };
+const labels = { classify: '分类与评分', m5: 'M5 预测案例', automl: 'AutoML 实验室', advanced: '进阶模型实验', recommend: '电商商品推荐', forecast: '销量预测', evidence: '效果报告', models: '模型解读', learn: '教学拆解', delivery: '交付方式' };
 function heading(page,title,subtitle) {
   return `<div class="breadcrumb">模型工坊<span>/</span>${labels[page]}</div><div class="page-heading"><div><h1>${title}</h1><p>${subtitle}</p></div></div><div class="prototype-note"><span class="status-dot"></span>独立案例项目 · 推荐与销量预测已接入真实公开数据训练；线上业务收益尚未验证。</div>`;
 }
@@ -59,6 +60,7 @@ function route() {
   document.querySelectorAll('[data-section]').forEach(a=>a.classList.toggle('active',a.dataset.section===(['models','learn','delivery'].includes(page)?page:'case')));
   cancelCase();
   if(CASES[page])casePage(page,params,token,error);
+  else if(page==='classify')renderClassification(main,()=>token===routeGeneration,params);
   else if(page==='models')renderModelGuide(main,()=>token===routeGeneration);
   else if(page==='learn')renderMetricLessons(main,()=>token===routeGeneration,params);
   else delivery();

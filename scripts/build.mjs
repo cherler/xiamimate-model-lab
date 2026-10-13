@@ -1,3 +1,4 @@
+import {verifyClassification} from '../apps/web/classification-metrics.js';
 import { cp, mkdir, readFile, rm } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
@@ -44,6 +45,13 @@ catch { throw new Error('请先运行 npm run export:automl，生成完整模型
 if(!/^[a-f0-9]{16}\/report\.json$/.test(selection.path))throw new Error('模型选择资源无效');
 const selectionBytes=await readFile(resolve(selectionAssets,selection.path));
 if(createHash('sha256').update(selectionBytes).digest('hex')!==selection.sha256 || JSON.parse(selectionBytes).run_id!==selection.run_id)throw new Error('模型选择报告校验失败');
+const classificationRoot=resolve(root,'apps/web/classification-results');
+const classification=JSON.parse(await readFile(resolve(classificationRoot,'manifest.json'),'utf8'));
+if(!/^[a-f0-9]{16}\/case\.json$/.test(classification.path))throw new Error('分类结果路径无效');
+const classificationBytes=await readFile(resolve(classificationRoot,classification.path));
+if(createHash('sha256').update(classificationBytes).digest('hex')!==classification.sha256)throw new Error('分类结果哈希不一致');
+const classificationPayload=verifyClassification(JSON.parse(classificationBytes));
+if(classificationPayload.run_id!==classification.run_id)throw new Error('分类结果版本不一致');
 // Build output is disposable; validate all sources before replacing it.
 await rm(`${root}dist`, { recursive: true, force: true });
 await mkdir(`${root}dist`, { recursive: true });

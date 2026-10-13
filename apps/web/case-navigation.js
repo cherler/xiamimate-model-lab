@@ -20,7 +20,11 @@ export function resolveRoute(hash){
   params.set('view',previous==='advanced'?'advanced':params.get('view')==='tuning'?'tuning':'selection');
  }
  if(page==='evidence'){page='recommend';params.set('view','report');}
- if(!['recommend','forecast','models','learn','delivery'].includes(page))page='recommend';
+ if(!['recommend','forecast','classify','models','learn','delivery'].includes(page))page='recommend';
+ if(page==='classify'){
+  if(!params.has('case'))params.set('case','spambase');
+  if(!['experience','data','models','report'].includes(params.get('view')))params.set('view','experience');
+ }
  if(CASES[page]){
   if(!params.has('case'))params.set('case',page==='forecast'?'m5':'tafeng');
   const entry=CASES[page].find(c=>c.id===params.get('case'));

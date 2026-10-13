@@ -37,3 +37,19 @@
 .lesson-table th[scope=row]{font-weight:500}
 @media(max-width:620px){.lesson-controls{grid-template-columns:1fr;gap:16px}.lesson-formula{padding:12px}.showcase-source p{overflow-wrap:anywhere}}
 .case-facts>div,.case-facts dd{min-width:0}
+
+/* Classification: operating policy, confusion counts and calibrated scores. */
+.lesson-controls input{width:100%;min-width:0;padding:12px;border:1px solid #b9cddd;border-radius:6px;background:white;color:var(--ink);font:inherit}
+.classification-confusion{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);margin:24px 0}
+.classification-confusion>div{padding:24px;background:#edf5f8;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.classification-confusion>div.classification-error{background:#faf3e6}
+.classification-confusion strong{font-size:30px;font-variant-numeric:tabular-nums}
+.classification-confusion span{font-size:14px}
+.classification-table{max-height:480px;overflow:auto;margin:20px 0}
+.classification-table thead{position:sticky;top:0;background:#edf5f8;z-index:1}
+.classification-chart{overflow-x:auto;margin:24px 0}
+.classification-chart svg{display:block;min-width:400px;width:100%;max-height:360px}
+.classification-chart text{font-size:12px;fill:#536f82}
+.classification-calibration{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start}
+#cls-input-error{color:#943c25}
+@media(max-width:620px){.classification-calibration{grid-template-columns:minmax(0,1fr)}.classification-confusion>div{padding:16px;display:block}.classification-confusion strong{display:block;margin-top:10px}.classification-confusion span{font-size:12px}}
