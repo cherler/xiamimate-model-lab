@@ -5,7 +5,7 @@ export const CASES = {
   {id:'uci',label:'UCI · 推荐与特征实验',views:['experience','data','advanced','selection','tuning','report']},
  ],
  forecast: [
-  {id:'m5',label:'M5 · 28 天零售预测',views:['experience','data']},
+  {id:'m5',label:'M5 · 28 天零售预测',views:['experience','data','models','report','training']},
   {id:'tafeng',label:'Ta Feng · 周销量预测',views:['experience','data','report']},
   {id:'uci',label:'UCI · 销量与深度预测',views:['experience','data','advanced','selection','tuning','report']},
  ],

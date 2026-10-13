@@ -1,3 +1,4 @@
+import { renderM5Details } from './m5-details.js';
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pct = v => v == null ? '不适用' : `${(v * 100).toFixed(2)}%`;
 const number = v => Number(v).toLocaleString('zh-CN', {maximumFractionDigits: 2});
@@ -55,6 +56,8 @@ export async function renderM5(host,isCurrent) {
   const [overview,catalog]=await Promise.all([resource('overview'),resource('catalog')]);if(!isCurrent())return;
   if(overview.run_id!==manifest.run_id || catalog.length!==overview.scope.series)throw new Error('案例版本或商品范围不一致');
   const params=new URLSearchParams(location.hash.split('?')[1]||'');
+  const view=params.get('view')||'experience';
+  if(['models','report','training'].includes(view))return renderM5Details(host,overview,manifest,M5_NAMES,view);
   let origin=overview.windows.some(w=>w.origin===Number(params.get('window')))?Number(params.get('window')):1913;
   let model=Object.hasOwn(M5_NAMES,params.get('model'))?params.get('model'):'lgbm_tweedie_core';
   let level=['store','category','item'].includes(params.get('level'))?params.get('level'):'store';

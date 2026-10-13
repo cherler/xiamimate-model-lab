@@ -58,7 +58,7 @@ for fold in report['folds'] + [report['final']]:
     history_dates = calendar.date.iloc[origin - 28:origin].tolist()
     window = {'origin': origin, 'kind': 'reserved_consumed' if final else 'development',
               'dates': dates, 'history_dates': history_dates, 'models': fold['models'],
-              'cost': {k: v for k, v in fold['cost'].items() if k != 'feature_gain'}, 'groups': {}}
+              'cost': fold['cost'], 'groups': {}}
     for group in ['store', *sorted(metadata.cat_id.unique())]:
         mask = np.ones(len(metadata), dtype=bool) if group == 'store' else metadata.cat_id.eq(group).to_numpy()
         window['groups'][group] = {'series': int(mask.sum()), 'history': past[mask].sum(axis=0).astype(float).tolist(),
