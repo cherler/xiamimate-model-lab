@@ -1,5 +1,6 @@
 """Persistent, version-bound Optuna studies. Search and replay are separate phases."""
 import hashlib
+import math
 import json
 from pathlib import Path
 import platform
@@ -38,7 +39,7 @@ class StudyRunner:
     def export(self):
         rows=[]
         for t in self.study.trials:
-            rows.append({'number':t.number,'state':t.state.name,'value':t.value if t.value is None or abs(t.value)!=float('inf') else None,'params':t.params,'attrs':t.user_attrs,'seconds':t.duration.total_seconds() if t.duration else None,'intermediate':{str(k):v for k,v in t.intermediate_values.items() if abs(v)!=float('inf')}})
+            rows.append({'number':t.number,'state':t.state.name,'value':t.value if t.value is None or math.isfinite(t.value) else None,'params':t.params,'attrs':t.user_attrs,'seconds':t.duration.total_seconds() if t.duration else None,'intermediate':{str(k):v for k,v in t.intermediate_values.items() if math.isfinite(v)}})
         write(self.path/'trials.json',rows)
         temporary=self.sampler_path.with_suffix('.tmp');temporary.write_bytes(pickle.dumps(self.study.sampler));temporary.replace(self.sampler_path)
         return rows
