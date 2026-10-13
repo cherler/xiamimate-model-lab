@@ -30,6 +30,6 @@ def verify_ranking(run):
 if __name__=='__main__':
     kind=sys.argv[1] if len(sys.argv)>1 else 'ranking'
     pointer=json.loads((ROOT/f'artifacts/advanced-{kind}.json').read_text());run=ROOT/'artifacts/advanced-runs'/pointer['run_id']
-    if kind=='ranking':verify_ranking(run)
+    if kind in ['ranking','graph']:verify_ranking(run)
     else:verify_run(run)
     print('Verified',run.name)
