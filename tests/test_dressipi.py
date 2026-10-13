@@ -37,6 +37,7 @@ class DressipiTests(unittest.TestCase):
         model = SessionBaselines().fit(tr, tp, attrs)
         self.assertEqual(model.predict([10], [20,30], 'cooccurrence')[0], 20)
         self.assertEqual(model.predict([10], [20,30], 'attributes')[0], 30)
+        self.assertNotIn(10, model.predict([10], [10,20,30], 'attributes'))
         before = model.predict([10], [20,30])
         model.predict([20], [20,30])
         self.assertEqual(before, model.predict([10], [20,30]))

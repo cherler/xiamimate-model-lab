@@ -85,6 +85,7 @@ class SessionBaselines:
         return self
 
     def predict(self, item_sequence, candidates, method='cooccurrence', k=100):
+        """item_sequence is chronological; the task's target has not been viewed yet."""
         if method not in ['popularity', 'cooccurrence', 'attributes']:
             raise ValueError('unknown baseline')
         scores = Counter()
@@ -101,4 +102,5 @@ class SessionBaselines:
                 for candidate, count in shared.items():
                     scores[candidate] += .8 ** age * count / len(attrs | self.attributes[candidate])
         # Scores never update from another evaluation session; IDs deterministically break ties.
-        return sorted(set(candidates), key=lambda i: (-scores[i], -self.popularity[i], str(i)))[:k]
+        available = set(candidates) - set(item_sequence)
+        return sorted(available, key=lambda i: (-scores[i], -self.popularity[i], str(i)))[:k]
