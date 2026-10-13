@@ -1,0 +1,11 @@
+[project]
+name = "model-workshop-advanced"
+version = "0.1.0"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "numpy>=2.2,<3", "pandas>=2.2,<3", "scipy>=1.15,<2",
+  "scikit-learn>=1.6,<2", "lightgbm>=4.6,<5",
+  "torch>=2.6,<3", "lightning>=2.5,<3", "pytorch-forecasting>=1.4,<2",
+]
+[tool.uv]
+package = false

@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "evidence": "development_after_prior_feedback",
+  "seed": 42,
+  "threads": 2,
+  "recommendation": {
+    "history_start": "2010-12-01",
+    "training_origins": ["2011-06-01", "2011-07-01", "2011-08-01"],
+    "evaluation_origins": ["2011-09-01", "2011-10-01", "2011-11-01"],
+    "max_items": 2000,
+    "sample_customers": 800,
+    "candidate_sources": {"decay": 60, "itemcf": 60, "popular": 40},
+    "ranker": {"n_estimators": 100, "num_leaves": 15, "learning_rate": 0.05, "min_child_samples": 30, "reg_lambda": 1.0},
+    "graph": {"dimensions": 32, "layers": 2, "epochs": 30, "batch_size": 8192, "learning_rate": 0.01, "regularization": 0.0001, "seeds": [42, 43, 44]},
+    "ease_regularization": 300
+  },
+  "forecast": {
+    "train_start": "2010-12-01", "train_end": "2011-08-01", "validation_end": "2011-09-01",
+    "evaluation_origins": ["2011-09-01", "2011-10-01", "2011-11-01"],
+    "items": 24, "minimum_active_days": 60, "encoder_days": 56, "horizon": 7,
+    "epochs": 15, "batch_size": 128, "hidden_size": 16, "attention_heads": 2,
+    "learning_rate": 0.005, "quantiles": [0.1, 0.5, 0.9]
+  }
+}

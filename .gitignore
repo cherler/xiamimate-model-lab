@@ -23,3 +23,8 @@ artifacts/tafeng-runs/
 artifacts/tafeng-*.log
 
 apps/web/showcase/
+
+artifacts/advanced-runs/
+artifacts/advanced-*.json
+artifacts/advanced-*.log
+apps/web/advanced-results/
