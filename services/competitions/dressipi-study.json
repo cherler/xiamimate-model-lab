@@ -1,0 +1,29 @@
+{
+  "version": "dressipi-feature-study-v1",
+  "base_run_id": "dressipi-20261013T085519500339Z",
+  "evidence": "post_feedback_development",
+  "validation_reused": true,
+  "public_export_allowed": false,
+  "controls": "Reuse v2 splits, hash cohorts, frozen pre-March statistics, all retrieval channels, candidates, training queries and LambdaRank parameters. Never inject targets; no model selection or hyperparameter search.",
+  "variants": {
+    "behavior": ["log_purchase_count", "cooccurrence_score", "popularity_rank", "cooccurrence_rank", "session_length", "session_unique_items"],
+    "attributes": ["attribute_score", "attribute_rank", "candidate_attribute_count", "session_length", "session_unique_items"],
+    "combined": ["log_purchase_count", "cooccurrence_score", "attribute_score", "popularity_rank", "cooccurrence_rank", "attribute_rank", "candidate_attribute_count", "session_length", "session_unique_items"],
+    "full": ["log_purchase_count", "cooccurrence_score", "attribute_score", "popularity_rank", "cooccurrence_rank", "attribute_rank", "shared_last_attributes", "last_attribute_jaccard", "candidate_attribute_count", "session_length", "session_unique_items", "matched_view_items"]
+  },
+  "diagnostic_bins": {
+    "session_length": [1, 5, 10],
+    "target_purchase_count": [0, 5, 20],
+    "last_attribute_count": [10, 20],
+    "view_attribute_coverage": "none / partial / complete"
+  },
+  "metrics": ["mrr@100", "recall@100", "recall@10", "conditional_recall@100"],
+  "failure_states": ["not_retrieved", "rank_after_100", "rank_11_100", "rank_1_10"],
+  "limitations": [
+    "Ranking-side ablation only: even behavior-only ranking uses an attribute-aware fixed retrieval pool; attribute ranks break ties with frozen purchase popularity.",
+    "April has already been evaluated and informed this study. It is development evidence, not a fresh independent test.",
+    "Full-feature model is the existing frozen v2 booster; its predictions must exactly reproduce every saved top-100 list.",
+    "Diagnostic target-popularity groups use the purchased target for post-hoc analysis only, not model input or cohort selection.",
+    "Single seed and sampled cohorts. Differences do not establish population-level or online business gains."
+  ]
+}
