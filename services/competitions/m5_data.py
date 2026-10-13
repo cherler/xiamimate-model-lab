@@ -88,10 +88,12 @@ def load(store, max_day):
         raise ValueError('private competition test is not available to this loader')
     # Column whitelist avoids materializing labels beyond the authorized origin.
     days = [f'd_{d}' for d in range(1, max_day + 1)]
-    chunks = pd.read_csv(RAW / 'sales_train_evaluation.csv', usecols=META + days,
+    # Organizer-style mirror omits Kaggle's redundant id column; reconstruct it.
+    chunks = pd.read_csv(RAW / 'sales_train_evaluation.csv', usecols=META[1:] + days,
                          dtype={d: 'float32' for d in days}, chunksize=4096)
     selected = [chunk.loc[chunk.store_id.eq(store)] for chunk in chunks]
     sales = pd.concat(selected, ignore_index=True).sort_values('item_id').reset_index(drop=True)
+    sales['id'] = sales.item_id.astype(str) + '_' + sales.store_id.astype(str)
     if sales.empty or sales.duplicated(['store_id', 'item_id']).any():
         raise ValueError('missing or duplicate series')
     calendar = pd.read_csv(RAW / 'calendar.csv')
