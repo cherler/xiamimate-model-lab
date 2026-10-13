@@ -1,3 +1,5 @@
+import { CASES, VIEW_NAMES, resolveRoute, caseHref } from './case-navigation.js';
+import { renderDressipi } from './dressipi.js';
 import { renderM5 } from './m5.js';
 import { renderAutoML } from './automl.js';
 import { renderAdvanced } from './advanced.js';
@@ -39,36 +41,37 @@ function download(filename, content) { const url = URL.createObjectURL(new Blob(
 function bindContact() { document.querySelectorAll('.contact-open').forEach(button => button.onclick = () => document.querySelector('#contact-dialog').showModal()); }
 document.querySelector('#close-dialog').onclick = () => document.querySelector('#contact-dialog').close();
 document.querySelector('#brief-form').onsubmit = e => { e.preventDefault(); const form = new FormData(e.target); download('模型工坊-定制需求.txt', `模型工坊 · 定制需求摘要\n\n业务目标：${form.get('goal')}\n现有数据：${form.get('data')}\n期望交付：${form.get('delivery')}\n\n该文件仅保存在本地，尚未发送。`); toast('需求摘要已下载，尚未发送'); };
-let caseId = 'tafeng', routeGeneration = 0;
-async function casePage(page, token) {
-  main.innerHTML = '<p class="loading-copy">正在读取案例目录…</p>';
+let routeGeneration = 0;
+async function casePage(page, params, token, routeError) {
+  const caseId=params.get('case'), entry=CASES[page].find(c=>c.id===caseId),view=params.get('view');
+  main.innerHTML=`<section class="case-picker"><label>选择${page==='forecast'?'预测':'推荐'}案例<select id="case-picker">${routeError?'<option value="" selected disabled>请选择已有案例</option>':''}${CASES[page].map(c=>`<option value="${c.id}" ${c.id===caseId?'selected':''}>${c.label}</option>`).join('')}</select></label><p>${page==='forecast'?'从门店总量到单件商品，比较真实销量与保存预测。':'从行为与商品属性出发，查看推荐依据与量化评估。'}</p></section>${entry?.views.length>1?`<nav class="case-views" aria-label="案例内容">${entry.views.map(v=>`<a href="${caseHref(page,caseId,v)}" ${view===v?'aria-current="page"':''}>${VIEW_NAMES[v]}</a>`).join('')}</nav>`:''}<div id="case-content"></div>`;
+  main.querySelector('#case-picker').onchange=e=>{location.hash=caseHref(page,e.target.value);};
+  const content=main.querySelector('#case-content'),current=()=>token===routeGeneration;
+  if(routeError){content.innerHTML='<section class="report-panel"><h1>案例不存在</h1><p>这个案例不属于当前任务，请选择已有案例。</p></section>';return;}
+  if(caseId==='m5')return renderM5(content,current);
+  if(caseId==='dressipi')return renderDressipi(content,current);
+  if(view==='advanced')return renderAdvanced(content,current,{task:page,embedded:true});
+  if(view==='selection'||view==='tuning')return renderAutoML(content,current,{task:page,embedded:true});
+  content.innerHTML='<p class="loading-copy">正在读取案例结果…</p>';
   try {
-    const manifest = await loadManifest();
-    if (token !== routeGeneration) return;
-    const entry = manifest.cases.find(c => c.id === caseId);
-    if (!entry) throw new Error('未知案例，请选择目录中的案例。');
-    main.innerHTML = `${page==='forecast'?'<a class="m5-featured-link" href="#m5"><strong>M5 · 28 天零售预测</strong><span>3,049 个商品 · 多粒度曲线与模型对照 →</span></a>':''}<section class="case-picker"><label>选择公开案例<select id="case-picker">${manifest.cases.map(c=>`<option value="${c.id}" ${c.id===caseId?'selected':''}>${c.label}</option>`).join('')}</select></label><p>${caseId==='tafeng'?'已核验的模型结果回放，可切换固定样本与模型。':'历史开发验证，保留原有本地推理交互。两案例不可直接计算提升率。'}</p></section><p class="advanced-entry"><a class="text-link" href="#advanced${page==='forecast'?'?task=forecast':''}">新增：属性排序、LightGCN 与 TFT · 查看同范围实验与模型解读 →</a></p><div id="case-content"></div>`;
-    main.querySelector('#case-picker').onchange=e=>{caseId=e.target.value;location.hash=`${page}?case=${caseId}`;};
-    const content = main.querySelector('#case-content');
-    if (caseId === 'tafeng') await renderShowcase(page,content,manifest,entry,()=>token===routeGeneration);
-    else await renderCase(page,content,entry.run_id);
-  } catch(error) {
-    if(token!==routeGeneration) return;
-    main.innerHTML = '<section class="report-panel"><h1>案例目录暂未就绪</h1><p>请完成展示数据导出后重新加载。本页不会自动换用其他案例。</p><p id="case-error" class="small-note"></p></section>';
-    main.querySelector('#case-error').textContent=error.message;
-  }
+    const manifest=await loadManifest();if(!current())return;
+    const source=manifest.cases.find(c=>c.id===caseId);
+    if(!source)throw new Error('案例尚未导出，请先完成本地训练与核验。');
+    if(caseId==='tafeng')await renderShowcase(view==='report'?'evidence':page,content,manifest,source,current);
+    else await renderCase(view==='report'?'evidence':page,content,source.run_id);
+  }catch(error){if(current()){content.innerHTML='<section class="report-panel"><h1>案例暂未就绪</h1><p id="case-error"></p></section>';content.querySelector('#case-error').textContent=error.message;}}
 }
 function route() {
-  const token=++routeGeneration;
-  const [raw, query=''] = location.hash.slice(1).split('?'); const page = labels[raw] ? raw : 'recommend';
-  const requestedCase=new URLSearchParams(query).get('case');
-  if(requestedCase) caseId=requestedCase;
-  document.querySelectorAll('[data-page]').forEach(a => { a.classList.toggle('active', a.dataset.page === page); if (a.dataset.page === page) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
-  document.querySelectorAll('[data-section]').forEach(a => a.classList.toggle('active', a.dataset.section === (['models', 'learn', 'delivery'].includes(page) ? page : 'case')));
+  const token=++routeGeneration,{page,params,error}=resolveRoute(location.hash);
+  const canonical=`#${page}${params.size?'?'+params:''}`;
+  if(location.hash!==canonical)history.replaceState(null,'',canonical);
+  document.querySelectorAll('[data-page]').forEach(a=>{a.classList.toggle('active',a.dataset.page===page);if(a.dataset.page===page)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
+  document.querySelectorAll('[data-section]').forEach(a=>a.classList.toggle('active',a.dataset.section===(['models','learn','delivery'].includes(page)?page:'case')));
   cancelCase();
-  if (['recommend','forecast','evidence'].includes(page)) casePage(page, token); else if (page==='m5') renderM5(main,()=>token===routeGeneration); else if (page==='automl') renderAutoML(main,()=>token===routeGeneration); else if (page==='advanced') renderAdvanced(main,()=>token===routeGeneration); else if (page==='models') renderModelGuide(main,()=>token===routeGeneration); else ({learn,delivery})[page]();
-  document.title = `${labels[page]} · 模型工坊`;
-  window.scrollTo(0, 0);
+  if(CASES[page])casePage(page,params,token,error);
+  else if(page==='models')renderModelGuide(main,()=>token===routeGeneration);
+  else ({learn,delivery})[page]();
+  document.title=`${labels[page]} · 模型工坊`;window.scrollTo(0,0);
 }
 window.addEventListener('hashchange', route);
 document.querySelector('.skip').onclick = e => { e.preventDefault(); main.focus(); main.scrollIntoView(); };
