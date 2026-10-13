@@ -46,3 +46,8 @@ artifacts/m5-export-latest.log
 artifacts/classification-runs/
 artifacts/classification-latest.json
 apps/web/classification-results/
+
+artifacts/retrieval-runs/
+artifacts/retrieval-latest.json
+apps/web/retrieval-results/
+services/retrieval/.venv/
