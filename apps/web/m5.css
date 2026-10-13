@@ -24,3 +24,16 @@
 .coverage-study{border-top:2px solid #c3dce5;padding-top:28px;margin-top:36px}.coverage-study h3{margin-top:28px}.coverage-summary{max-width:78ch;line-height:1.8}.coverage-chart-scroll{overflow-x:auto;margin:18px 0}.coverage-chart-scroll svg{display:block;width:100%;min-width:520px;font:12px var(--font-body, sans-serif);fill:#527183}.coverage-study .advanced-duel h3{font-size:17px}.coverage-study .m5-controls{flex-wrap:wrap}
 
 @media(max-width:600px){.coverage-chart-scroll svg{font-size:16px}}
+
+/* Saved-result lessons share the case typography and accessible table regions. */
+.case-story dl.case-facts{display:block}
+.lesson-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin:24px 0}
+.lesson-controls label{display:flex;flex-direction:column;gap:8px;font-size:14px;color:#536f82;min-width:0}
+.lesson-controls select{width:100%;min-width:0;padding:12px;border:1px solid #b9cddd;border-radius:6px;background:white;color:var(--ink);font:inherit}
+.lesson-formula{padding:16px 20px;margin-top:16px;background:#edf5f8;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.lesson-formula p{margin:8px 0;line-height:1.8}
+.lesson-table{max-height:460px;overflow:auto}
+.lesson-table thead{position:sticky;top:0;background:#edf5f8;z-index:1}
+.lesson-table th[scope=row]{font-weight:500}
+@media(max-width:620px){.lesson-controls{grid-template-columns:1fr;gap:16px}.lesson-formula{padding:12px}.showcase-source p{overflow-wrap:anywhere}}
+.case-facts>div,.case-facts dd{min-width:0}

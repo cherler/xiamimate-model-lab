@@ -1,3 +1,4 @@
+import { renderMetricLessons } from './metric-lessons.js';
 import { renderCaseInfo } from './case-info.js';
 import { CASES, VIEW_NAMES, resolveRoute, caseHref } from './case-navigation.js';
 import { renderDressipi } from './dressipi.js';
@@ -11,19 +12,6 @@ const main = document.querySelector('#main');
 const labels = { m5: 'M5 预测案例', automl: 'AutoML 实验室', advanced: '进阶模型实验', recommend: '电商商品推荐', forecast: '销量预测', evidence: '效果报告', models: '模型解读', learn: '教学拆解', delivery: '交付方式' };
 function heading(page,title,subtitle) {
   return `<div class="breadcrumb">模型工坊<span>/</span>${labels[page]}</div><div class="page-heading"><div><h1>${title}</h1><p>${subtitle}</p></div></div><div class="prototype-note"><span class="status-dot"></span>独立案例项目 · 推荐与销量预测已接入真实公开数据训练；线上业务收益尚未验证。</div>`;
-}
-function learn() {
-  const lessons = [
-    ['先建立比较对象', '为什么要先跑一个热门推荐或上周同期基线？', '在同一开发验证范围比较准确度、偏差与训练成本。第三轮补入个人复购、零预测和中位数，比较复杂模型是否带来额外改善。', '#recommend'],
-    ['比较推荐算法', '复杂算法能胜过个人复购吗？', '选择同一顾客，比较个人高频、近期加权复购、ALS、EASE 与融合。展开依据，再查看历史活跃度与新商品／复购目标诊断。复杂算法带来的额外增益需要单独衡量。', '#recommend'],
-    ['比较预测目标', '为什么更复杂的模型仍可能低估销量？', 'Ridge 拟合对数销量，反变换后可能压低尖峰。LightGBM 在原始数量上比较平方误差、Poisson 与 Tweedie。切换商品和窗口，检查 WAPE 改善时总量偏差是否仍然明显。', '#forecast'],
-    ['定义预测任务', '逐日销量与一周总销量，是同一个问题吗？', '第三轮分别保留 28 天逐日任务和每周更新的 7 天总量任务。目标、更新频率、MAE 单位都不同，不能把两张表 WAPE 的差值作为模型提升。开发筛选未通过也必须保留。', '#forecast'],
-    ['从行为构造特征', '哪些信息在做决策的那一刻已经知道？', '以时间边界构造购买历史、频次或滞后销量，避免把后来的结果提前提供给模型。', '#forecast'],
-    ['检查效果是否虚高', '为什么随机切分有时会产生误导？', '训练样本的完整预测标签必须早于验证起点。当前三个窗口用于选参与比较，只是开发验证；不能把反复观察过的窗口重新称为独立测试。源数据核验脚本会重建目标并回放保存的预测。', '#evidence'],
-    ['推荐规则与补货模拟', '为什么推荐更准不一定代表更赚钱？', '改变排除规则、探索比例或补货提前期，观察结果变化；进一步的收益估计需要成本假设。', '#recommend'],
-    ['部署与交接', '如何连接业务、处理失败并保留证据？', '定义输入输出、冷启动、降级和版本日志。训练与请求服务分离，保留重现过程。', '#delivery'],
-  ];
-  main.innerHTML = heading('learn', '推荐与预测项目教学', '按任务定义、特征构造、基线比较和效果评估组织课程。以下示例对应 UCI 开发实验，Ta Feng、M5 和 Dressipi 的数据说明可在各案例中查看。') + `<div class="lesson-list">${lessons.map(([title, question, body, link], i) => `<details ${i === 0 ? 'open' : ''}><summary><span class="lesson-number">${i + 1}</span><div><h2>${title}</h2><p>${question}</p></div><span class="lesson-plus">+</span></summary><div class="lesson-body"><p>${body}</p><a class="outline small" href="${link}?case=uci">打开 UCI 真实案例</a></div></details>`).join('')}</div>`;
 }
 
 function delivery() {
@@ -72,7 +60,8 @@ function route() {
   cancelCase();
   if(CASES[page])casePage(page,params,token,error);
   else if(page==='models')renderModelGuide(main,()=>token===routeGeneration);
-  else ({learn,delivery})[page]();
+  else if(page==='learn')renderMetricLessons(main,()=>token===routeGeneration,params);
+  else delivery();
   document.title=`${labels[page]} · 模型工坊`;window.scrollTo(0,0);
 }
 window.addEventListener('hashchange', route);
