@@ -7,6 +7,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from services.competitions.m5_data import ROOT,digest,write
 from services.competitions.dressipi import ranking_metrics
 from services.competitions.dressipi_study import verify as verify_study
+from services.competitions.coverage_export import read_coverage
 
 
 def verify_run(run):
@@ -43,10 +44,12 @@ def main():
         if not study_run.resolve().is_relative_to((ROOT/'artifacts/competition-runs').resolve()):raise ValueError('invalid study path')
         if digest(study_run/'report.json')!=sp['report_sha256']:raise ValueError('study pointer mismatch')
         study=verify_study(study_run,run);study_sha=sp['report_sha256']
-    version=hashlib.sha256((pointer['report_sha256']+study_sha+digest(__file__)).encode()).hexdigest()[:16]
+    coverage,coverage_sha=read_coverage('dressipi',run)
+    version=hashlib.sha256((pointer['report_sha256']+study_sha+coverage_sha+digest(__file__)).encode()).hexdigest()[:16]
     folder=ROOT/'apps/web/dressipi-results'/version;folder.mkdir(parents=True,exist_ok=True);resources={}
     outputs=[('report',report),('samples',{'run_id':report['run_id'],'samples':samples})]
     if study:outputs.append(('study',study))
+    if coverage:outputs.append(('coverage',coverage))
     for key,value in outputs:
         write(folder/f'{key}.json',value);resources[key]={'path':f'{version}/{key}.json','sha256':digest(folder/f'{key}.json')}
     manifest={'schema':1,'run_id':report['run_id'],'version':version,'public_export_allowed':False,'resources':resources,'source_report_sha256':pointer['report_sha256']}

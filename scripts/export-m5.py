@@ -10,6 +10,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from services.competitions.m5_data import ROOT, digest, load, write
 from services.competitions.m5_verify import verify
+from services.competitions.coverage_export import read_coverage
 
 pointer = json.loads((ROOT / 'artifacts/competition-m5.json').read_text())
 run = ROOT / 'artifacts/competition-runs' / pointer['run_id']
@@ -23,7 +24,8 @@ if report['status'] != 'complete_reserved_window_consumed' or report['config']['
     raise ValueError('only the verified complete M5 pilot is supported')
 metadata, history, calendar, _ = load('CA_1', 1913)
 metadata = metadata.reset_index(drop=True)
-version = hashlib.sha256((pointer['report_sha256'] + digest(__file__)).encode()).hexdigest()[:16]
+coverage, coverage_sha = read_coverage('m5', run)
+version = hashlib.sha256((pointer['report_sha256'] + coverage_sha + digest(__file__)).encode()).hexdigest()[:16]
 output = ROOT / 'apps/web/m5-results'
 folder = output / version
 folder.mkdir(parents=True, exist_ok=True)
@@ -73,6 +75,7 @@ for fold in report['folds'] + [report['final']]:
                                          'predictions': {name: p[i].tolist() for name, p in predictions.items()}}
         save(f'items-{origin}-{start // 100}', {'run_id': report['run_id'], 'origin': origin, 'items': bundle})
 save('overview', overview)
+if coverage: save('coverage', coverage)
 manifest = {'schema': 1, 'version': version, 'run_id': report['run_id'],
             'mode': 'local_research_preview', 'public_export_allowed': False,
             'source_report_sha256': pointer['report_sha256'], 'resources': resources}

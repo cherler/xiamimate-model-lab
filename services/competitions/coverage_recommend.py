@@ -35,7 +35,7 @@ class RetrievalEngine:
                 weighted=(self.matrix@row.multiply(self.idf).T).toarray().ravel()
                 shared_cache[item]=(common,weighted)
             common,weighted=shared_cache[item]
-            attr+=weight*np.divide(common,self.count[pos]+self.count-common,out=np.zeros(n),where=(self.count[pos]+self.count-common)>0)
+            attr+=np.divide(weight*common,self.count[pos]+self.count-common,out=np.zeros(n),where=(self.count[pos]+self.count-common)>0)
             idf+=weight*np.divide(weighted,self.mass[pos]+self.mass-weighted,out=np.zeros(n),where=(self.mass[pos]+self.mass-weighted)>0)
             links=self.model.links.get(item,{});den=sum(links.values()) or 1
             for target,count in links.items():co[self.index[target]]+=weight*count/den
@@ -54,7 +54,7 @@ class RetrievalEngine:
         base=['popularity','cooccurrence','attributes'];indices=np.unique(np.concatenate([channels[k][:topk] for k in base]+([channels['idf'][:idf_k]] if idf_k else [])))
         features=x[indices].copy()
         for j,k in enumerate(base):
-            ranks=np.full(len(self.items),topk+1,dtype='float32');ranks[channels[k][:topk]]=np.arange(1,topk+1)
+            ranks=np.full(len(self.items),topk+1,dtype='float32');ranks[channels[k][:topk]]=np.arange(1,len(channels[k][:topk])+1)
             features[:,3+j]=ranks[indices]
         return [self.items[i] for i in indices],features
 
@@ -104,7 +104,7 @@ def run():
     rows={k:[] for k in cfg['variants']};samples={k:[] for k in cfg['variants']};cold=[];tick=time.perf_counter()
     for i,((sid,seq,target),original) in enumerate(zip(valid,originals)):
         x,channels=engine.signals(seq);origpool,origx=engine.candidates(x,channels,100)
-        if origpool!=original['pool'] or any([engine.items[j] for j in channels[k][:100]]!=original['rankings'][k] for k in ['popularity','cooccurrence','attributes']):raise ValueError('accelerated retrieval differs from original')
+        if origpool!=original['pool'] or any([engine.items[j] for j in channels[k][:100]]!=original['rankings'][k] for k in ['popularity','cooccurrence','attributes']):raise ValueError(f'accelerated retrieval differs from original at {sid}')
         cold.append({'session':sid,'zero_base_purchases':model.popularity[target]==0})
         for key,config in cfg['variants'].items():
             if key=='original':pool=origpool;ranking=original['rankings']['lightgbm']

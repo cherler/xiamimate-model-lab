@@ -125,6 +125,17 @@ def verify(folder):
         with np.load(folder/f'fold-{o}.npz') as b:
             f=json.loads((folder/f'fold-{o}.json').read_text())
             folds.append({**f,'actual':b['actual'],'scale':b['scale'],'sparse':b['sparse'],'predictions':{m:b[m] for m in cfg['models']}})
+    original_meta,history,_,prices=load('CA_1',cfg['max_label_day'])
+    if not original_meta.equals(meta):raise ValueError('forecast cohort drift')
+    for f in folds:
+        o=f['origin']
+        if not np.array_equal(f['actual'],history[:,o:o+28]):raise ValueError('development actual changed')
+        expected_scale=np.sqrt(1+history[:,o-56:o].mean(axis=1,dtype=float))
+        expected_sparse=(history[:,o-56:o]==0).mean(axis=1)>=.5
+        if not np.array_equal(f['scale'],expected_scale) or not np.array_equal(f['sparse'],expected_sparse):raise ValueError('history grouping changed')
+        evaluator=WRMSSE(meta,history[:,:o],revenue_at(history,prices,o))
+        for model,prediction in f['predictions'].items():
+            if evaluator.score(f['actual'],prediction)!=f['scores'][model]:raise ValueError('point metric mismatch')
     windows,saved,calibration=build_report(folds,meta,cfg)
     if windows!=r['windows'] or calibration!=json.loads((folder/'calibration.json').read_text()):raise ValueError('interval report mismatch')
     with np.load(folder/'intervals.npz') as b:

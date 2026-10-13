@@ -52,4 +52,21 @@ class CoverageTests(unittest.TestCase):
         wide,_=engine.candidates(x,channels,300,50)
         self.assertTrue(set(pool)<=set(wide));self.assertFalse(set(sequence)&set(wide))
 
+class RareAttributeTests(unittest.TestCase):
+    def test_idf_channel_prefers_rare_shared_attribute_over_generic_tie(self):
+        from collections import Counter,defaultdict
+        model=SessionBaselines();model.attributes=defaultdict(set);model.attribute_items=defaultdict(set)
+        model.links=defaultdict(Counter);model.popularity=Counter({'2':2})
+        for i in range(20):
+            pairs={('category','common')} if i!=1 else {('category','rare')}
+            if i==0:pairs.add(('category','rare'))
+            model.attributes[str(i)]=pairs
+            for pair in pairs:model.attribute_items[pair].add(str(i))
+        engine=RetrievalEngine(model,list(model.attributes));x,c=engine.signals(['0'])
+        self.assertEqual(engine.items[c['attributes'][0]],'2')
+        self.assertEqual(engine.items[c['idf'][0]],'1')
+        pool,_=engine.candidates(x,c,3,1)
+        self.assertIn('1',pool);self.assertNotIn('0',pool)
+
+
 if __name__=='__main__':unittest.main()
