@@ -157,6 +157,15 @@ def run(data_dir):
     print(f'Verified {run_id}',flush=True)
 
 
+def verify_frozen(folder, base_run, report):
+    frozen=json.loads((folder/'frozen.json').read_text())
+    for key,name in {'protocol_sha256':'protocol.json','training_features_sha256':'training-features.npz',
+                     'validation_features_sha256':'validation-features.npz','training_queries_sha256':'training-queries.json'}.items():
+        if frozen[key]!=digest(folder/name): raise ValueError('frozen input changed')
+    if frozen['base_model_sha256']!=digest(base_run/'ranker.txt'): raise ValueError('frozen base model changed')
+    if frozen['params']!=report['params']: raise ValueError('frozen parameters changed')
+
+
 def verify(folder, base_run):
     checks=json.loads((folder/'checksums.json').read_text())
     required={'report.json','predictions.json','diagnostic-metadata.json','protocol.json','provenance.json','frozen.json','training-features.npz','training-queries.json','validation-features.npz','behavior.txt','attributes.txt','combined.txt','full.txt'}
@@ -166,6 +175,13 @@ def verify(folder, base_run):
     r=json.loads((folder/'report.json').read_text());cfg=json.loads((folder/'protocol.json').read_text())
     if r['protocol']!=cfg or r['base_run_id']!=base_run.name or r['public_export_allowed'] is not False: raise ValueError('study identity mismatch')
     if json.loads((folder/'provenance.json').read_text())['base_report_sha256']!=digest(base_run/'report.json'): raise ValueError('base report changed')
+    verify_frozen(folder,base_run,r)
+    if r['run_id']!=folder.name or r['status']!='complete_development_study' or r['full_rankings_match_base'] is not True: raise ValueError('invalid study status')
+    for key,features in cfg['variants'].items():
+        booster=lgb.Booster(model_file=str(folder/f'{key}.txt'))
+        if booster.feature_name()!=features: raise ValueError('model feature columns mismatch')
+        gain=[{'feature':f,'gain':float(g)} for f,g in zip(features,booster.feature_importance(importance_type='gain'))]
+        if r['feature_gain'][key]!=gain: raise ValueError('model feature gain mismatch')
     rows=json.loads((folder/'predictions.json').read_text()); originals=json.loads((base_run/'predictions.json').read_text())
     if len(rows)!=len(originals) or len({x['session'] for x in rows})!=len(rows): raise ValueError('cohort mismatch')
     for row,original in zip(rows,originals):

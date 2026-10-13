@@ -6,6 +6,7 @@ import sys
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from services.competitions.m5_data import ROOT,digest,write
 from services.competitions.dressipi import ranking_metrics
+from services.competitions.dressipi_study import verify as verify_study
 
 
 def verify_run(run):
@@ -35,9 +36,18 @@ def main():
     if not run.resolve().is_relative_to((ROOT/'artifacts/competition-runs').resolve()):raise ValueError('invalid path')
     if digest(run/'report.json')!=pointer['report_sha256']:raise ValueError('report pointer mismatch')
     report,samples=verify_run(run)
-    version=hashlib.sha256((pointer['report_sha256']+digest(__file__)).encode()).hexdigest()[:16]
+    study=None; study_sha='no-study'
+    study_pointer=ROOT/'artifacts/competition-dressipi-study.json'
+    if study_pointer.exists():
+        sp=json.loads(study_pointer.read_text());study_run=ROOT/'artifacts/competition-runs'/sp['run_id']
+        if not study_run.resolve().is_relative_to((ROOT/'artifacts/competition-runs').resolve()):raise ValueError('invalid study path')
+        if digest(study_run/'report.json')!=sp['report_sha256']:raise ValueError('study pointer mismatch')
+        study=verify_study(study_run,run);study_sha=sp['report_sha256']
+    version=hashlib.sha256((pointer['report_sha256']+study_sha+digest(__file__)).encode()).hexdigest()[:16]
     folder=ROOT/'apps/web/dressipi-results'/version;folder.mkdir(parents=True,exist_ok=True);resources={}
-    for key,value in [('report',report),('samples',{'run_id':report['run_id'],'samples':samples})]:
+    outputs=[('report',report),('samples',{'run_id':report['run_id'],'samples':samples})]
+    if study:outputs.append(('study',study))
+    for key,value in outputs:
         write(folder/f'{key}.json',value);resources[key]={'path':f'{version}/{key}.json','sha256':digest(folder/f'{key}.json')}
     manifest={'schema':1,'run_id':report['run_id'],'version':version,'public_export_allowed':False,'resources':resources,'source_report_sha256':pointer['report_sha256']}
     tmp=folder.parent/'manifest.json.tmp';write(tmp,manifest);tmp.replace(folder.parent/'manifest.json')
