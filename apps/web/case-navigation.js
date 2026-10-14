@@ -1,3 +1,4 @@
+import {LOCAL_RESEARCH} from './preview-mode.js';
 export const CASES = {
  recommend: [
   {id:'tafeng',label:'Ta Feng · 复购推荐',views:['experience','data','report']},
@@ -11,7 +12,10 @@ export const CASES = {
  ],
 };
 export const VIEW_NAMES={data:'案例与数据',models:'特征与模型',training:'训练记录',experience:'案例体验',advanced:'进阶模型',selection:'模型选择',tuning:'调优记录',report:'效果报告'};
-export function resolveRoute(hash){
+export function visibleCases(page,localResearch=LOCAL_RESEARCH){
+ return (CASES[page]||[]).filter(c=>localResearch||!['m5','dressipi'].includes(c.id));
+}
+export function resolveRoute(hash,localResearch=LOCAL_RESEARCH){
  const [raw,query='']=hash.replace(/^#/,'').split('?'),params=new URLSearchParams(query);
  let page=raw;
  if(page==='m5'){page='forecast';params.set('case','m5');}
@@ -34,7 +38,7 @@ export function resolveRoute(hash){
   if(!['experience','data','models','report'].includes(params.get('view')))params.set('view','experience');
  }
  if(CASES[page]){
-  if(!params.has('case'))params.set('case',page==='forecast'?'m5':'tafeng');
+  if(!params.has('case'))params.set('case',page==='forecast'?(localResearch?'m5':'uci'):'tafeng');
   const entry=CASES[page].find(c=>c.id===params.get('case'));
   if(!entry)return {page,params,error:'这个案例不属于当前任务，请选择下方已有案例。'};
   if(!params.has('view'))params.set('view','experience');

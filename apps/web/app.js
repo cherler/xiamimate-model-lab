@@ -5,7 +5,7 @@ import { renderRetrieval } from './retrieval.js';
 import { renderClassification } from './classification.js';
 import { renderMetricLessons } from './metric-lessons.js';
 import { renderCaseInfo } from './case-info.js';
-import { CASES, VIEW_NAMES, resolveRoute, caseHref } from './case-navigation.js';
+import { CASES, VIEW_NAMES, resolveRoute, caseHref, visibleCases } from './case-navigation.js';
 import { renderDressipi } from './dressipi.js';
 import { renderM5 } from './m5.js';
 import { renderAutoML } from './automl.js';
@@ -37,8 +37,8 @@ document.querySelector('#close-dialog').onclick = () => document.querySelector('
 document.querySelector('#brief-form').onsubmit = e => { e.preventDefault(); const form = new FormData(e.target); download('模型工坊-定制需求.txt', `模型工坊 · 定制需求摘要\n\n业务目标：${form.get('goal')}\n现有数据：${form.get('data')}\n期望交付：${form.get('delivery')}\n\n该文件仅保存在本地，尚未发送。`); toast('需求摘要已下载，尚未发送'); };
 let routeGeneration = 0;
 async function casePage(page, params, token, routeError) {
-  const caseId=params.get('case'), entry=CASES[page].find(c=>c.id===caseId),view=params.get('view');
-  main.innerHTML=`<section class="case-picker"><label>选择${page==='forecast'?'预测':'推荐'}案例<select id="case-picker">${routeError?'<option value="" selected disabled>请选择已有案例</option>':''}${CASES[page].map(c=>`<option value="${c.id}" ${c.id===caseId?'selected':''}>${c.label}</option>`).join('')}</select></label><p>${page==='forecast'?'从门店总量到单件商品，比较真实销量与保存预测。':'从行为与商品属性出发，查看推荐依据与量化评估。'}</p></section>${entry?.views.length>1?`<nav class="case-views" aria-label="案例内容">${entry.views.map(v=>`<a href="${caseHref(page,caseId,v)}" ${view===v?'aria-current="page"':''}>${VIEW_NAMES[v]}</a>`).join('')}</nav>`:''}<div id="case-content"></div>`;
+  const caseId=params.get('case'), entry=CASES[page].find(c=>c.id===caseId),view=params.get('view'), choices=visibleCases(page), hidden=entry&&!choices.some(c=>c.id===caseId);
+  main.innerHTML=`<section class="case-picker"><label>选择${page==='forecast'?'预测':'推荐'}案例<select id="case-picker">${routeError?'<option value="" selected disabled>请选择已有案例</option>':''}${hidden?'<option value="" selected disabled>当前链接为本地研究案例</option>':''}${choices.map(c=>`<option value="${c.id}" ${c.id===caseId?'selected':''}>${c.label}</option>`).join('')}</select></label><p>${page==='forecast'?'从门店总量到单件商品，比较真实销量与保存预测。':'从行为与商品属性出发，查看推荐依据与量化评估。'}</p></section>${entry?.views.length>1?`<nav class="case-views" aria-label="案例内容">${entry.views.map(v=>`<a href="${caseHref(page,caseId,v)}" ${view===v?'aria-current="page"':''}>${VIEW_NAMES[v]}</a>`).join('')}</nav>`:''}<div id="case-content"></div>`;
   main.querySelector('#case-picker').onchange=e=>{location.hash=caseHref(page,e.target.value);};
   const content=main.querySelector('#case-content'),current=()=>token===routeGeneration;
   if(routeError){content.innerHTML='<section class="report-panel"><h1>案例不存在</h1><p>这个案例不属于当前任务，请选择已有案例。</p></section>';return;}

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {CASES,resolveRoute,caseHref} from '../apps/web/case-navigation.js';
+import {CASES,resolveRoute,caseHref,visibleCases} from '../apps/web/case-navigation.js';
 import {reciprocalRank,attributeOverlap} from '../apps/web/dressipi.js';
 test('legacy links preserve task and M5 view selections within two case entrances',()=>{
  const m=resolveRoute('#m5?window=1885&model=seasonal_naive&level=item&item=FOODS_1_001_CA_1');
@@ -18,4 +18,16 @@ test('defaults remain task specific and unknown cases never silently use another
 test('anonymous attributes match by category/value pair; no invented semantics or conditional ranking metric',()=>{
  assert.deepEqual(attributeOverlap([['1','2'],['3','4']],[['9','2'],['1','2']]),[['1','2']]);
  assert.equal(reciprocalRank('b',['a','b']),.5);assert.equal(reciprocalRank('x',['a','b']),0);assert.equal(reciprocalRank('b',['a','b'],1),0);
+});
+
+test('public navigation opens available forecasts while explicit research links retain honest missing-data handling',()=>{
+ assert.equal(resolveRoute('#forecast',false).params.get('case'),'uci');
+ assert.equal(resolveRoute('#forecast',true).params.get('case'),'m5');
+ for(const page of ['recommend','forecast']){
+  assert.ok(visibleCases(page,false).length>0);assert.ok(visibleCases(page,false).every(c=>!['m5','dressipi'].includes(c.id)));
+  assert.equal(visibleCases(page,true).length,CASES[page].length);
+ }
+ assert.equal(resolveRoute('#m5?window=1913',false).params.get('case'),'m5');
+ assert.equal(resolveRoute('#recommend?case=dressipi',false).params.get('case'),'dressipi');
+ assert.ok(resolveRoute('#forecast?case=unknown',false).error);
 });
