@@ -41,7 +41,8 @@
       "n_jobs": 2
     },
     "label_policy": "Freeze scores and thresholds before reading windows. Known public benchmark, no label-based tuning. Intersect windows with evaluation period; report clipping. Not official NAB score.",
-    "metrics": "raw point flags vs benchmark windows; emitted alerts spaced by >=60 min; event hit requires emitted alert inside window; delay from evaluation-window start, not fault onset; no point adjustment"
+    "metrics": "raw point flags vs benchmark windows; emitted alerts spaced by >=60 min; event hit requires emitted alert inside window; delay from evaluation-window start, not fault onset; no point adjustment",
+    "timestamp_cleaning": "parse timestamps; retain first source row per timestamp, then stable chronological sort; report discarded duplicates and reordered input. Frozen after source schema check, before labels."
   },
   "segmentation": {
     "source": "https://archive.ics.uci.edu/dataset/502/online+retail+ii",
