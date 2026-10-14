@@ -43,26 +43,27 @@ npm run test:deep
 
 ## 运行
 
-需要 Node.js 22+、uv、Python 3.12。macOS 上 LightGBM 需要 OpenMP 运行库，可使用 `brew install libomp` 安装。
+已有完整展示包时，浏览和构建只需要 Node.js 22+。导出、原模型复核或训练另需 uv、Python 3.12；macOS 上 LightGBM 需要 OpenMP 运行库，可使用 `brew install libomp` 安装。
 
 ```sh
 cd /Users/liuzhenhai/projects/xiamimate/xiamimate-model-lab
 uv sync --python 3.12
 npm run export:showcase
+npm run export:uci
 npm run dev
 ```
 
-打开 <http://127.0.0.1:5328>。已有完整产物与展示包时可直接 `npm run dev`。`export:showcase` 需要本地固定 UCI 与 Ta Feng 产物，不会下载数据、训练或重新开启测试；缺少产物时明确失败。新环境需恢复这些已保存的实验，不能重新跑已消耗的 Ta Feng 测试来补包。第三轮也只用本地 CPU；线程数固定为 2，没有使用 AutoDL、GPU 或云端付费资源。`npm run train` 保留第一轮复现入口；运行完成会将页面切回第一轮对应报告与模型。
+打开 <http://127.0.0.1:5328>。已有完整展示包时可直接 `npm run dev`，默认启动纯静态服务，不启动 Python。`npm run preview` 在 5330 端口预览已构建的 `dist/`；原本地接口仅通过可选的 `npm run dev:api` 启动。`export:showcase` 需要本地固定 UCI 与 Ta Feng 产物，不会下载数据、训练或重新开启测试；缺少产物时明确失败。新环境需恢复这些已保存的实验，不能重新跑已消耗的 Ta Feng 测试来补包。第三轮也只用本地 CPU；线程数固定为 2，没有使用 AutoDL、GPU 或云端付费资源。`npm run train` 保留第一轮复现入口，但不会切换固定的静态展示版本。
 
 首次训练获取 UCI Online Retail II，读取原始两张 Excel 表并清洗；后续使用经 SHA-256 校验的缓存。完整模型、配置、逐条预测、报告和校验清单全部保存成功后，才原子更新 `artifacts/latest.json`。失败不会替换上一次可用版本；页面不触发长训练，也不会显示合成指标来掩盖失败。
 
 本机原数据为 `data/raw/verified-mirror.xlsx`，来自经核验的公开镜像。完整 SHA-256 与独立公开 LFS 校验值一致，大小和 CRC32 与 UCI 原包成员头一致，原站已下载的 22,630,349 字节也逐字节一致。报告保留 `mirror_used` 和实际来源。重新获取可用 `uv run python scripts/download-mirror.py`，脚本锁定版本并校验完整文件。
 
-`npm run build` 先校验展示包，再输出前端 `dist/`。Ta Feng 页面读取已核验的保存结果，不依赖推理 API；UCI 原交互仍需要同源本地 Python API。全站独立静态发布和远程部署尚未完成；本地服务仍只监听本机。客户数据接入、账号和在线训练不在当前范围。
+`npm run build` 先校验各案例展示包，再输出纯静态 `dist/`。Ta Feng 与 UCI 的推荐、预测、报告和下载均不依赖模型 API；缺失或损坏数据时明确报错。UCI 保留 24 位公开顾客及新客、9 种推荐方法和原经营规则，共 4,950 组离线结果；逐日／周预测与诊断沿用冻结实验。详见 [UCI 静态化验收](docs/uci-static-release.md)。远程部署、完整版本恢复演练和全站发布验收尚未完成；本地服务只监听本机。客户数据接入、账号和在线训练不在当前范围。
 
 ## 展示接入第一轮
 
-- 两案例清单绑定固定实验与证据类型；默认 Ta Feng，UCI 不被替换或混算。UCI 当前 API 版本不匹配清单时明确报错。
+- 两案例清单绑定固定实验与证据类型；默认 Ta Feng，UCI 不被替换或混算。UCI 静态包的实验版本或报告哈希不匹配清单时明确报错。
 - Ta Feng 复购与发现各 4 种已评估方法，展示历史、Top 10、实际目标、个例指标与完整人群对照；24 名训练顾客固定抽样，未回访样本保留，另列 3 名新顾客回退示例。
 - 50 商品 × 4 周起点 × 6 方法，全部 200 个商品周可切换；显示七天总量、误差、偏差，保留强基线与未通过结论。
 - `npm run export:showcase` 校验完整实验文件并复算推荐和周预测统计，生成约 745 KiB 的案例资源（包含 UCI 展示数据），文件不提交 Git。重复导出保持版本一致，失败不更新清单。
