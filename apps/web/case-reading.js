@@ -132,10 +132,15 @@ export function canShowReading(host){
 }
 export function mountCaseReading(host,page,params){
  const c=CASE_READINGS[`${page}:${params.get('case')}`];if(!c||!canShowReading(host))return;
- host.querySelector('.case-reading')?.remove();
- const body=host.querySelector('#case-content');
- if(body)(host.querySelector('.case-picker')||body).insertAdjacentHTML('beforebegin',readingHtml(page,params));
- else{const heading=host.querySelector('.page-heading');if(!heading)return;heading.insertAdjacentHTML('afterend',readingHtml(page,params));}
+ host.querySelector('.case-reading-disclosure')?.remove();
+ host.querySelector('.reading-entry')?.remove();
+ const body=host.querySelector('#case-content'),heading=host.querySelector('.page-heading,.m5-heading');
+ if(!heading)return;
+ const html=`<details class="case-reading-disclosure"><summary>案例说明、评估结论与适用条件</summary>${readingHtml(page,params)}</details>`;
+ const footer=(body||host).querySelector('.showcase-source');
+ if(footer)footer.insertAdjacentHTML('beforebegin',html);else (body||host).insertAdjacentHTML('beforeend',html);
+ heading.insertAdjacentHTML('afterend','<div class="reading-entry"><button class="text-link" type="button">查看案例说明与评估范围 ↓</button></div>');
+ host.querySelector('.reading-entry button').onclick=()=>{const panel=host.querySelector('.case-reading-disclosure');panel.open=true;const summary=panel.querySelector('summary');summary.focus({preventScroll:true});summary.scrollIntoView({block:'start'});};
  const guide=host.querySelector('.case-reading');
  // Refresh from the current route because controls may have changed the saved selection.
  guide.querySelectorAll('[data-reading-step]').forEach(a=>a.onclick=()=>{const live=new URLSearchParams(location.hash.split('?')[1]||'');a.href=readingHref(page,live,a.dataset.readingStep);});
