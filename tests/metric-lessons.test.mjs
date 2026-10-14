@@ -52,7 +52,7 @@ test('all saved teaching rows match original metrics; modified metrics and versi
 test('missing saved resources show an error, and a stale lesson cannot overwrite another route',async()=>{
  const original=globalThis.fetch;globalThis.fetch=async()=>{throw new Error('offline');};
  try{
-  const host={innerHTML:''};await renderMetricLessons(host,()=>true);assert.match(host.innerHTML,/教学结果暂不可用/);
+  const host={innerHTML:''};await renderMetricLessons(host,()=>true);assert.match(host.innerHTML,/Ta Feng 指标课暂不可用/);assert.match(host.innerHTML,/七案例计算入口/);
   let content='';const stale={get innerHTML(){return content;},set innerHTML(v){content=v;}};
   const pending=renderMetricLessons(stale,()=>false);content='another route';await pending;assert.equal(content,'another route');
  }finally{globalThis.fetch=original;}
