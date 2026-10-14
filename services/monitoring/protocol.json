@@ -1,0 +1,73 @@
+{
+  "version": "r5-v1",
+  "seed": 20261014,
+  "nab": {
+    "revision": "ea702d75cc2258d9d7dd35ca8e5e2539d71f3140",
+    "files": {
+      "data/realKnownCause/ambient_temperature_system_failure.csv": "230b68ccca20f59d562afd5d24ad52939c9b784386bed0054018358bf9120581",
+      "data/realKnownCause/machine_temperature_system_failure.csv": "92bf5b87fc7f9bba8ca0b7ec63ccaac8cb4a1371a258e8c29a10ae9c018d82a4",
+      "data/realKnownCause/cpu_utilization_asg_misconfiguration.csv": "58ba65dc0737cfbac11b51514476d50c438d44011232144bb8d93f392df58f9f",
+      "labels/combined_windows.json": "1e1fbc4601321aad8d0f8b3784c8134299379f68f6c1f7777565f8ffd57ab6b1",
+      "LICENSE.txt": "0a0b4d0b10cb1f7ed9ab2993ef93defc03447e6eba9daca1315dd32dae4877e3",
+      "data/README.md": "1d32963e44a52323b44affff374a1222ebe5ef19ef8f7f6c6fd7a747aa52db30"
+    }
+  },
+  "anomaly": {
+    "series": [
+      "ambient_temperature_system_failure",
+      "machine_temperature_system_failure",
+      "cpu_utilization_asg_misconfiguration"
+    ],
+    "split": [
+      0.2,
+      0.3
+    ],
+    "window": "24h",
+    "minimum_history": 12,
+    "threshold_quantile": 0.99,
+    "comparison": "score > calibration quantile(method=higher)",
+    "cooldown_minutes": 60,
+    "features": [
+      "value",
+      "delta",
+      "past_mean",
+      "past_std",
+      "residual"
+    ],
+    "isolation_forest": {
+      "n_estimators": 200,
+      "max_samples": 256,
+      "contamination": "auto",
+      "n_jobs": 2
+    },
+    "label_policy": "Freeze scores and thresholds before reading windows. Known public benchmark, no label-based tuning. Intersect windows with evaluation period; report clipping. Not official NAB score.",
+    "metrics": "raw point flags vs benchmark windows; emitted alerts spaced by >=60 min; event hit requires emitted alert inside window; delay from evaluation-window start, not fault onset; no point adjustment"
+  },
+  "segmentation": {
+    "source": "https://archive.ics.uci.edu/dataset/502/online+retail+ii",
+    "license": "CC BY 4.0",
+    "xlsx_sha256": "bcbe73b35f5b7babf197fb0cb983a11f5d9ff929078d4aa53d171b1f2df2e980",
+    "origins": [
+      "2011-09-01",
+      "2011-10-01"
+    ],
+    "lookback_days": 180,
+    "future_days": 30,
+    "features": [
+      "recency_days",
+      "orders",
+      "gross_sales_gbp"
+    ],
+    "transform": "log1p + RobustScaler, fit at first origin only; no clipping",
+    "clusters": 4,
+    "n_init": 10,
+    "rules": "priority: R>90 dormant; else F==1 once; else R<=30 and F>=3 active; else regular",
+    "silhouette_sample": 2000,
+    "stability_runs": 10,
+    "stability_fraction": 0.8,
+    "stability": "Refit scaler and KMeans on each 80% no-replacement sample; predict all first-origin customers. ARI plus Hungarian-aligned per-cluster retention.",
+    "temporal": "Frozen scaler and centers assign second-origin 180-day features. Compare common customers; count entrants/exits separately.",
+    "future": "30-day positive-order return and gross sales, computed after assignments; descriptive association only, not causal uplift.",
+    "scope": "all countries, valid positive merchandise transactions with customer IDs; exclude cancellations, nonpositive prices/quantities, nonmerchandise codes, exact duplicate rows; gross not net revenue; anonymous customer codes"
+  }
+}

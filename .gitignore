@@ -51,3 +51,7 @@ artifacts/retrieval-runs/
 artifacts/retrieval-latest.json
 apps/web/retrieval-results/
 services/retrieval/.venv/
+
+artifacts/monitoring-runs/
+artifacts/monitoring-*.json
+apps/web/monitoring-results/
