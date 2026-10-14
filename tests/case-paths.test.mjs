@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {caseMethodHref,PUBLIC_CASE_PATHS,publicCasePath,publicLessonHref,casePathDirectory} from '../apps/web/case-paths.js';
+import {caseMethodHref,PUBLIC_CASE_PATHS,publicCasePath,publicLessonHref} from '../apps/web/case-paths.js';
 import {resolveRoute} from '../apps/web/case-navigation.js';
 import {CASE_READINGS} from '../apps/web/case-reading.js';
 import {CASE_EXERCISES} from '../apps/web/case-exercises.js';
@@ -17,20 +17,18 @@ test('seven public method and calculation links lead to the intended frozen case
   const method=resolveRoute(c.methodHref,false);
   assert.equal(method.error,undefined);
   assert.equal(method.params.get('case'),id);
-  assert.equal(method.page,page==='recommend'||page==='forecast'?'models':page);
-  if(method.page==='models'){
-   assert.equal(method.params.get('focus'),'detail');
+  assert.equal(method.page,'models');assert.equal(method.params.get('business'),page);
+  if(['recommend','forecast'].includes(page)){
    const {selected}=resolveGuideSelection(method.params);
    assert.equal(selected.caseId,id);
    assert.equal(selected.task,method.params.get('task'));
-  }else assert.equal(method.params.get('view'),'models');
+  }
   const lesson=resolveRoute(publicLessonHref(c.key),false);
   assert.equal(lesson.error,undefined);
-  assert.equal(lesson.page,page==='recommend'?'learn':page);
+  assert.equal(lesson.page,'learn');assert.equal(lesson.params.get('business'),page);
  }
  assert.equal(publicCasePath('forecast:m5'),null);
- assert.doesNotMatch(casePathDirectory('methods'),/M5|Dressipi/);
- assert.match(casePathDirectory('teaching'),/查看计算/);
+
 });
 
 test('method links preserve the live task and model instead of the public default',()=>{

@@ -1,6 +1,6 @@
 import {FORECAST_GUIDE} from './forecast-guide.js';
 import {loadManifest, loadShowcaseResource, MODEL_NAMES} from './showcase.js';
-import {casePathDirectory} from './case-paths.js';
+import {saveSelection} from './navigation-state.js';
 const esc = v => String(v ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pct = v => `${(v*100).toFixed(2)}%`;
 const variant = (model,label) => ({model,label:label || MODEL_NAMES[model]});
@@ -76,16 +76,21 @@ function advancedRoadmap() {
 function featureMap() {
  return `<section class="guide-features"><h2>各类特征的使用情况</h2><p>原始字段、衍生特征与页面文案各有用途。推荐排序是输出，不是本项目的原始输入特征。</p><div class="table-scroll" tabindex="0" role="region" aria-label="特征使用情况"><table><thead><tr><th scope="col">信息／特征</th><th scope="col">当前状态</th><th scope="col">应用范围</th><th scope="col">说明</th></tr></thead><tbody>${FEATURES.map(row=>`<tr>${row.map((v,i)=>`<td>${i===1?`<span class="guide-status">${esc(v)}</span>`:esc(v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></section><section class="guide-next"><h2>已完成的特征对照实验</h2><p>进阶实验已整理历史可用的商品属性，比较行为特征、商品属性与用户—商品匹配特征。固定候选集、时间边界与模型设置，逐组加入特征；同时报告排序质量、覆盖率与逐窗口人群数量。</p><p>Ta Feng 最终测试已经使用。后续基于其反馈的改进须标注为测试后开发，或使用新的未见数据验证；原测试不能重新称为独立验证。特征重要性也不代表因果关系。</p></section>`;
 }
-export async function renderModelGuide(host,isCurrent) {
+export async function renderModelGuide(host,isCurrent,params=new URLSearchParams()) {
  host.innerHTML='<p class="loading-copy">正在读取模型说明与已核验成绩…</p>';
  try {
   const manifest=await loadManifest();
   const reports=Object.fromEntries(await Promise.all(manifest.cases.map(async entry=>[entry.id,await loadShowcaseResource(manifest,entry,'report')])));
   if(!isCurrent())return;
-  let {selected,model}=resolveGuideSelection(new URLSearchParams(location.hash.split('?')[1]||''));
+  if(params.has('model')&&!GUIDE.some(c=>c.caseId===params.get('case')&&c.task===params.get('task')&&(c.id===params.get('model')||c.variants.some(v=>v.model===params.get('model'))))){
+   const card={caseId:params.get('case'),task:params.get('task')};
+   host.innerHTML=`<section class="report-panel"><h1>当前方法的独立解读尚未整理</h1><p>当前选择：${esc(params.get('model'))}。此处保留你的选择；已有模型效果与样本仍可在案例中查看。</p><div class="download-actions"><a class="primary" href="${esc(guideLink(card,params.get('model')))}">返回当前模型体验</a><a class="outline" href="${esc(guideLink(card,params.get('model'),'report'))}">查看本案例完整评估</a></div></section>`;return;
+  }
+  let {selected,model}=resolveGuideSelection(params);
   let group=selected.group,forecastScope=group==='forecast'?`${selected.caseId}:${selected.task}`:'uci:weekly_sales';
-  host.innerHTML=`<div class="breadcrumb">模型工坊<span>/</span>模型解读</div><div class="page-heading"><div><h1>七类业务的建模方法</h1><p>按业务任务进入实际案例，查看模型、基线和量化证据；复杂方法的价值以同范围对照为准。</p></div></div>${casePathDirectory('methods')}<section class="guide-detail-section"><h2>推荐与预测模型详情</h2><p>以下是 Ta Feng 与 UCI 已运行方法的逐模型说明。其他五类的方法与评估保留在对应案例内。</p><div class="guide-intro"><strong>推荐和预测分任务比较</strong><p>复购关注已买商品，发现关注未买商品；销量预测估计未来数量。三项任务分别评估，分数不能跨任务比较。</p></div><nav class="guide-groups" aria-label="按业务任务浏览模型">${Object.entries(groups).map(([id,label])=>`<button type="button" data-guide-group="${id}">${label}</button>`).join('')}</nav><label class="guide-scope" id="guide-scope-label">预测案例与任务<select id="guide-forecast-scope">${Object.entries(forecastScopes).map(([id,label])=>`<option value="${id}">${label}</option>`).join('')}</select></label><div class="guide-layout"><nav class="guide-models" aria-label="模型目录"></nav><article id="guide-detail" aria-label="当前模型说明"></article></div></section>${featureMap()}${advancedRoadmap()}`;
+  host.innerHTML=`<div class="breadcrumb">模型工坊<span>/</span>模型解读</div><div class="page-heading"><div><h1>${group==='forecast'?'销量预测':'商品推荐'}：模型与量化证据</h1><p>查看当前任务的输入特征、建模方法、同范围对照和适用条件。</p></div></div><section class="guide-detail-section"><div class="guide-intro"><strong>推荐和预测分任务比较</strong><p>复购关注已买商品，发现关注未买商品；销量预测估计未来数量。三项任务分别评估，分数不能跨任务比较。</p></div><nav class="guide-groups" aria-label="按业务任务浏览模型">${Object.entries(groups).filter(([id])=>group==='forecast'?id==='forecast':id!=='forecast').map(([id,label])=>`<button type="button" data-guide-group="${id}">${label}</button>`).join('')}</nav><label class="guide-scope" id="guide-scope-label">预测案例与任务<select id="guide-forecast-scope">${Object.entries(forecastScopes).map(([id,label])=>`<option value="${id}">${label}</option>`).join('')}</select></label><div class="guide-layout"><nav class="guide-models" aria-label="模型目录"></nav><article id="guide-detail" aria-label="当前模型说明"></article></div></section>${featureMap()}${advancedRoadmap()}`;
   const draw=()=>{
+   saveSelection(selected.group==='forecast'?'forecast':'recommend',{case:selected.caseId,task:selected.task,model});
    host.querySelector('#guide-scope-label').hidden=group!=='forecast';
    host.querySelector('#guide-forecast-scope').value=forecastScope;
    const detail={...selected,...selected.variants.find(v=>v.model===model)};
@@ -102,7 +107,7 @@ export async function renderModelGuide(host,isCurrent) {
   host.querySelector('#guide-forecast-scope').onchange=e=>{forecastScope=e.target.value;selected=GUIDE.find(c=>`${c.caseId}:${c.task}`===forecastScope&&c.group==='forecast');model=selected.variants[0].model;draw();};
   draw();
  } catch(error) {
-  if(isCurrent())host.innerHTML=`<div class="breadcrumb">模型工坊<span>/</span>模型解读</div>${casePathDirectory('methods')}<section class="report-panel"><h1>推荐与预测模型详情暂未就绪</h1><p>${esc(error.message)}</p><p>请重新加载；未读取到报告时不显示替代成绩。</p><button class="outline" id="guide-retry" type="button">重新加载</button></section>`;
-  if(isCurrent())host.querySelector('#guide-retry').onclick=()=>renderModelGuide(host,isCurrent);
+  if(isCurrent())host.innerHTML=`<div class="breadcrumb">模型工坊<span>/</span>模型解读</div><section class="report-panel"><h1>推荐与预测模型详情暂未就绪</h1><p>${esc(error.message)}</p><p>请重新加载；未读取到报告时不显示替代成绩。</p><button class="outline" id="guide-retry" type="button">重新加载</button></section>`;
+  if(isCurrent())host.querySelector('#guide-retry').onclick=()=>renderModelGuide(host,isCurrent,params);
  }
 }

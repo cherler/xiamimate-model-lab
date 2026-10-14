@@ -195,11 +195,12 @@ export async function renderShowcase(page,host,manifest,entry,isCurrent) {
     const params=new URLSearchParams(location.hash.split('?')[1]||'');
     if(page==='recommend') {
       const task=params.get('task'), model=params.get('model');
+      if(data.samples.some(s=>s.customer===params.get('customer')))state.customer=params.get('customer');
       if(['repurchase','discovery'].includes(task)) state.task=task;
       if(Object.hasOwn(report.recommendation[state.task],model)) state.models[state.task]=model;
       recommendation(host,report,data,entry);
     }
-    else if(page==='forecast') { const model=params.get('model'); if(Object.hasOwn(report.weekly,model)) state.forecastModel=model; forecast(host,report,data,entry); }
+    else if(page==='forecast') { if(data.items.includes(params.get('item')))state.item=params.get('item');if(data.origins.includes(params.get('origin')))state.origin=params.get('origin');if(Object.hasOwn(report.weekly,params.get('baseline')))state.forecastBaseline=params.get('baseline');const model=params.get('model'); if(Object.hasOwn(report.weekly,model)) state.forecastModel=model; forecast(host,report,data,entry); }
     else evidence(host,report,entry);
   } catch(error) {
     if(isCurrent()) host.innerHTML=`<section class="report-panel"><h2>案例暂未就绪</h2><p>${esc(error.message)}</p><p>请重新加载页面；如仍无法读取，请检查案例结果数据包。</p></section>`;

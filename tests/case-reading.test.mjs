@@ -36,7 +36,7 @@ test('D8 calculations route to real supported views without mixing cases or teac
  assert.deepEqual(Object.keys(CASE_EXERCISES).sort(),Object.keys(CASE_READINGS).sort());
  for(const [key,e] of Object.entries(CASE_EXERCISES)){
   const [page,id]=key.split(':'),q=new URLSearchParams({case:id,view:'data',origin:'2011-09-01'}),r=resolveRoute(exerciseHref(page,q));assert.equal(r.error,undefined);
-  if(e.href){assert.equal(r.page,'learn');assert.equal(r.params.get('lesson'),page);}else{assert.equal(r.page,page);assert.equal(r.params.get('case'),id);assert.equal(r.params.get('view'),e.view);assert.equal(r.params.get('walk'),'calculation');assert.equal(r.params.get('origin'),'2011-09-01');}
+  assert.equal(r.page,'learn');assert.equal(r.params.get('business'),page);assert.equal(r.params.get('case'),id);assert.equal(r.params.get('origin'),'2011-09-01');
   assert.match(readingHtml(page,q),/计算与实验阅读/);assert.ok(e.failure.length>10);
  }
  assert.equal(exerciseHref('decision',new URLSearchParams({case:'bad'})),null);
@@ -70,4 +70,11 @@ test('every public case links back to its method and its real calculation',async
   assert.ok(html.includes(caseMethodHref(page,new URLSearchParams({case:id})).replaceAll('&','&amp;')));
  }
  assert.doesNotMatch(readingHtml('forecast',new URLSearchParams({case:'m5'})),/reading-study-links/);
+});
+
+test('calculation destinations use stable anchors rather than matching display copy',async()=>{
+ const fs=await import('node:fs');
+ const {CASE_EXERCISES}=await import('../apps/web/case-exercises.js');
+ const source=fs.readdirSync('apps/web').filter(n=>n.endsWith('.js')).map(n=>fs.readFileSync('apps/web/'+n,'utf8')).join('\n');
+ for(const [key,e] of Object.entries(CASE_EXERCISES))if(e.anchor){assert.equal(e.anchor,key);assert.ok(source.includes(`data-calculation="${e.anchor}"`));}
 });

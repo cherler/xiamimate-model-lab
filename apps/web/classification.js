@@ -1,3 +1,4 @@
+import {saveSelection} from './navigation-state.js';
 import {pairForState,classificationPair,mailDuel,classificationConditions,classificationCosts,calibrationEvidence,TRANSITIONS} from './classification-depth.js';
 import {CLASSIFICATION_MODELS as MODELS,applyPolicy,confusionCounts,scoreMetrics,verifyClassification} from './classification-metrics.js';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -65,10 +66,17 @@ export async function renderClassification(host,current,params){
   const {payload,manifest}=await load();if(!current())return;
   const r=payload.report,initialModel=Object.hasOwn(MODELS,params.get('model'))?params.get('model'):r.selected_model,state={split:params.get('split')==='validation'?'validation':'test',model:initialModel,baseline:'rules',baseThreshold:r.thresholds.rules,transition:'all',costs:{fp:10,fn:1,review:.1},mode:'threshold',threshold:r.thresholds[initialModel],share:.2,filter:'all',sample:null};
   host.innerHTML=`<div class="breadcrumb">分类与评分<span>/</span>Spambase</div><header class="page-heading"><div><h1>垃圾邮件识别与复核评分</h1><p>使用公开邮件统计特征，比较规则、逻辑回归与 LightGBM。调整阈值或复核名额，查看识别数量和误标正常邮件的变化。</p></div></header>${nav}<div id="classification-content"></div><footer class="showcase-source"><h2>来源与使用说明</h2><p>Hopkins, M., Reeber, E., Forman, G., &amp; Suermondt, J. (1999). <a href="https://archive.ics.uci.edu/dataset/94/spambase" target="_blank" rel="noreferrer">Spambase · UCI</a>，DOI 10.24432/C53G6X；<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">CC BY 4.0</a>。本站对特征进行了排除、分组切分、训练与校准；结果不代表数据作者背书或现代邮箱效果。</p><p>实验 ${esc(r.run_id)}。页面只读取保存结果，无客户数据上传、邮箱连接或在线训练。</p><a class="text-link" href="./classification-results/${manifest.path}" download>下载本实验结果与样本</a></footer>`;
+  if(Object.hasOwn(MODELS,params.get('baseline')))state.baseline=params.get('baseline');
+  state.baseThreshold=r.thresholds[state.baseline];
+  for(const key of ['threshold','baseThreshold','share']){const n=Number(params.get(key));if(params.has(key)&&Number.isFinite(n)&&n>=0&&n<=(key==='share'?1:1.000001))state[key]=n;}
+  if(['threshold','capacity'].includes(params.get('mode')))state.mode=params.get('mode');
+  if(params.has('sample'))state.sample=params.get('sample');
+  for(const key of ['fp','fn','review']){const n=Number(params.get('cost_'+key));if(params.has('cost_'+key)&&Number.isFinite(n)&&n>=0&&n<=1000000)state.costs[key]=n;}
   const content=host.querySelector('#classification-content');
   const draw=()=>{
    const active=host.ownerDocument.activeElement?.id;
    content.innerHTML=view==='data'?dataView(r):view==='models'?modelsView(r):view==='report'?reportView(payload,state):experience(payload,state);
+   saveSelection('classify',{case:'spambase',view,split:state.split,model:state.model,baseline:state.baseline,threshold:state.threshold,baseThreshold:state.baseThreshold,share:state.share,mode:state.mode,sample:state.sample,...Object.fromEntries(Object.entries(state.costs).map(([k,v])=>['cost_'+k,v]))});
    const fields={'cls-split':'split','cls-model':'model','cls-baseline':'baseline','cls-base-threshold':'baseThreshold','cls-transition':'transition','cls-mode':'mode','cls-threshold':'threshold','cls-share':'share','cls-filter':'filter','cls-sample':'sample'};
    for(const [id,key] of Object.entries(fields)){
     const control=content.querySelector(`#${id}`);if(!control)continue;

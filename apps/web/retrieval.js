@@ -1,3 +1,4 @@
+import {saveSelection} from './navigation-state.js';
 import {traceView,GROUPS,groupedQueries,groupSummary,groupView,pipelineView} from './retrieval-depth.js';
 import {RETRIEVAL_METHODS as METHODS,retrievalMetrics,verifyRetrieval} from './retrieval-metrics.js';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -71,7 +72,7 @@ export async function renderRetrieval(host,current,params){
    const form=content.querySelector('#ret-filter-form');if(form)form.onsubmit=e=>{e.preventDefault();s.filter=content.querySelector('#ret-filter').value.trim();draw();};
    const clear=content.querySelector('#ret-clear');if(clear)clear.onclick=()=>{s.filter='';s.group='all';draw();};
    const query=new URLSearchParams({case:'scifact',view,query:s.query,model:s.model,baseline:s.base,k:s.k,groupBy:s.groupBy,group:s.group});if(s.document)query.set('document',s.document);
-   history.replaceState(null,'',`#retrieve?${query}`);
+   saveSelection('retrieve',Object.fromEntries(query));
    host.querySelectorAll('[data-ret-view]').forEach(a=>{const v=new URLSearchParams(query);v.set('view',a.dataset.retView);a.href=`#retrieve?${v}`;});
    if(active&&Object.hasOwn(fields,active))content.querySelector(`#${active}`)?.focus({preventScroll:true});
   };draw();

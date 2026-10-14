@@ -1,3 +1,4 @@
+import {saveSelection} from './navigation-state.js';
 import {CASE_EXERCISES,exerciseHref} from './case-exercises.js';
 import {PUBLIC_CASE_PATHS,caseMethodHref,publicCasePath} from './case-paths.js';
 // Reading contracts describe frozen evidence; live scores remain in the original reports.
@@ -144,9 +145,9 @@ export function mountCaseReading(host,page,params){
  const walk=params.get('walk');let target;
  if(walk==='fit')target=guide.querySelector('.reading-fit');
  else if(walk==='evidence')target=[...host.querySelectorAll('h2')].find(h=>c.evidenceTargets.includes(h.textContent.trim()));
- else if(walk==='calculation'){const exercise=CASE_EXERCISES[`${page}:${params.get('case')}`];target=[...host.querySelectorAll('summary')].find(h=>h.textContent.trim()===exercise?.target);if(target)target.parentElement.open=true;}
+ else if(walk==='calculation'){const exercise=CASE_EXERCISES[`${page}:${params.get('case')}`];target=exercise?.anchor?host.querySelector(`[data-calculation="${exercise.anchor}"]`):null;if(target)target.parentElement.open=true;}
  else if(walk==='example')target=(body||host).querySelector('h1');
- if(target){const live=new URLSearchParams(location.hash.split('?')[1]||'');live.set('walk',walk);history.replaceState(null,'',`#${page}?${live}`);for(let el=target.parentElement;el&&el!==host;el=el.parentElement)if(el.tagName==='DETAILS')el.open=true;target.tabIndex=-1;target.focus({preventScroll:true});target.scrollIntoView({block:'start'});}
+ if(target){const live=new URLSearchParams(location.hash.split('?')[1]||'');live.set('walk',walk);saveSelection(page,Object.fromEntries(live));for(let el=target.parentElement;el&&el!==host;el=el.parentElement)if(el.tagName==='DETAILS')el.open=true;target.tabIndex=-1;target.focus({preventScroll:true});target.scrollIntoView({block:'start'});}
 }
 
 export function deliveryCaseLinks(){

@@ -36,7 +36,7 @@ export function m5Chart(sample, model, baseline, window, day=0, compact=false) {
  const ticks=compact?[0,9,18,27]:[0,14,27,41,55];
  return `<svg viewBox="0 0 ${width} ${compact?240:310}" role="img" aria-label="${compact?'未来28天实际销量与两种模型的保存预测':'前28天历史、未来28天实际销量与两种模型的保存预测'}；单位件每天"><rect x="${compact?48:443}" y="25" width="${compact?302:409}" height="${bottom-25}" fill="#eef7fa"/>${[0,.25,.5,.75,1].map(f=>`<line x1="${compact?48:62}" y1="${y(maximum*f)}" x2="${right}" y2="${y(maximum*f)}" stroke="#dce7ee"/><text x="${compact?42:52}" y="${y(maximum*f)+4}" text-anchor="end">${compact?Math.round(maximum*f).toLocaleString('zh-CN'):number(maximum*f)}</text>`).join('')}<text x="${compact?48:64}" y="16">件／天</text>${compact?'':`<text x="252" y="40" text-anchor="middle">已知历史</text><line x1="443" y1="48" x2="443" y2="264" stroke="#819ba8" stroke-dasharray="4 5"/><polyline points="${line(history,0)}" fill="none" stroke="#8098a6" stroke-width="2.5"/>`}<text x="${compact?200:650}" y="40" text-anchor="middle">28 天预测与实际对照</text><polyline points="${path(actual)}" fill="none" stroke="#17324d" stroke-width="2.6"/><polyline points="${path(base)}" fill="none" stroke="#af8038" stroke-width="2.5" stroke-dasharray="5 4"/><polyline points="${path(predicted)}" fill="none" stroke="#087f9d" stroke-width="3"/><line id="m5-cursor${compact?'-mobile':''}" x1="${x(offset+day)}" x2="${x(offset+day)}" y1="48" y2="${bottom}" stroke="#087f9d" opacity=".35"/>${ticks.map(i=>`<text x="${x(i)}" y="${compact?225:291}" text-anchor="${compact&&i===27?'end':'middle'}">${(compact?window.dates[i]:i<28?window.history_dates[i]:window.dates[i-28]).slice(5)}</text>`).join('')}</svg>`;
 }
-export async function renderM5(host,isCurrent) {
+export async function renderM5(host,isCurrent,routeParams) {
  host.innerHTML='<p class="loading-copy">正在核验 M5 预测案例…</p>';
  try {
   const response=await fetch('./m5-results/manifest.json',{cache:'no-store'});
@@ -60,7 +60,7 @@ export async function renderM5(host,isCurrent) {
   if(overview.run_id!==manifest.run_id || catalog.length!==overview.scope.series)throw new Error('案例版本或商品范围不一致');
   const coverage=manifest.resources.coverage?await resource('coverage'):null;if(!isCurrent())return;
   if(coverage&&(coverage.report.base_run_id!==manifest.run_id||coverage.report.status!=='complete_development'||coverage.report.public_export_allowed!==false))throw new Error('预测区间实验版本不一致');
-  const params=new URLSearchParams(location.hash.split('?')[1]||'');
+  const params=routeParams||new URLSearchParams(location.hash.split('?')[1]||'');
   const view=params.get('view')||'experience';
   if(['models','report','training'].includes(view)){renderM5Details(host,overview,manifest,M5_NAMES,view);if(coverage&&view==='report')renderForecastCoverage(host,coverage,manifest);return;}
   let origin=overview.windows.some(w=>w.origin===Number(params.get('window')))?Number(params.get('window')):1913;

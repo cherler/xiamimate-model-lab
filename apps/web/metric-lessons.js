@@ -1,5 +1,5 @@
 import { loadManifest, loadShowcaseResource, MODEL_NAMES, sampleStatus } from './showcase.js';
-import {casePathDirectory} from './case-paths.js';
+import {saveSelection} from './navigation-state.js';
 
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num=v=>v==null?'不定义':v.toLocaleString('zh-CN',{maximumFractionDigits:5});
@@ -76,9 +76,17 @@ export async function renderMetricLessons(host,current,params=new URLSearchParam
   verifyLessonResults(recommendations,weekly,report);
   const lesson=params.get('lesson')==='forecast'?'forecast':'recommend';
   const state={task:'repurchase',customer:recommendations.samples[0].customer,recModel:report.decisions.repurchase.selected_model,k:10,item:weekly.items[0],origin:'all',forecastModel:report.decisions.weekly_sales.selected_model};
-  host.innerHTML=`<div class="breadcrumb">模型工坊<span>/</span>教学拆解</div><header class="page-heading"><div><h1>七案例的计算与实验拆解</h1><p>进入案例中的保存记录，核对指标分母、逐项计算与失败条件。Ta Feng 推荐和预测另提供完整的指标复算课。</p></div></header>${casePathDirectory('teaching')}<section class="lesson-detail-section"><h2>Ta Feng：真实样本指标计算</h2><p>从保存的推荐列表与销量预测出发，逐项复算指标。样本来自已完成的二月测试。</p><nav class="case-views" aria-label="指标课程"><a href="#learn?lesson=recommend&focus=calculation" ${lesson==='recommend'?'aria-current="page"':''}>推荐：命中与排序</a><a href="#learn?lesson=forecast&focus=calculation" ${lesson==='forecast'?'aria-current="page"':''}>预测：误差与偏差</a></nav><div id="metric-lesson"></div></section><section class="m5-section"><h2>案例学习顺序</h2><ol class="case-steps"><li>在“案例与数据”确认决策时刻、可用字段与输出粒度。</li><li>在“案例体验”切换样本和方法，检查输入历史与实际结果。</li><li>在本页复算单样本与子集指标，再回到完整报告确认人群和时间范围。</li><li>结合模型解读、特征实验与调优记录解释差异；交付时保留版本、结果和评估口径。</li></ol><a class="text-link" href="#${lesson}?case=tafeng&view=data">查看 Ta Feng 业务与数据说明 →</a></section>${methodLessonsHtml()}<footer class="showcase-source"><p>数据与实验：${esc(entry.run_id)}；展示版本 ${esc(manifest.version)}。本页只复算已保存结果，不重新选模，不修改独立测试记录。</p><p>24 名老客在读取结果前按 ID 哈希抽取，未回访者保留；另有 3 名观察期新客，仅作回放示例。销量覆盖预先固定的 50 商品 × 4 周。商品编码不补造名称。</p></footer>`;
+  state.task=['repurchase','discovery'].includes(params.get('task'))?params.get('task'):'repurchase';
+  state.recModel=Object.hasOwn(report.recommendation[state.task],params.get('model'))?params.get('model'):report.decisions[state.task].selected_model;
+  if(recommendations.samples.some(s=>s.customer===params.get('customer')))state.customer=params.get('customer');
+  if([1,3,5,10].includes(Number(params.get('k'))))state.k=Number(params.get('k'));
+  if(['all',...weekly.items].includes(params.get('item')))state.item=params.get('item');
+  if(['all',...weekly.origins].includes(params.get('origin')))state.origin=params.get('origin');
+  if(Object.hasOwn(report.weekly,params.get('model')))state.forecastModel=params.get('model');
+  host.innerHTML=`<div class="breadcrumb">模型工坊<span>/</span>教学拆解</div><header class="page-heading"><div><h1>${lesson==='forecast'?'销量预测':'商品推荐'}：指标逐项计算</h1><p>使用当前案例已保存的结果，核对指标分母、计算步骤与适用范围。</p></div></header><section class="lesson-detail-section"><h2>Ta Feng：真实样本指标计算</h2><p>从保存的推荐列表与销量预测出发，逐项复算指标。样本来自已完成的二月测试。</p><nav class="case-views" aria-label="指标课程"><a href="#learn?lesson=recommend&focus=calculation" ${lesson==='recommend'?'aria-current="page"':''}>推荐：命中与排序</a><a href="#learn?lesson=forecast&focus=calculation" ${lesson==='forecast'?'aria-current="page"':''}>预测：误差与偏差</a></nav><div id="metric-lesson"></div></section><section class="m5-section"><h2>案例学习顺序</h2><ol class="case-steps"><li>在“案例与数据”确认决策时刻、可用字段与输出粒度。</li><li>在“案例体验”切换样本和方法，检查输入历史与实际结果。</li><li>在本页复算单样本与子集指标，再回到完整报告确认人群和时间范围。</li><li>结合模型解读、特征实验与调优记录解释差异；交付时保留版本、结果和评估口径。</li></ol><a class="text-link" href="#${lesson}?case=tafeng&view=data">查看 Ta Feng 业务与数据说明 →</a></section>${methodLessonsHtml()}<footer class="showcase-source"><p>数据与实验：${esc(entry.run_id)}；展示版本 ${esc(manifest.version)}。本页只复算已保存结果，不重新选模，不修改独立测试记录。</p><p>24 名老客在读取结果前按 ID 哈希抽取，未回访者保留；另有 3 名观察期新客，仅作回放示例。销量覆盖预先固定的 50 商品 × 4 周。商品编码不补造名称。</p></footer>`;
   const body=host.querySelector('#metric-lesson');
   const draw=()=>{
+   saveSelection(lesson,lesson==='recommend'?{case:'tafeng',task:state.task,model:state.recModel,customer:state.customer,k:state.k}:{case:'tafeng',task:'weekly_sales',model:state.forecastModel,item:state.item,origin:state.origin});
    const focused=host.ownerDocument?.activeElement?.id;
    body.innerHTML=lesson==='recommend'?recommendationLesson(recommendations,report,state):forecastLesson(weekly,report,state);
    const bindings={'lesson-task':'task','lesson-customer':'customer','lesson-rec-model':'recModel','lesson-k':'k','lesson-item':'item','lesson-origin':'origin','lesson-forecast-model':'forecastModel'};
@@ -93,5 +101,5 @@ export async function renderMetricLessons(host,current,params=new URLSearchParam
    const target=host.querySelector('.lesson-detail-section');
    target.tabIndex=-1;target.focus({preventScroll:true});target.scrollIntoView({block:'start'});
   }
- }catch(error){if(current())host.innerHTML=`<div class="breadcrumb">模型工坊<span>/</span>教学拆解</div>${casePathDirectory('teaching')}<section class="report-panel"><h1>Ta Feng 指标课暂不可用</h1><p>${esc(error.message)}</p><p>请刷新重试或完成结果导出与核验。此处不使用模拟样本替代真实成绩。</p></section>`;}
+ }catch(error){if(current())host.innerHTML=`<div class="breadcrumb">模型工坊<span>/</span>教学拆解</div><section class="report-panel"><h1>Ta Feng 指标课暂不可用</h1><p>${esc(error.message)}</p><p>请刷新重试或完成结果导出与核验。此处不使用模拟样本替代真实成绩。</p></section>`;}
 }

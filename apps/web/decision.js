@@ -1,3 +1,4 @@
+import {saveSelection} from './navigation-state.js';
 import {decisionPairView,decisionOutcomeView,decisionResourceView,decisionApplicability} from './decision-depth.js';
 import {DECISION_MODELS as MODELS,POLICIES,decisionInput,decisionMetrics,findPlan,aggregatePlans,verifyDecision} from './decision-metrics.js';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -34,7 +35,7 @@ export async function renderDecision(host,current,params){
   const content=host.querySelector('#decision-content');const draw=()=>{const focused=host.ownerDocument.activeElement?.id;content.innerHTML=view==='experience'?experience(p,s):view==='report'?report(p,s):view==='data'?dataPage(p):modelPage();
    for(const key of ['origin','model','budget','capacity','shortage','policy','item','axis','reference']){const el=content.querySelector('#dec-'+key);if(el)el.onchange=e=>{s[key]=e.target.value;draw();};}
    const button=content.querySelector('#dec-download');if(button)button.onclick=()=>csvDownload(p,s);
-   const query=new URLSearchParams({case:'retail',view,...Object.fromEntries(Object.entries(s))});history.replaceState(null,'',`#decision?${query}`);host.querySelectorAll('[data-decision-view]').forEach(a=>{const q=new URLSearchParams(query);q.set('view',a.dataset.decisionView);a.href=`#decision?${q}`;});if(focused)content.querySelector('#'+focused)?.focus({preventScroll:true});
+   const query=new URLSearchParams({case:'retail',view,...Object.fromEntries(Object.entries(s))});saveSelection('decision',Object.fromEntries(query));host.querySelectorAll('[data-decision-view]').forEach(a=>{const q=new URLSearchParams(query);q.set('view',a.dataset.decisionView);a.href=`#decision?${q}`;});if(focused)content.querySelector('#'+focused)?.focus({preventScroll:true});
   };draw();if(s.item)content.querySelector('#dec-item')?.scrollIntoView({block:'center'});
  }catch(e){if(current())host.innerHTML=`<section class="report-panel"><h1>决策结果暂不可用</h1><p>${esc(e.message)}</p><p>恢复完整的本地结果并核验后刷新；不使用虚构方案代替。</p></section>`;}
 }

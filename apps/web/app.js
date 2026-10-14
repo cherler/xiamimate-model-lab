@@ -1,3 +1,5 @@
+import {BUSINESSES,navigationContext,sectionHref} from './navigation-state.js';
+import {CASE_EXERCISES} from './case-exercises.js';
 import {mountCaseReading,deliveryCaseLinks} from './case-reading.js';
 import { renderDecision } from './decision.js';
 import { renderMonitoring } from './monitoring.js';
@@ -28,6 +30,8 @@ function delivery() {
   "limit": 10,
   "exclude_purchased": false
 }</pre></div><div><h3>交付时保留的内容</h3><p>请求与模型版本、推荐依据、触发的经营规则、降级原因和运行耗时。对照实验独立保存分组与结果。</p><p class="small-note">此接口属于本地推荐演示，不代表七类案例均已有在线接口。模型工坊作为虾米伙伴的模块化项目独立开发，共享联系入口，尚未接入主站账号、积分或客户数据。</p></div></div></section>`;
+  main.querySelector('.prototype-note').insertAdjacentHTML('afterend','<nav class="delivery-toc" aria-label="交付方式目录"><button class="outline" data-delivery-section="start">怎样开始</button><button class="outline" data-delivery-section="stages">交付阶段</button><button class="outline" data-delivery-section="cases">业务场景与案例</button></nav>');
+  main.querySelectorAll('[data-delivery-section]').forEach(b=>b.onclick=()=>{const target=main.querySelector(`#delivery-${b.dataset.deliverySection}`);target.tabIndex=-1;target.focus({preventScroll:true});target.scrollIntoView({block:'start'});});
   bindContact();
 }
 
@@ -44,8 +48,8 @@ async function casePage(page, params, token, routeError) {
   const content=main.querySelector('#case-content'),current=()=>token===routeGeneration;
   if(routeError){content.innerHTML='<section class="report-panel"><h1>案例不存在</h1><p>这个案例不属于当前任务，请选择已有案例。</p></section>';return;}
   if(view==='data')return renderCaseInfo(content,caseId,page);
-  if(caseId==='m5')return renderM5(content,current);
-  if(caseId==='dressipi')return renderDressipi(content,current);
+  if(caseId==='m5')return renderM5(content,current,params);
+  if(caseId==='dressipi')return renderDressipi(content,current,params);
   if(view==='advanced')return renderAdvanced(content,current,{task:page,embedded:true});
   if(view==='selection'||view==='tuning')return renderAutoML(content,current,{task:page,embedded:true});
   content.innerHTML='<p class="loading-copy">正在读取案例结果…</p>';
@@ -57,32 +61,60 @@ async function casePage(page, params, token, routeError) {
     else await renderCase(view==='report'?'evidence':page,content,source.run_id,source.report_sha256);
   }catch(error){if(current()){content.innerHTML='<section class="report-panel"><h1>案例暂未就绪</h1><p id="case-error"></p></section>';content.querySelector('#case-error').textContent=error.message;}}
 }
-async function route() {
-  const token=++routeGeneration,{page,params,error}=resolveRoute(location.hash);
-  const canonical=`#${page}${params.size?'?'+params:''}`;
-  if(location.hash!==canonical)history.replaceState(null,'',canonical);
-  const sidebar=document.querySelector('.sidebar');sidebar.innerHTML=sidebarHtml(page,params);
-  const activeSection=['models','learn','delivery'].includes(page)?page:'case';
-  document.querySelectorAll('[data-section]').forEach(a=>{const active=a.dataset.section===activeSection;a.classList.toggle('active',active);if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
-  cancelCase();
-  let rendering;
-  if(CASES[page])rendering=casePage(page,params,token,error);
-  else if(page==='decision')rendering=renderDecision(main,()=>token===routeGeneration,params);
-  else if(['anomaly','segments'].includes(page))rendering=renderMonitoring(main,()=>token===routeGeneration,params,page);
-  else if(page==='retrieve')rendering=renderRetrieval(main,()=>token===routeGeneration,params);
-  else if(page==='classify')rendering=renderClassification(main,()=>token===routeGeneration,params);
-  else if(page==='models')rendering=renderModelGuide(main,()=>token===routeGeneration);
-  else if(page==='learn')rendering=renderMetricLessons(main,()=>token===routeGeneration,params);
-  else delivery();
-  document.title=`${labels[page]} · 模型工坊`;window.scrollTo(0,0);
-  await rendering;
-  if(token===routeGeneration){
-    mountCaseReading(main,page,params);
-    const targetId=sidebarTarget(page,params),target=targetId?main.querySelector(`#${targetId}`):page==='models'&&params.get('focus')==='detail'?main.querySelector('.guide-detail-section'):null;
-    if(target){target.tabIndex=-1;target.focus({preventScroll:true});target.scrollIntoView({block:'start'});}
-    sidebar.querySelectorAll('a').forEach(a=>a.onclick=()=>{if(a.getAttribute('href')===location.hash&&target)target.scrollIntoView({block:'start'});});
-  }
+const selections=new Map();
+let lastBusiness='recommend';
+function updateNavigation(){
+ const {page,params}=resolveRoute(location.hash),context=navigationContext(page,params);
+ if(context.mode!=='delivery'){params.set('case',context.caseId);selections.set(context.business,params.toString());lastBusiness=context.business;}
+ const business=context.mode==='delivery'?lastBusiness:context.business;
+ const currentParams=context.mode==='delivery'?new URLSearchParams(selections.get(business)||''):params;
+ const sidebar=document.querySelector('.sidebar');sidebar.innerHTML=sidebarHtml(page,params,selections);
+ sidebar.hidden=context.mode==='delivery';document.querySelector('.shell').classList.toggle('delivery-shell',sidebar.hidden);
+ main.dataset.mode=context.mode;
+ document.querySelectorAll('[data-section]').forEach(a=>{
+  const active=a.dataset.section===context.mode;a.classList.toggle('active',active);
+  if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');
+  a.href=sectionHref(a.dataset.section,business,currentParams);
+ });
 }
+async function route() {
+ const token=++routeGeneration,{page,params,error}=resolveRoute(location.hash),context=navigationContext(page,params);
+ if(['models','learn'].includes(page)){
+  params.set('case',context.caseId);params.set('business',context.business);params.delete('topic');
+ }
+ const canonical=`#${page}${params.size?'?'+params:''}`;
+ if(location.hash!==canonical)history.replaceState(null,'',canonical);
+ updateNavigation();cancelCase();
+ const current=()=>token===routeGeneration,renderParams=new URLSearchParams(params),business=context.business;
+ let rendering;
+ const tafengLesson=context.mode==='learn'&&context.caseId==='tafeng'&&['recommend','forecast'].includes(business);
+ if(context.mode==='delivery')delivery();
+ else if(context.mode==='models'&&['recommend','forecast'].includes(business)&&!['m5','dressipi'].includes(context.caseId)){
+  if(!renderParams.has('task'))renderParams.set('task',business==='forecast'?'weekly_sales':context.caseId==='uci'?'next_basket':'repurchase');
+  rendering=renderModelGuide(main,current,renderParams);
+ }else if(tafengLesson){renderParams.set('lesson',business);rendering=renderMetricLessons(main,current,renderParams);}
+ else{
+  renderParams.set('case',context.caseId);
+  if(context.mode==='models')renderParams.set('view','models');
+  if(context.mode==='learn'){
+   renderParams.set('view',CASE_EXERCISES[`${business}:${context.caseId}`]?.view||'experience');renderParams.set('walk','calculation');
+  }
+  if(CASES[business])rendering=casePage(business,renderParams,token,error);
+  else if(business==='decision')rendering=renderDecision(main,current,renderParams);
+  else if(['anomaly','segments'].includes(business))rendering=renderMonitoring(main,current,renderParams,business);
+  else if(business==='retrieve')rendering=renderRetrieval(main,current,renderParams);
+  else if(business==='classify')rendering=renderClassification(main,current,renderParams);
+ }
+ document.title=`${labels[business]} · ${context.mode==='case'?'案例体验':labels[context.mode]} · 模型工坊`;window.scrollTo(0,0);
+ await rendering;
+ if(current()){
+  if(context.mode==='case'||context.mode==='learn'&&!tafengLesson)mountCaseReading(main,business,renderParams);
+  const targetId=sidebarTarget(page,params),target=targetId?main.querySelector(`#${targetId}`):null;
+  if(target){target.tabIndex=-1;target.focus({preventScroll:true});target.scrollIntoView({block:'start'});}
+  updateNavigation();
+ }
+}
+window.addEventListener('selectionchange',updateNavigation);
 window.addEventListener('hashchange', route);
 document.querySelector('.skip').onclick = e => { e.preventDefault(); main.focus(); main.scrollIntoView(); };
 bindContact(); route();
