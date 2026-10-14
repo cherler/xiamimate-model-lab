@@ -1,3 +1,4 @@
+import {CASE_EXERCISES,exerciseHref} from './case-exercises.js';
 // Reading contracts describe frozen evidence; live scores remain in the original reports.
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const CASE_READINGS={
@@ -108,8 +109,9 @@ export function readingHref(page,params,step){
 }
 export function readingHtml(page,params){
  const c=CASE_READINGS[`${page}:${params.get('case')}`];if(!c)return '';
+ const exercise=CASE_EXERCISES[`${page}:${params.get('case')}`];
  const step=Object.hasOwn(READING_STEPS,params.get('walk'))?params.get('walk'):null;
- return `<section class="case-reading" aria-label="${esc(c.name)}案例导读"><div class="reading-intro"><strong>${esc(c.name)} · 案例导读</strong><p>${esc(c.input)} → ${esc(c.output)}。</p></div><ol class="reading-steps">${Object.entries(READING_STEPS).map(([key,v])=>`<li><a data-reading-step="${key}" href="${esc(readingHref(page,params,key))}" ${step===key?'aria-current="step"':''}>${v.label}</a></li>`).join('')}</ol><p class="reading-evidence">${esc(c.evidence)}</p><details class="reading-fit" ${step==='fit'?'open':''}><summary>适用条件与可委托范围</summary><dl><div><dt>所需条件</dt><dd>${esc(c.needs)}</dd></div><div><dt>已展示的能力</dt><dd>${esc(c.delivery)}</dd></div><div><dt>尚未证明</dt><dd>${esc(c.limit)}</dd></div></dl><p>以上能力可用于讨论定制范围；新业务的效果、接口与验收要求需另行约定。本站目前仅展示公开案例，没有接入客户数据。</p><a href="#delivery">查看定制服务与交付范围</a></details><p class="reading-scope">${esc(c.scope)}${c.research?' 对外使用许可尚未确认；公开构建不包含本案例结果。':''}</p></section>`;
+ return `<section class="case-reading" aria-label="${esc(c.name)}案例导读"><div class="reading-intro"><strong>${esc(c.name)} · 案例导读</strong><p>${esc(c.input)} → ${esc(c.output)}。</p></div><ol class="reading-steps">${Object.entries(READING_STEPS).map(([key,v])=>`<li><a data-reading-step="${key}" href="${esc(readingHref(page,params,key))}" ${step===key?'aria-current="step"':''}>${v.label}</a></li>`).join('')}</ol><p class="reading-evidence">${esc(c.evidence)}</p><details class="reading-fit" ${step==='fit'?'open':''}><summary>适用条件与可委托范围</summary><dl><div><dt>所需条件</dt><dd>${esc(c.needs)}</dd></div><div><dt>已展示的能力</dt><dd>${esc(c.delivery)}</dd></div><div><dt>尚未证明</dt><dd>${esc(c.limit)}</dd></div></dl><p>以上能力可用于讨论定制范围；新业务的效果、接口与验收要求需另行约定。本站目前仅展示公开案例，没有接入客户数据。</p><a href="#delivery">查看定制服务与交付范围</a></details>${exercise?`<details class="reading-exercise"><summary>计算与实验阅读 · ${esc(exercise.metric)}</summary><p>${esc(exercise.recipe)}</p><p>失效条件：${esc(exercise.failure)}</p><a data-reading-calculation href="${esc(exerciseHref(page,params))}">打开真实记录与计算明细</a><p class="reading-scope">使用已有结果，不重新训练或选择最优样本；实验范围、输入版本及参数见原页面与报告记录。</p></details>`:''}<p class="reading-scope">${esc(c.scope)}${c.research?' 对外使用许可尚未确认；公开构建不包含本案例结果。':''}</p></section>`;
 }
 export function canShowReading(host){
  return !/暂不可用|暂未就绪|案例不存在|正在读取|当前构建未包含/.test([...host.querySelectorAll('h1,h2,.loading-copy,.report-panel>p')].map(e=>e.textContent).join(' '));
@@ -123,9 +125,16 @@ export function mountCaseReading(host,page,params){
  const guide=host.querySelector('.case-reading');
  // Refresh from the current route because controls may have changed the saved selection.
  guide.querySelectorAll('[data-reading-step]').forEach(a=>a.onclick=()=>{const live=new URLSearchParams(location.hash.split('?')[1]||'');a.href=readingHref(page,live,a.dataset.readingStep);});
+ guide.querySelector('[data-reading-calculation]')?.addEventListener('click',e=>{e.currentTarget.href=exerciseHref(page,new URLSearchParams(location.hash.split('?')[1]||''));});
  const walk=params.get('walk');let target;
  if(walk==='fit')target=guide.querySelector('.reading-fit');
  else if(walk==='evidence')target=[...host.querySelectorAll('h2')].find(h=>c.evidenceTargets.includes(h.textContent.trim()));
+ else if(walk==='calculation'){const exercise=CASE_EXERCISES[`${page}:${params.get('case')}`];target=[...host.querySelectorAll('summary')].find(h=>h.textContent.trim()===exercise?.target);if(target)target.parentElement.open=true;}
  else if(walk==='example')target=(body||host).querySelector('h1');
- if(target){for(let el=target.parentElement;el&&el!==host;el=el.parentElement)if(el.tagName==='DETAILS')el.open=true;target.tabIndex=-1;target.focus({preventScroll:true});target.scrollIntoView({block:'start'});}
+ if(target){const live=new URLSearchParams(location.hash.split('?')[1]||'');live.set('walk',walk);history.replaceState(null,'',`#${page}?${live}`);for(let el=target.parentElement;el&&el!==host;el=el.parentElement)if(el.tagName==='DETAILS')el.open=true;target.tabIndex=-1;target.focus({preventScroll:true});target.scrollIntoView({block:'start'});}
+}
+
+export function deliveryCaseLinks(){
+ const keys=['recommend:tafeng','forecast:uci','classify:spambase','retrieve:scifact','anomaly:nab','segments:retail','decision:retail'];
+ return `<section class="delivery-evidence"><h2>七类业务的案例与交付能力</h2><p>以下为已展示的建模能力，可作为定制范围的讨论起点。新业务的数据、效果与验收要求需另定，不将公开案例成绩作为收益承诺。</p><div class="delivery-case-list">${keys.map(key=>{const [page,id]=key.split(':'),c=CASE_READINGS[key];return `<article><h3>${esc(c.name)}</h3><p>${esc(c.delivery)}</p><p class="small-note">${esc(c.limit)}</p><a href="${esc(readingHref(page,new URLSearchParams({case:id}),'fit'))}">查看案例条件与证据</a></article>`;}).join('')}</div></section>`;
 }

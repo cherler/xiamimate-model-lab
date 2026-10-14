@@ -30,3 +30,21 @@ test('D8 escapes route content and opens applicability only for the requested re
  const html=readingHtml('decision',q);assert.doesNotMatch(html,/<script>/);assert.match(html,/class="reading-fit" open/);assert.match(html,/aria-current="step"/);
  q.set('walk','unknown');assert.doesNotMatch(readingHtml('decision',q),/class="reading-fit" open/);
 });
+
+test('D8 calculations route to real supported views without mixing cases or teaching denominators',async()=>{
+ const {CASE_EXERCISES,exerciseHref}=await import('../apps/web/case-exercises.js');
+ assert.deepEqual(Object.keys(CASE_EXERCISES).sort(),Object.keys(CASE_READINGS).sort());
+ for(const [key,e] of Object.entries(CASE_EXERCISES)){
+  const [page,id]=key.split(':'),q=new URLSearchParams({case:id,view:'data',origin:'2011-09-01'}),r=resolveRoute(exerciseHref(page,q));assert.equal(r.error,undefined);
+  if(e.href){assert.equal(r.page,'learn');assert.equal(r.params.get('lesson'),page);}else{assert.equal(r.page,page);assert.equal(r.params.get('case'),id);assert.equal(r.params.get('view'),e.view);assert.equal(r.params.get('walk'),'calculation');assert.equal(r.params.get('origin'),'2011-09-01');}
+  assert.match(readingHtml(page,q),/计算与实验阅读/);assert.ok(e.failure.length>10);
+ }
+ assert.equal(exerciseHref('decision',new URLSearchParams({case:'bad'})),null);
+});
+test('D8 delivery entry leads to seven available public evidence paths, not research-only scores',async()=>{
+ const {deliveryCaseLinks}=await import('../apps/web/case-reading.js');const html=deliveryCaseLinks();
+ const links=[...html.matchAll(/href="([^"]+)"/g)].map(m=>m[1].replaceAll('&amp;','&'));assert.equal(links.length,7);
+ assert.equal(new Set(links.map(link=>resolveRoute(link).page)).size,7);
+ for(const link of links){const {page,params}=resolveRoute(link);assert.ok(CASE_READINGS[`${page}:${params.get('case')}`]);assert.equal(params.get('walk'),'fit');assert.notEqual(params.get('case'),'m5');assert.notEqual(params.get('case'),'dressipi');}
+ assert.match(html,/不将公开案例成绩作为收益承诺/);
+});

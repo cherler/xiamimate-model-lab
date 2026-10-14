@@ -1,4 +1,4 @@
-import {mountCaseReading} from './case-reading.js';
+import {mountCaseReading,deliveryCaseLinks} from './case-reading.js';
 import { renderDecision } from './decision.js';
 import { renderMonitoring } from './monitoring.js';
 import { renderRetrieval } from './retrieval.js';
@@ -16,11 +16,11 @@ import { renderCase, cancelCase } from './real-cases.js';
 const main = document.querySelector('#main');
 const labels = { decision: '决策优化', anomaly: '异常检测', segments: '零售分群', retrieve: '智能检索', classify: '分类与评分', m5: 'M5 预测案例', automl: 'AutoML 实验室', advanced: '进阶模型实验', recommend: '电商商品推荐', forecast: '销量预测', evidence: '效果报告', models: '模型解读', learn: '教学拆解', delivery: '交付方式' };
 function heading(page,title,subtitle) {
-  return `<div class="breadcrumb">模型工坊<span>/</span>${labels[page]}</div><div class="page-heading"><div><h1>${title}</h1><p>${subtitle}</p></div></div><div class="prototype-note"><span class="status-dot"></span>独立案例项目 · 推荐与销量预测已接入真实公开数据训练；线上业务收益尚未验证。</div>`;
+  return `<div class="breadcrumb">模型工坊<span>/</span>${labels[page]}</div><div class="page-heading"><div><h1>${title}</h1><p>${subtitle}</p></div></div><div class="prototype-note"><span class="status-dot"></span>公开数据案例 · 展示训练、推理与评估记录；新业务效果需要独立验证。</div>`;
 }
 
 function delivery() {
-  main.innerHTML = heading('delivery', '定制服务与交付范围', '先定义目标与数据条件，再确定模型、接口和交付范围。') + `<section class="delivery-intro"><h2>可选服务</h2><button class="primary contact-open">整理我的需求</button></section><div class="delivery-options">${[['数据可行性评估', '数据条件与实施建议', ['数据质量与字段梳理', '业务任务与评估口径', '基线结果和实施建议']], ['模型与交互原型', '模型原型与评估报告', ['可运行模型与实验记录', '接口或批量结果样例', '演示页面与评估报告']], ['业务接入与教学', '部署文档与项目讲解', ['数据更新、降级与日志方案', '部署文档与效果复核流程', '项目讲解与实践辅导']]].map(([t, sub, items]) => `<article><h2>${t}</h2><p>${sub}</p><ul>${items.map(x => `<li>${x}</li>`).join('')}</ul></article>`).join('')}</div><section class="technical-panel"><div class="section-heading"><h2>接口形态</h2><span class="badge">可选本地接口 · 已实现</span></div><div class="tech-columns"><div><h3>推荐请求</h3><pre>POST /api/v1/recommendations
+  main.innerHTML = heading('delivery', '定制服务与交付范围', '先定义目标与数据条件，再确定模型、接口和交付范围。') + `<section class="delivery-intro"><h2>可选服务</h2><button class="primary contact-open">整理我的需求</button></section><div class="delivery-options">${[['数据可行性评估', '数据条件与实施建议', ['数据质量与字段梳理', '业务任务与评估口径', '基线结果和实施建议']], ['模型与交互原型', '模型原型与评估报告', ['可运行模型与实验记录', '接口或批量结果样例', '演示页面与评估报告']], ['业务接入与教学', '部署文档与项目讲解', ['数据更新、降级与日志方案', '部署文档与效果复核流程', '项目讲解与实践辅导']]].map(([t, sub, items]) => `<article><h2>${t}</h2><p>${sub}</p><ul>${items.map(x => `<li>${x}</li>`).join('')}</ul></article>`).join('')}</div>${deliveryCaseLinks()}<section class="technical-panel"><div class="section-heading"><h2>接口形态</h2><span class="badge">可选本地接口 · 已实现</span></div><div class="tech-columns"><div><h3>推荐请求</h3><pre>POST /api/v1/recommendations
 {
   "customer_id": "new",
   "strategy": "als",
