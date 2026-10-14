@@ -1,3 +1,4 @@
+import {mountCaseReading} from './case-reading.js';
 import { renderDecision } from './decision.js';
 import { renderMonitoring } from './monitoring.js';
 import { renderRetrieval } from './retrieval.js';
@@ -55,22 +56,25 @@ async function casePage(page, params, token, routeError) {
     else await renderCase(view==='report'?'evidence':page,content,source.run_id,source.report_sha256);
   }catch(error){if(current()){content.innerHTML='<section class="report-panel"><h1>案例暂未就绪</h1><p id="case-error"></p></section>';content.querySelector('#case-error').textContent=error.message;}}
 }
-function route() {
+async function route() {
   const token=++routeGeneration,{page,params,error}=resolveRoute(location.hash);
   const canonical=`#${page}${params.size?'?'+params:''}`;
   if(location.hash!==canonical)history.replaceState(null,'',canonical);
   document.querySelectorAll('[data-page]').forEach(a=>{a.classList.toggle('active',a.dataset.page===page);if(a.dataset.page===page)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
   document.querySelectorAll('[data-section]').forEach(a=>a.classList.toggle('active',a.dataset.section===(['models','learn','delivery'].includes(page)?page:'case')));
   cancelCase();
-  if(CASES[page])casePage(page,params,token,error);
-  else if(page==='decision')renderDecision(main,()=>token===routeGeneration,params);
-  else if(['anomaly','segments'].includes(page))renderMonitoring(main,()=>token===routeGeneration,params,page);
-  else if(page==='retrieve')renderRetrieval(main,()=>token===routeGeneration,params);
-  else if(page==='classify')renderClassification(main,()=>token===routeGeneration,params);
-  else if(page==='models')renderModelGuide(main,()=>token===routeGeneration);
-  else if(page==='learn')renderMetricLessons(main,()=>token===routeGeneration,params);
+  let rendering;
+  if(CASES[page])rendering=casePage(page,params,token,error);
+  else if(page==='decision')rendering=renderDecision(main,()=>token===routeGeneration,params);
+  else if(['anomaly','segments'].includes(page))rendering=renderMonitoring(main,()=>token===routeGeneration,params,page);
+  else if(page==='retrieve')rendering=renderRetrieval(main,()=>token===routeGeneration,params);
+  else if(page==='classify')rendering=renderClassification(main,()=>token===routeGeneration,params);
+  else if(page==='models')rendering=renderModelGuide(main,()=>token===routeGeneration);
+  else if(page==='learn')rendering=renderMetricLessons(main,()=>token===routeGeneration,params);
   else delivery();
   document.title=`${labels[page]} · 模型工坊`;window.scrollTo(0,0);
+  await rendering;
+  if(token===routeGeneration)mountCaseReading(main,page,params);
 }
 window.addEventListener('hashchange', route);
 document.querySelector('.skip').onclick = e => { e.preventDefault(); main.focus(); main.scrollIntoView(); };
