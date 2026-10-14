@@ -7,7 +7,7 @@ test('all seven business plans describe data, outcomes and validation without in
  for(const {id} of BUSINESSES){
   const plan=MODEL_ROADMAPS[id];assert.equal(plan.paths.length,2);
   for(const p of plan.paths)for(const key of ['name','priority','problem','data','method','output','validation','limit'])assert.ok(p[key]?.length>3,`${id}: ${key}`);
-  const html=modelRoadmapHtml(id);assert.match(html,id==='segments'?/本轮已实现 · 保存结果见案例报告/:['recommend','retrieve'].includes(id)?/适配审查已完成 · 模型效果尚待验证/:/规划 · 尚未运行以下升级实验/);assert.equal((html.match(/<details/g)||[]).length,2);assert.equal((html.match(/<details open/g)||[]).length,1);
+  const html=modelRoadmapHtml(id);assert.match(html,id==='segments'?/本轮已实现 · 保存结果见案例报告/:['recommend','retrieve'].includes(id)?/适配审查已完成 · 模型效果尚待验证/:/规划 · 尚未运行以下升级实验/);assert.equal((html.match(/<details/g)||[]).length,6);assert.equal((html.match(/<details[^>]* open/g)||[]).length,1);
   assert.doesNotMatch(html,/已超越|已提升|准确率达到|<script|NaN|undefined/);
  }
  assert.equal(modelRoadmapHtml('unknown'),'');
@@ -35,4 +35,22 @@ test('readiness figures remain bound to actual audits and separate from quality 
  assert.match(modelRoadmapHtml('retrieve'),/不是端到端延迟/);assert.match(modelRoadmapHtml('recommend'),/未训练 SASRec/);
  assert.match(modelRoadmapHtml('retrieve'),/未做领域微调、质量评分或官方 PLAID 验收/);
  assert.doesNotMatch(modelRoadmapHtml('forecast'),/readiness-review/);
+});
+
+import {SCENARIO_EXPANSIONS,scenarioExpansionHtml} from '../apps/web/scenario-expansion.js';
+test('scenario reports distinguish unverified business settings from local evidence',()=>{
+ assert.deepEqual(Object.keys(SCENARIO_EXPANSIONS).sort(),BUSINESSES.map(x=>x.id).sort());
+ const ids=new Set();
+ for(const {id} of BUSINESSES){
+  const html=scenarioExpansionHtml(id);assert.match(html,/以下扩展场景尚未实证/);assert.match(html,/不能替代这些扩展场景的验证/);
+  for(const s of SCENARIO_EXPANSIONS[id].scenarios){
+   for(const key of ['title','signal','data','baseline','method','deliverable','validation','limit'])assert.ok(s[key]?.length>(key==='title'?5:15),`${id}.${s.id}.${key}`);
+   const anchor=`scenario-${id}-${s.id}`;assert.ok(!ids.has(anchor));ids.add(anchor);
+   assert.ok(html.includes(`id="${anchor}"`));assert.ok(html.includes(`data-scenario-jump="${id}-${s.id}"`));assert.equal(new URL(s.source).protocol,'https:');
+  }
+ }
+ assert.equal(ids.size,21);assert.equal(scenarioExpansionHtml('missing'),'');
+ assert.match(scenarioExpansionHtml('recommend'),/真实时间戳/);assert.match(scenarioExpansionHtml('recommend'),/不自动建模实际时间间隔/);
+ assert.match(scenarioExpansionHtml('segments'),/不是另一种聚类算法/);
+ assert.match(scenarioExpansionHtml('decision'),/非预知约束/);
 });

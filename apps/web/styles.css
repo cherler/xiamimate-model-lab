@@ -138,3 +138,5 @@ main,.sidebar,.workbench>*,.bottom-grid>*{min-width:0}
 @media(max-width:700px) { .preference-pair,.preference-products { grid-template-columns:1fr; } }
 
 .readiness-review{margin:22px 0;padding:20px;border-left:3px solid var(--blue);background:#eff6f9}.readiness-review h3{margin-top:0}.readiness-review p{line-height:1.8}
+
+.scenario-expansion>h2{margin:8px 0 12px}.scenario-expansion>p{line-height:1.8}.scenario-index{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}.scenario-index button{white-space:normal;text-align:left;font-size:14px;line-height:1.6}.scenario-expansion details{scroll-margin-top:110px}.case-model-progress{margin-top:24px}.case-model-progress>summary{color:var(--muted)}.case-model-progress>h2{font-size:20px}

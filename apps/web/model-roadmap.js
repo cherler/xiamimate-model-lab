@@ -1,4 +1,5 @@
 // Modeling choices and scoped readiness evidence, separate from model quality.
+import {scenarioExpansionHtml} from './scenario-expansion.js';
 import {readinessHtml} from './model-readiness-view.js';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const MODEL_ROADMAPS={
@@ -26,11 +27,12 @@ export const MODEL_ROADMAPS={
 };
 export function modelRoadmapHtml(business){
  const plan=MODEL_ROADMAPS[business];if(!plan)return '';
- return `<section class="model-roadmap report-panel" aria-label="本业务后续建模方案"><span class="guide-kicker">${plan.implemented?'本轮已实现 · 保存结果见案例报告':plan.audit?'适配审查已完成 · 模型效果尚待验证':'规划 · 尚未运行以下升级实验'}</span><h2>${plan.implemented?'建模方案实施状态':'后续建模方案'}：${esc(plan.title)}</h2><p>${esc(plan.goal)}</p><p class="small-note"><strong>现有业务案例：</strong>${esc(plan.current)}</p>${readinessHtml(business)}${plan.paths.map((p,i)=>`<details ${i===0?'open':''}><summary><strong>${esc(p.name)}</strong><span>${esc(p.priority)}${plan.implemented||(plan.audit&&i===0)?'':' · 待验证'}</span></summary><dl>${[['业务问题',p.problem],['需要的数据',p.data],['建模方法',p.method],[plan.implemented?'已展示的分析内容':'预期交付内容',p.output],['验收依据',p.validation],['适用边界',p.limit]].map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>${p.source?`<a class="text-link" href="${esc(p.source)}" target="_blank" rel="noopener noreferrer">方法原理与实现资料 ↗</a>`:''}</details>`).join('')}<p class="small-note">本节用于说明业务选型与后续实验设计，不提供未运行的成绩。已有保存结果仍见本案例评估；未来实验须另定数据版本、开发范围与预算。</p></section>`;
+ return `<section class="model-roadmap report-panel" aria-label="业务场景扩展与主案例进度">${scenarioExpansionHtml(business)}<details class="case-model-progress"><summary><strong>主案例升级记录与后续实验</strong><span>与上述场景选型分析分别查看</span></summary><span class="guide-kicker">${plan.implemented?'本轮已实现 · 保存结果见案例报告':plan.audit?'适配审查已完成 · 模型效果尚待验证':'规划 · 尚未运行以下升级实验'}</span><h2>${plan.implemented?'建模方案实施状态':'后续建模方案'}：${esc(plan.title)}</h2><p>${esc(plan.goal)}</p><p class="small-note"><strong>现有业务案例：</strong>${esc(plan.current)}</p>${readinessHtml(business)}${plan.paths.map((p,i)=>`<details ><summary><strong>${esc(p.name)}</strong><span>${esc(p.priority)}${plan.implemented||(plan.audit&&i===0)?'':' · 待验证'}</span></summary><dl>${[['业务问题',p.problem],['需要的数据',p.data],['建模方法',p.method],[plan.implemented?'已展示的分析内容':'预期交付内容',p.output],['验收依据',p.validation],['适用边界',p.limit]].map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>${p.source?`<a class="text-link" href="${esc(p.source)}" target="_blank" rel="noopener noreferrer">方法原理与实现资料 ↗</a>`:''}</details>`).join('')}<p class="small-note">本节用于说明业务选型与后续实验设计，不提供未运行的成绩。已有保存结果仍见本案例评估；未来实验须另定数据版本、开发范围与预算。</p></details></section>`;
 }
 export function mountModelRoadmap(host,business){
  host.querySelector('.model-roadmap')?.remove();
  const html=modelRoadmapHtml(business);if(!html)return;
  const supplement=host.querySelector('.guide-related');
  if(supplement)supplement.insertAdjacentHTML('beforebegin',html);else host.insertAdjacentHTML('beforeend',html);
+ host.querySelectorAll('[data-scenario-jump]').forEach(button=>button.onclick=()=>{const target=host.querySelector(`#scenario-${button.dataset.scenarioJump}`);if(target){target.open=true;target.querySelector('summary').focus({preventScroll:true});target.scrollIntoView({block:'start',behavior:'smooth'});}});
 }
