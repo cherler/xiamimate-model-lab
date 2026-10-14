@@ -67,3 +67,7 @@ artifacts/preference-latest.json
 apps/web/preference-results/
 
 artifacts/feasibility/
+artifacts/colbert-reference/
+artifacts/colbert-runs/
+artifacts/colbert-latest.json
+apps/web/colbert-results/

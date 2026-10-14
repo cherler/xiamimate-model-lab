@@ -1,0 +1,377 @@
+{
+  "run_id": "colbert-20261014T124255210873Z",
+  "protocol": {
+    "version": "colbert-scifact-development-v1",
+    "evidence": "known_benchmark_development_after_prior_feedback",
+    "parent_run": "scifact-20261014T000358068631Z",
+    "model": "colbert-ir/colbertv2.0",
+    "revision": "c1e84128e85ef755c096a95bdb06b47793b13acf",
+    "queries": "all 300 saved query IDs; no relevance-based selection",
+    "candidates": "unchanged parent hybrid top50; preserve ranks 51-100 exactly",
+    "threads": 4,
+    "batch_size": 16,
+    "query_maxlen": 64,
+    "doc_maxlen": 180,
+    "chunk_tokens": 160,
+    "chunk_stride": 128,
+    "max_chunks": null,
+    "text_policy": "title + space + abstract; split BERT WordPiece offset spans into raw substrings, at most160 tokens after retokenization; cover all nonwhitespace source text, no relevance selection; both models receive identical strings",
+    "query_policy": "both models receive same query prefix up to61 BERT WordPieces (64 minus CLS/Q/SEP); cross encoder pair fits within256; expansion from original32 is part of new controlled design",
+    "methods": [
+      "parent_hybrid",
+      "parent_rerank",
+      "cross_first",
+      "cross_chunks",
+      "colbert_first",
+      "colbert_chunks"
+    ],
+    "pooling": "max chunk score per document; first uses only first identical chunk; no learned length correction; report long-doc group separately",
+    "reference_parity": "execute pinned official tokenizer/encoder/mask/reduce routines in isolated adapter; not full PLAID or compressed index parity",
+    "timing": "ColBERT query encode+cached candidate MaxSim versus cross pair encode; excludes parent candidate retrieval, model load/download and ColBERT offline doc encoding; one warm pass, report not service SLA",
+    "selection": "no fitting, tuning or outcome-driven configuration changes; freeze rankings before reading existing qrels; report both improvements and regressions",
+    "explanation": "save best chunk index for all candidates and full token MaxSim decomposition for top3 ColBERT chunk results of all queries; includes special and MASK query slots; not causal or factual evidence"
+  },
+  "core_parity": {
+    "passed": true,
+    "reference": {
+      "revision": "cc4f3dc91c0b45d2d08c251d9d95178285c65f1c",
+      "repository": "https://github.com/stanford-futuredata/ColBERT",
+      "files": {
+        "colbert/modeling/tokenization/query_tokenization.py": "c765b93f0ad1386de0566edc0d349ec4cca0683f0f77a505b09c036fc025c285",
+        "colbert/modeling/tokenization/doc_tokenization.py": "65df0d05ed77abe0667196d9aa4e1d4d13dbf865f23a87fa31ff367f3d6910be",
+        "colbert/modeling/tokenization/utils.py": "d2d48ce274335cc8f5fa95dcb3b117d9aa832d520a7d2ec2b3128866aba6d018",
+        "colbert/modeling/colbert.py": "29f54b1916a32b5682befc331f5391c5e757642cc7bc2a1842511b28bc7e378b",
+        "LICENSE": "641c1a7fc3e22f3ea8521617c690213f0d741bf95ff35eeba99b34ff2102e0ae"
+      }
+    },
+    "text_cases": 4,
+    "pair_cases": 16,
+    "max_embedding_error": 0.0,
+    "max_score_error": 9.5367431640625e-07,
+    "scope": "official tokenization/encoding/mask/MaxSim core routines; same loaded weights; no PLAID/quantization/index verification"
+  },
+  "costs": {
+    "candidate_documents": 4639,
+    "chunks": 13399,
+    "colbert_encoding_seconds": 364.35198249993846,
+    "float32_vector_bytes": 843662848,
+    "saved_vector_file_bytes": 852440775,
+    "peak_rss_bytes": 2982035456
+  },
+  "summary": {
+    "parent_hybrid": {
+      "ndcg_at_10": 0.6826104962391715,
+      "recall_at_10": 0.8105555555555556,
+      "mrr_at_10": 0.6459841269841271,
+      "recall_at_50": 0.937,
+      "recall_at_100": 0.9543333333333334
+    },
+    "parent_rerank": {
+      "ndcg_at_10": 0.6840978635899573,
+      "recall_at_10": 0.8122222222222223,
+      "mrr_at_10": 0.6510476190476191,
+      "recall_at_50": 0.937,
+      "recall_at_100": 0.9543333333333334
+    },
+    "cross_first": {
+      "ndcg_at_10": 0.659828980035316,
+      "recall_at_10": 0.8048888888888889,
+      "mrr_at_10": 0.621297619047619,
+      "recall_at_50": 0.937,
+      "recall_at_100": 0.9543333333333334
+    },
+    "cross_chunks": {
+      "ndcg_at_10": 0.6952106277198309,
+      "recall_at_10": 0.8276111111111111,
+      "mrr_at_10": 0.6609153439153439,
+      "recall_at_50": 0.937,
+      "recall_at_100": 0.9543333333333334
+    },
+    "colbert_first": {
+      "ndcg_at_10": 0.6689284259490794,
+      "recall_at_10": 0.7875555555555556,
+      "mrr_at_10": 0.6374497354497354,
+      "recall_at_50": 0.937,
+      "recall_at_100": 0.9543333333333334
+    },
+    "colbert_chunks": {
+      "ndcg_at_10": 0.718254033407504,
+      "recall_at_10": 0.8482222222222222,
+      "mrr_at_10": 0.6847830687830687,
+      "recall_at_50": 0.937,
+      "recall_at_100": 0.9543333333333334
+    }
+  },
+  "comparisons": [
+    {
+      "model": "colbert_first",
+      "baseline": "cross_first",
+      "ndcg_delta": 0.009099445913763372,
+      "bootstrap_ci95": [
+        -0.010214052589850791,
+        0.029647557498350876
+      ],
+      "wins": 51,
+      "losses": 46,
+      "ties": 203
+    },
+    {
+      "model": "colbert_chunks",
+      "baseline": "cross_chunks",
+      "ndcg_delta": 0.023043405687673234,
+      "bootstrap_ci95": [
+        0.004379149835072374,
+        0.041627953174828786
+      ],
+      "wins": 56,
+      "losses": 31,
+      "ties": 213
+    },
+    {
+      "model": "colbert_chunks",
+      "baseline": "colbert_first",
+      "ndcg_delta": 0.0493256074584247,
+      "bootstrap_ci95": [
+        0.026696131802486176,
+        0.07457661104755442
+      ],
+      "wins": 47,
+      "losses": 39,
+      "ties": 214
+    },
+    {
+      "model": "cross_chunks",
+      "baseline": "cross_first",
+      "ndcg_delta": 0.03538164768451484,
+      "bootstrap_ci95": [
+        0.010764933358147202,
+        0.061978170352664286
+      ],
+      "wins": 51,
+      "losses": 55,
+      "ties": 194
+    }
+  ],
+  "timing": {
+    "cross_first": {
+      "median": 289.1754999291152,
+      "p95": 345.4061338212341
+    },
+    "cross_chunks": {
+      "median": 809.5712293870747,
+      "p95": 1194.9973976705223
+    },
+    "colbert_first": {
+      "median": 22.122625028714538,
+      "p95": 27.809840533882383
+    },
+    "colbert_chunks": {
+      "median": 24.922186974436045,
+      "p95": 31.558597693219784
+    }
+  },
+  "groups": {
+    "short_query": {
+      "n": 246,
+      "metrics": {
+        "parent_hybrid": {
+          "ndcg_at_10": 0.6844688189389846,
+          "recall_at_10": 0.8031165311653117,
+          "mrr_at_10": 0.6515727835849786,
+          "recall_at_50": 0.936178861788618,
+          "recall_at_100": 0.9565040650406504
+        },
+        "parent_rerank": {
+          "ndcg_at_10": 0.6807626267361891,
+          "recall_at_10": 0.8126016260162602,
+          "mrr_at_10": 0.6462543554006968,
+          "recall_at_50": 0.936178861788618,
+          "recall_at_100": 0.9565040650406504
+        },
+        "cross_first": {
+          "ndcg_at_10": 0.6531271242982172,
+          "recall_at_10": 0.8004065040650407,
+          "mrr_at_10": 0.6115369725125822,
+          "recall_at_50": 0.936178861788618,
+          "recall_at_100": 0.9565040650406504
+        },
+        "cross_chunks": {
+          "ndcg_at_10": 0.6883685651197218,
+          "recall_at_10": 0.8232384823848238,
+          "mrr_at_10": 0.6532681636340174,
+          "recall_at_50": 0.936178861788618,
+          "recall_at_100": 0.9565040650406504
+        },
+        "colbert_first": {
+          "ndcg_at_10": 0.6589723883921179,
+          "recall_at_10": 0.7760162601626016,
+          "mrr_at_10": 0.6262791973157826,
+          "recall_at_50": 0.936178861788618,
+          "recall_at_100": 0.9565040650406504
+        },
+        "colbert_chunks": {
+          "ndcg_at_10": 0.7075259398123847,
+          "recall_at_10": 0.8378048780487805,
+          "mrr_at_10": 0.6723641760227127,
+          "recall_at_50": 0.936178861788618,
+          "recall_at_100": 0.9565040650406504
+        }
+      }
+    },
+    "long_query": {
+      "n": 54,
+      "metrics": {
+        "parent_hybrid": {
+          "ndcg_at_10": 0.6741448039400232,
+          "recall_at_10": 0.8444444444444444,
+          "mrr_at_10": 0.6205246913580247,
+          "recall_at_50": 0.9407407407407407,
+          "recall_at_100": 0.9444444444444444
+        },
+        "parent_rerank": {
+          "ndcg_at_10": 0.6992917203682342,
+          "recall_at_10": 0.8104938271604938,
+          "mrr_at_10": 0.672883597883598,
+          "recall_at_50": 0.9407407407407407,
+          "recall_at_100": 0.9444444444444444
+        },
+        "cross_first": {
+          "ndcg_at_10": 0.6903596561709892,
+          "recall_at_10": 0.8253086419753086,
+          "mrr_at_10": 0.6657627865961201,
+          "recall_at_50": 0.9407407407407407,
+          "recall_at_100": 0.9444444444444444
+        },
+        "cross_chunks": {
+          "ndcg_at_10": 0.7263800240092172,
+          "recall_at_10": 0.8475308641975309,
+          "mrr_at_10": 0.6957524985302763,
+          "recall_at_50": 0.9407407407407407,
+          "recall_at_100": 0.9444444444444444
+        },
+        "colbert_first": {
+          "ndcg_at_10": 0.7142837081530158,
+          "recall_at_10": 0.8401234567901235,
+          "mrr_at_10": 0.6883377425044093,
+          "recall_at_50": 0.9407407407407407,
+          "recall_at_100": 0.9444444444444444
+        },
+        "colbert_chunks": {
+          "ndcg_at_10": 0.7671264597852699,
+          "recall_at_10": 0.895679012345679,
+          "mrr_at_10": 0.741358024691358,
+          "recall_at_50": 0.9407407407407407,
+          "recall_at_100": 0.9444444444444444
+        }
+      }
+    },
+    "pool_mostly_multichunk": {
+      "n": 299,
+      "metrics": {
+        "parent_hybrid": {
+          "ndcg_at_10": 0.6848934744874631,
+          "recall_at_10": 0.8132664437012264,
+          "mrr_at_10": 0.6481446090141743,
+          "recall_at_50": 0.936789297658863,
+          "recall_at_100": 0.954180602006689
+        },
+        "parent_rerank": {
+          "ndcg_at_10": 0.6863858163109939,
+          "recall_at_10": 0.8149386845039019,
+          "mrr_at_10": 0.6532250358337315,
+          "recall_at_50": 0.936789297658863,
+          "recall_at_100": 0.954180602006689
+        },
+        "cross_first": {
+          "ndcg_at_10": 0.6620357659217218,
+          "recall_at_10": 0.8075808249721294,
+          "mrr_at_10": 0.6233755375059723,
+          "recall_at_50": 0.936789297658863,
+          "recall_at_100": 0.954180602006689
+        },
+        "cross_chunks": {
+          "ndcg_at_10": 0.6975357468760846,
+          "recall_at_10": 0.8303790412486065,
+          "mrr_at_10": 0.6631257631257631,
+          "recall_at_50": 0.936789297658863,
+          "recall_at_100": 0.954180602006689
+        },
+        "colbert_first": {
+          "ndcg_at_10": 0.6711656447649627,
+          "recall_at_10": 0.7901895206243033,
+          "mrr_at_10": 0.639581674364283,
+          "recall_at_50": 0.936789297658863,
+          "recall_at_100": 0.954180602006689
+        },
+        "colbert_chunks": {
+          "ndcg_at_10": 0.7206562208102049,
+          "recall_at_10": 0.8510590858416945,
+          "mrr_at_10": 0.6870733131602698,
+          "recall_at_50": 0.936789297658863,
+          "recall_at_100": 0.954180602006689
+        }
+      }
+    },
+    "other_pool": {
+      "n": 1,
+      "metrics": {
+        "parent_hybrid": {
+          "ndcg_at_10": 0.0,
+          "recall_at_10": 0.0,
+          "mrr_at_10": 0.0,
+          "recall_at_50": 1.0,
+          "recall_at_100": 1.0
+        },
+        "parent_rerank": {
+          "ndcg_at_10": 0.0,
+          "recall_at_10": 0.0,
+          "mrr_at_10": 0.0,
+          "recall_at_50": 1.0,
+          "recall_at_100": 1.0
+        },
+        "cross_first": {
+          "ndcg_at_10": 0.0,
+          "recall_at_10": 0.0,
+          "mrr_at_10": 0.0,
+          "recall_at_50": 1.0,
+          "recall_at_100": 1.0
+        },
+        "cross_chunks": {
+          "ndcg_at_10": 0.0,
+          "recall_at_10": 0.0,
+          "mrr_at_10": 0.0,
+          "recall_at_50": 1.0,
+          "recall_at_100": 1.0
+        },
+        "colbert_first": {
+          "ndcg_at_10": 0.0,
+          "recall_at_10": 0.0,
+          "mrr_at_10": 0.0,
+          "recall_at_50": 1.0,
+          "recall_at_100": 1.0
+        },
+        "colbert_chunks": {
+          "ndcg_at_10": 0.0,
+          "recall_at_10": 0.0,
+          "mrr_at_10": 0.0,
+          "recall_at_50": 1.0,
+          "recall_at_100": 1.0
+        }
+      }
+    }
+  },
+  "environment": {
+    "python": "3.12.9",
+    "torch": "2.14.1",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "threads": 4
+  },
+  "source_sha256": {
+    "colbert-study-protocol.json": "f787fd823d71d3cf7c06ad675b14ab8d553e926ef9142a1268521ac54a37ae5a",
+    "colbert_study.py": "064d3c7599aec3e4b97df2ce8faa3d5d4315a6c3ccaa6d3a49201b23819a24fa",
+    "colbert_encoder.py": "7dd76940ecdceb9da73b9dfee7b5144216eb36a6b6006a088f987da7c1c78fd2",
+    "uv.lock": "a4124fe5ec362098156dadd75604ecd7ad5c5ed49398377654490d2f10d861b2"
+  },
+  "frozen_sha256": "c0a29357b2baf40ae59e2564a48a8420c4fde31a3e05485a239e3c5f75a11dfd",
+  "case_sha256": "71bbc0a28f1c3101261a46829a3685adef64c8eecbe1b5eb6b701f5aab85a7b6"
+}

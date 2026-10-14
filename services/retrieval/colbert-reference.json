@@ -1,0 +1,11 @@
+{
+  "revision": "cc4f3dc91c0b45d2d08c251d9d95178285c65f1c",
+  "repository": "https://github.com/stanford-futuredata/ColBERT",
+  "files": {
+    "colbert/modeling/tokenization/query_tokenization.py": "c765b93f0ad1386de0566edc0d349ec4cca0683f0f77a505b09c036fc025c285",
+    "colbert/modeling/tokenization/doc_tokenization.py": "65df0d05ed77abe0667196d9aa4e1d4d13dbf865f23a87fa31ff367f3d6910be",
+    "colbert/modeling/tokenization/utils.py": "d2d48ce274335cc8f5fa95dcb3b117d9aa832d520a7d2ec2b3128866aba6d018",
+    "colbert/modeling/colbert.py": "29f54b1916a32b5682befc331f5391c5e757642cc7bc2a1842511b28bc7e378b",
+    "LICENSE": "641c1a7fc3e22f3ea8521617c690213f0d741bf95ff35eeba99b34ff2102e0ae"
+  }
+}

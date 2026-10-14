@@ -1,0 +1,19 @@
+{
+ "version":"colbert-scifact-development-v1",
+ "evidence":"known_benchmark_development_after_prior_feedback",
+ "parent_run":"scifact-20261014T000358068631Z",
+ "model":"colbert-ir/colbertv2.0",
+ "revision":"c1e84128e85ef755c096a95bdb06b47793b13acf",
+ "queries":"all 300 saved query IDs; no relevance-based selection",
+ "candidates":"unchanged parent hybrid top50; preserve ranks 51-100 exactly",
+ "threads":4,"batch_size":16,"query_maxlen":64,"doc_maxlen":180,
+ "chunk_tokens":160,"chunk_stride":128,"max_chunks":null,
+ "text_policy":"title + space + abstract; split BERT WordPiece offset spans into raw substrings, at most160 tokens after retokenization; cover all nonwhitespace source text, no relevance selection; both models receive identical strings",
+ "query_policy":"both models receive same query prefix up to61 BERT WordPieces (64 minus CLS/Q/SEP); cross encoder pair fits within256; expansion from original32 is part of new controlled design",
+ "methods":["parent_hybrid","parent_rerank","cross_first","cross_chunks","colbert_first","colbert_chunks"],
+ "pooling":"max chunk score per document; first uses only first identical chunk; no learned length correction; report long-doc group separately",
+ "reference_parity":"execute pinned official tokenizer/encoder/mask/reduce routines in isolated adapter; not full PLAID or compressed index parity",
+ "timing":"ColBERT query encode+cached candidate MaxSim versus cross pair encode; excludes parent candidate retrieval, model load/download and ColBERT offline doc encoding; one warm pass, report not service SLA",
+ "selection":"no fitting, tuning or outcome-driven configuration changes; freeze rankings before reading existing qrels; report both improvements and regressions",
+ "explanation":"save best chunk index for all candidates and full token MaxSim decomposition for top3 ColBERT chunk results of all queries; includes special and MASK query slots; not causal or factual evidence"
+}
