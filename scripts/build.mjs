@@ -1,3 +1,4 @@
+import {verifyUciStatic} from './verify-uci-static.mjs';
 import {verifyDecision} from '../apps/web/decision-metrics.js';
 import {verifyMonitoring} from '../apps/web/monitoring-metrics.js';
 import {verifyRetrieval} from '../apps/web/retrieval-metrics.js';
@@ -77,9 +78,10 @@ if(!/^[a-f0-9]{16}\/case\.json$/.test(decision.path))throw new Error('决策结�
 const decisionBytes=await readFile(resolve(decisionRoot,decision.path));
 if(createHash('sha256').update(decisionBytes).digest('hex')!==decision.sha256)throw new Error('决策结果哈希不一致');
 if(verifyDecision(JSON.parse(decisionBytes)).run_id!==decision.run_id)throw new Error('决策结果版本不一致');
+await verifyUciStatic(resolve(root,'apps/web/uci-results'),manifest);
 // Build output is disposable; validate all sources before replacing it.
 await rm(`${root}dist`, { recursive: true, force: true });
 await mkdir(`${root}dist`, { recursive: true });
 await cp(`${root}apps/web`, `${root}dist`, { recursive: true, filter: source => publishableWebPath(resolve(root,'apps/web'),source) });
 console.log('M5 and Dressipi local research data excluded from public build; usage clearance is pending.');
-console.log(`Built showcase ${manifest.version}. Ta Feng uses saved results; UCI still requires the local API.`);
+console.log(`Built showcase ${manifest.version}. Ta Feng and UCI use verified static results; no model API is required.`);
