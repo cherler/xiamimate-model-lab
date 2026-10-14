@@ -43,6 +43,9 @@ test('D8 calculations route to real supported views without mixing cases or teac
 });
 test('D8 delivery entry leads to seven available public evidence paths, not research-only scores',async()=>{
  const {deliveryCaseLinks}=await import('../apps/web/case-reading.js');const html=deliveryCaseLinks();
+ const {PUBLIC_CASE_PATHS}=await import('../apps/web/case-paths.js');
+ for(const c of PUBLIC_CASE_PATHS){assert.match(html,new RegExp(c.scene));assert.match(html,new RegExp(c.decision));}
+ assert.match(html,/要做的判断/);assert.match(html,/展示交付/);
  const links=[...html.matchAll(/href="([^"]+)"/g)].map(m=>m[1].replaceAll('&amp;','&'));assert.equal(links.length,7);
  assert.equal(new Set(links.map(link=>resolveRoute(link).page)).size,7);
  for(const link of links){const {page,params}=resolveRoute(link);assert.ok(CASE_READINGS[`${page}:${params.get('case')}`]);assert.equal(params.get('walk'),'fit');assert.notEqual(params.get('case'),'m5');assert.notEqual(params.get('case'),'dressipi');}

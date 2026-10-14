@@ -1,4 +1,5 @@
 import {CASE_EXERCISES,exerciseHref} from './case-exercises.js';
+import {PUBLIC_CASE_PATHS} from './case-paths.js';
 // Reading contracts describe frozen evidence; live scores remain in the original reports.
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const CASE_READINGS={
@@ -146,6 +147,5 @@ export function mountCaseReading(host,page,params){
 }
 
 export function deliveryCaseLinks(){
- const keys=['recommend:tafeng','forecast:uci','classify:spambase','retrieve:scifact','anomaly:nab','segments:retail','decision:retail'];
- return `<section class="delivery-evidence"><h2>七类业务的案例与交付能力</h2><p>以下为已展示的建模能力，可作为定制范围的讨论起点。新业务的数据、效果与验收要求需另定，不将公开案例成绩作为收益承诺。</p><div class="delivery-case-list">${keys.map(key=>{const [page,id]=key.split(':'),c=CASE_READINGS[key];return `<article><h3>${esc(c.name)}</h3><p>${esc(c.delivery)}</p><p class="small-note">${esc(c.limit)}</p><a href="${esc(readingHref(page,new URLSearchParams({case:id}),'fit'))}">查看案例条件与证据</a></article>`;}).join('')}</div></section>`;
+ return `<section class="delivery-evidence" id="delivery-cases"><h2>七类业务的案例与交付能力</h2><p>先按业务场景判断是否相关，再查看公开案例中实际完成的方法和证据。新业务的数据、效果与验收要求需另定，不将公开案例成绩作为收益承诺。</p><div class="delivery-case-list">${PUBLIC_CASE_PATHS.map(item=>{const [page,id]=item.key.split(':'),c=CASE_READINGS[item.key];return `<article><span class="delivery-case-type">${esc(item.title)} · ${esc(item.caseName)}</span><h3>${esc(item.scene)}</h3><dl><div><dt>要做的判断</dt><dd>${esc(item.decision)}</dd></div><div><dt>展示交付</dt><dd>${esc(c.delivery)}</dd></div></dl><p class="small-note">证据边界：${esc(c.limit)}</p><a href="${esc(readingHref(page,new URLSearchParams({case:id}),'fit'))}">查看案例条件与证据</a></article>`;}).join('')}</div></section>`;
 }
