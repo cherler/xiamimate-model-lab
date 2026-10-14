@@ -62,3 +62,12 @@ test('customer first-screen summaries cover every case and distinguish fixed con
   assert.match(html,c.research?/本地研究结论/:/固定评估结论/);
  }
 });
+test('every public case links back to its method and its real calculation',async()=>{
+ const {PUBLIC_CASE_PATHS}=await import('../apps/web/case-paths.js');
+ for(const path of PUBLIC_CASE_PATHS){
+  const [page,id]=path.key.split(':');const html=readingHtml(page,new URLSearchParams({case:id}));
+  assert.match(html,/查看建模方法/);assert.match(html,/查看逐项计算/);
+  assert.ok(html.includes(path.methodHref.replaceAll('&','&amp;')));
+ }
+ assert.doesNotMatch(readingHtml('forecast',new URLSearchParams({case:'m5'})),/reading-study-links/);
+});

@@ -10,6 +10,7 @@
 .reading-steps li{flex:1;min-width:0}
 .reading-steps a{display:block;padding:8px 10px;background:#f1f7fa;border:1px solid #dce7ee;border-radius:4px;text-decoration:none;font-weight:600;text-align:center;line-height:1.4}
 .reading-steps a:hover,.reading-steps a[aria-current=step]{border-color:#087f9d;background:#e9f4f7}
+.reading-study-links{display:flex;align-items:center;gap:13px;flex-wrap:wrap;margin:12px 0 8px;font-size:12px}.reading-study-links span{color:#536f82}.reading-study-links a{color:#087f9d;font-weight:650;text-decoration:underline;text-underline-offset:3px}
 .reading-context,.reading-fit,.reading-exercise{border-top:1px solid #e8eff3;padding-top:8px;margin-top:8px}
 .case-reading summary{cursor:pointer;font-weight:600}
 .reading-context summary,.reading-exercise summary{color:#536f82}

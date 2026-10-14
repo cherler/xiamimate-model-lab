@@ -1,5 +1,5 @@
 import {CASE_EXERCISES,exerciseHref} from './case-exercises.js';
-import {PUBLIC_CASE_PATHS} from './case-paths.js';
+import {PUBLIC_CASE_PATHS,publicCasePath} from './case-paths.js';
 // Reading contracts describe frozen evidence; live scores remain in the original reports.
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const CASE_READINGS={
@@ -120,10 +120,11 @@ export function readingHref(page,params,step){
  return `#${page}?${q}`;
 }
 export function readingHtml(page,params){
- const c=CASE_READINGS[`${page}:${params.get('case')}`];if(!c)return '';
- const exercise=CASE_EXERCISES[`${page}:${params.get('case')}`];
+ const key=`${page}:${params.get('case')}`,c=CASE_READINGS[key];if(!c)return '';
+ const exercise=CASE_EXERCISES[key],publicPath=publicCasePath(key);
+ const lessonHref=exerciseHref(page,params);const focusedLesson=lessonHref?.startsWith('#learn?')?`${lessonHref}&focus=calculation`:lessonHref;
  const step=Object.hasOwn(READING_STEPS,params.get('walk'))?params.get('walk'):null;
- return `<section class="case-reading" aria-label="${esc(c.name)}案例结论"><div class="reading-summary"><div class="reading-intro"><strong>${esc(c.name)}</strong><p>${esc(c.input)} → ${esc(c.output)}。</p></div><div class="reading-conclusion"><span>${c.research?'本地研究结论':'固定评估结论'}</span><strong>${esc(c.verdict)}</strong><p>${esc(c.scope)}${c.research?' 对外使用许可尚未确认；公开构建不包含本案例结果。':''}</p></div></div><ol class="reading-steps">${Object.entries(READING_STEPS).map(([key,v])=>`<li><a data-reading-step="${key}" href="${esc(readingHref(page,params,key))}" ${step===key?'aria-current="step"':''}>${v.label}</a></li>`).join('')}</ol><details class="reading-context"><summary>对照方法与证据范围</summary><p>${esc(c.evidence)}</p><p>上方是固定报告的结论摘要；切换下方样本、模型或规则时，以对应的页面结果和完整报告为准。</p></details><details class="reading-fit" ${step==='fit'?'open':''}><summary>适用条件与可委托范围</summary><dl><div><dt>所需条件</dt><dd>${esc(c.needs)}</dd></div><div><dt>已展示的能力</dt><dd>${esc(c.delivery)}</dd></div><div><dt>尚未证明</dt><dd>${esc(c.limit)}</dd></div></dl><p>以上能力可用于讨论定制范围；新业务的效果、接口与验收要求需另行约定。本站目前仅展示公开案例，没有接入客户数据。</p><a href="#delivery">查看定制服务与交付范围</a></details>${exercise?`<details class="reading-exercise"><summary>计算与实验阅读 · ${esc(exercise.metric)}</summary><p>${esc(exercise.recipe)}</p><p>失效条件：${esc(exercise.failure)}</p><a data-reading-calculation href="${esc(exerciseHref(page,params))}">打开真实记录与计算明细</a><p class="reading-scope">使用已有结果，不重新训练或选择最优样本；实验范围、输入版本及参数见原页面与报告记录。</p></details>`:''}</section>`;
+ return `<section class="case-reading" aria-label="${esc(c.name)}案例结论"><div class="reading-summary"><div class="reading-intro"><strong>${esc(c.name)}</strong><p>${esc(c.input)} → ${esc(c.output)}。</p></div><div class="reading-conclusion"><span>${c.research?'本地研究结论':'固定评估结论'}</span><strong>${esc(c.verdict)}</strong><p>${esc(c.scope)}${c.research?' 对外使用许可尚未确认；公开构建不包含本案例结果。':''}</p></div></div><ol class="reading-steps">${Object.entries(READING_STEPS).map(([key,v])=>`<li><a data-reading-step="${key}" href="${esc(readingHref(page,params,key))}" ${step===key?'aria-current="step"':''}>${v.label}</a></li>`).join('')}</ol>${publicPath?`<nav class="reading-study-links" aria-label="本案例方法与计算"><span>继续了解本例</span><a href="${esc(publicPath.methodHref)}">查看建模方法</a><a data-reading-study href="${esc(focusedLesson)}">查看逐项计算</a></nav>`:''}<details class="reading-context"><summary>对照方法与证据范围</summary><p>${esc(c.evidence)}</p><p>上方是固定报告的结论摘要；切换下方样本、模型或规则时，以对应的页面结果和完整报告为准。</p></details><details class="reading-fit" ${step==='fit'?'open':''}><summary>适用条件与可委托范围</summary><dl><div><dt>所需条件</dt><dd>${esc(c.needs)}</dd></div><div><dt>已展示的能力</dt><dd>${esc(c.delivery)}</dd></div><div><dt>尚未证明</dt><dd>${esc(c.limit)}</dd></div></dl><p>以上能力可用于讨论定制范围；新业务的效果、接口与验收要求需另行约定。本站目前仅展示公开案例，没有接入客户数据。</p><a href="#delivery">查看定制服务与交付范围</a></details>${exercise?`<details class="reading-exercise"><summary>计算与实验阅读 · ${esc(exercise.metric)}</summary><p>${esc(exercise.recipe)}</p><p>失效条件：${esc(exercise.failure)}</p><a data-reading-calculation href="${esc(exerciseHref(page,params))}">打开真实记录与计算明细</a><p class="reading-scope">使用已有结果，不重新训练或选择最优样本；实验范围、输入版本及参数见原页面与报告记录。</p></details>`:''}</section>`;
 }
 export function canShowReading(host){
  return !/暂不可用|暂未就绪|案例不存在|正在读取|当前构建未包含/.test([...host.querySelectorAll('h1,h2,.loading-copy,.report-panel>p')].map(e=>e.textContent).join(' '));
@@ -138,6 +139,7 @@ export function mountCaseReading(host,page,params){
  // Refresh from the current route because controls may have changed the saved selection.
  guide.querySelectorAll('[data-reading-step]').forEach(a=>a.onclick=()=>{const live=new URLSearchParams(location.hash.split('?')[1]||'');a.href=readingHref(page,live,a.dataset.readingStep);});
  guide.querySelector('[data-reading-calculation]')?.addEventListener('click',e=>{e.currentTarget.href=exerciseHref(page,new URLSearchParams(location.hash.split('?')[1]||''));});
+ guide.querySelector('[data-reading-study]')?.addEventListener('click',e=>{const href=exerciseHref(page,new URLSearchParams(location.hash.split('?')[1]||''));e.currentTarget.href=href?.startsWith('#learn?')?`${href}&focus=calculation`:href;});
  const walk=params.get('walk');let target;
  if(walk==='fit')target=guide.querySelector('.reading-fit');
  else if(walk==='evidence')target=[...host.querySelectorAll('h2')].find(h=>c.evidenceTargets.includes(h.textContent.trim()));
