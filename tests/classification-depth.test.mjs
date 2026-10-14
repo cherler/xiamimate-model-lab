@@ -30,3 +30,18 @@ test('all six transition types have explicit witnesses',()=>{
  const rows=[[0,0,1],[1,1,0],[0,1,0],[1,0,1],[1,1,1],[1,0,0]].map(([label,a,b],i)=>({id:String(i),group:String(i),source_row:i,label,scores:{rules:b,lightgbm:a}}));
  const c=policyPair(rows,'lightgbm','rules',{threshold:.5},{threshold:.5});assert.deepEqual(Object.values(c.counts),[1,1,1,1,1,1]);
 });
+
+test('cost assumptions reverse preferences without changing predictions or frozen decisions',{skip:!p},async()=>{
+ const {policyCost,capacityTradeoffs,calibrationEvidence}=await import('../apps/web/classification-depth.js');
+ const state={split:'test',model:'lightgbm',baseline:'rules',mode:'threshold',share:.2,threshold:p.report.thresholds.lightgbm,baseThreshold:p.report.thresholds.rules};
+ const pair=pairForState(p,state),normal={fp:10,fn:1,review:.1},highFp={fp:100,fn:1,review:.1};
+ assert.equal(policyCost(pair.current,normal).total,92.9);assert.equal(policyCost(pair.base,normal).total,186.6);
+ assert.ok(policyCost(pair.current,highFp).total>policyCost(pair.base,highFp).total);
+ for(const split of ['validation','test'])for(const model of ['rules','logistic','lightgbm'])for(const {share,pair:q} of capacityTradeoffs(p,{...state,model,split})){
+  assert.equal(q.current.selected,Math.floor(p.rows[split].length*share));assert.equal(q.current.selected,q.base.selected);
+  for(const c of [q.current,q.base]){const cost=policyCost(c,normal);assert.equal(cost.total,cost.fp+cost.fn+cost.review);assert.equal(policyCost(c,{fp:0,fn:0,review:0}).total,0);}
+ }
+ for(const value of [-1,NaN,Infinity,1000001])assert.throws(()=>policyCost(pair.current,{...normal,fp:value}));
+ const html=calibrationEvidence(p.report,state);assert.match(html,/升高 0.000042/);assert.match(html,/升高 0.002838/);assert.match(html,/split=test&model=lightgbm/);
+ assert.deepEqual(pairForState(p,state).current,pair.current);
+});
