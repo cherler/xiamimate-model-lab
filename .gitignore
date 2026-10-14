@@ -61,3 +61,7 @@ artifacts/decision-latest.json
 apps/web/decision-results/
 
 apps/web/uci-results/
+
+artifacts/preference-runs/
+artifacts/preference-latest.json
+apps/web/preference-results/

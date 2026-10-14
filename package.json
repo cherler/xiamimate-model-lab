@@ -67,6 +67,9 @@
     "dev:api": "uv run python services/server.py",
     "preview": "node scripts/static-server.mjs --dist",
     "verify:uci": "uv run python scripts/verify-uci-replay.py",
-    "explain:advanced": "services/advanced/.venv/bin/python services/advanced/explain.py trees && services/advanced/.venv/bin/python services/advanced/explain.py graph && services/advanced/.venv/bin/python services/advanced/explain.py tft && services/advanced/.venv/bin/python services/advanced/export.py"
+    "explain:advanced": "services/advanced/.venv/bin/python services/advanced/explain.py trees && services/advanced/.venv/bin/python services/advanced/explain.py graph && services/advanced/.venv/bin/python services/advanced/explain.py tft && services/advanced/.venv/bin/python services/advanced/export.py",
+    "train:preferences": "uv run --project services/segmentation python services/segmentation/run.py",
+    "verify:preferences": "uv run --project services/segmentation python services/segmentation/run.py verify",
+    "test:preferences": "uv run --project services/segmentation python -m unittest discover -s services/segmentation/tests -v"
   }
 }

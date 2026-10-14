@@ -1,0 +1,23 @@
+{
+  "version":"preference-v1",
+  "evidence":"development_after_prior_feedback",
+  "origins":["2011-09-01","2011-10-01"],
+  "history_days":180,
+  "future_days":30,
+  "seed":20261014,
+  "min_item_customers":5,
+  "svd_dimensions":32,
+  "features":"Distinct invoice count per customer/item; sublinear TF, smoothed IDF and SVD fitted at first origin only; L2 normalized SVD features. RFM excluded from preference features. All countries, positive merchandise transactions with known customers.",
+  "kmeans":{"n_clusters":4,"n_init":10},
+  "graph":{"neighbors":15,"resolution":1.0,"iterations":-1,"partition":"RBConfigurationVertexPartition","edges":"union of positive-cosine kNN, undirected max weight; self edges excluded"},
+  "hdbscan":{"min_cluster_size":30,"min_samples":10,"metric":"euclidean","cluster_selection_method":"eom"},
+  "silhouette_sample":1000,
+  "sensitivity":{"neighbors":[10,25],"resolution":[0.5,1.5],"min_cluster_size":[20,50],"seeds":[20261015,20261016]},
+  "subsample_seeds":[20261015,20261016,20261017],
+  "subsample_fraction":0.8,
+  "future_top_k":10,
+  "selection":"No method or hyperparameter is selected using future outcomes. KMeans K=4 is fixed; additional KMeans uses the observed primary Leiden group count to control group-count differences, not to optimize outcomes.",
+  "stability":"Refit clustering on fixed first-origin feature representation; 80% subsamples compared only on included customers. ARI including noise and ARI on jointly assigned customers are separate. Second-origin refits all preference clusterers with frozen vocabulary/IDF/SVD; temporal ARI is not fixed-model migration or accuracy.",
+  "future":"Freeze assignments and historical top-10 representative items before reading 30-day purchases. On each method's assigned returning customers compare group top-10 with global top-10; all future items remain in denominator. Report noise/unknown-catalog exclusions. This is profile continuation, not personalized recommendation or causal marketing uplift.",
+  "sources":["https://archive.ics.uci.edu/dataset/502/online+retail+ii","https://leidenalg.readthedocs.io/en/stable/reference.html","https://scikit-learn.org/stable/modules/generated/sklearn.cluster.HDBSCAN.html"]
+}
