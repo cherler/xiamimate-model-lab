@@ -1,16 +1,16 @@
-import {CASE_READINGS,canShowReading} from './case-reading.js';
+import {CASE_READINGS,canShowReading,caseReading,caseExercise,isPreferenceContext} from './case-reading.js';
 import {CASE_EXERCISES} from './case-exercises.js';
 import {publicCasePath} from './case-paths.js';
 import {sectionHref} from './navigation-state.js';
 import {mountModelRoadmap} from './model-roadmap.js';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function learningContextHtml(business,params,mode){
- const key=`${business}:${params.get('case')}`,c=CASE_READINGS[key],exercise=CASE_EXERCISES[key],path=publicCasePath(key);
+ const key=`${business}:${params.get('case')}`,c=caseReading(business,params),exercise=caseExercise(business,params),path=publicCasePath(key);
  if(!c||!['models','learn'].includes(mode))return '';
  const q=new URLSearchParams(params);q.delete('experienceView');q.set('view','report');q.delete('business');q.delete('walk');
  const report=`#${business}?${q}`;
  const daily=business==='forecast'&&params.get('case')==='uci'&&params.get('task')==='daily_sales';
- const goal=daily?'估计未来 28 天逐日销量，核查尖峰、低估和单品误差；与七天总量任务分别评价。':path?.decision||`${c.input} → ${c.output}`;
+ const goal=isPreferenceContext(business,params)?'区分价值接近、商品偏好不同的顾客，并核查可覆盖的人群。':daily?'估计未来 28 天逐日销量，核查尖峰、低估和单品误差；与七天总量任务分别评价。':path?.decision||`${c.input} → ${c.output}`;
  const lessonMetric=daily?'商品日误差与逐窗口汇总':exercise.metric;
  const recipe=daily?'对同一商品日计算两方法绝对误差之差，再汇总相同窗口；商品日 MAE 与七日总量 MAE 的单位不同。':exercise.recipe;
  const question=daily?'解释为什么偏差接近零仍可能有很高的 WAPE，以及为什么周总量成绩不能代替逐日尖峰预测。':exercise.failure;

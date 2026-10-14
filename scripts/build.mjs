@@ -1,3 +1,4 @@
+import {verifyPreference} from '../apps/web/preference-segments.js';
 import {validateExplanations} from '../apps/web/advanced-explanations.js';
 import {verifyUciStatic} from './verify-uci-static.mjs';
 import {verifyDecision} from '../apps/web/decision-metrics.js';
@@ -76,6 +77,13 @@ for(const kind of ['anomaly','segments']){
  const bytes=await readFile(resolve(monitoringRoot,spec.path));if(createHash('sha256').update(bytes).digest('hex')!==spec.sha256)throw new Error('监测结果哈希不一致');
  const payload=verifyMonitoring(JSON.parse(bytes),{deep:true});if(payload.kind!==kind||payload.run_id!==spec.run_id)throw new Error('监测结果版本不一致');
 }
+const preferenceRoot=resolve(root,'apps/web/preference-results');
+const preference=JSON.parse(await readFile(resolve(preferenceRoot,'manifest.json'),'utf8'));
+if(!/^[a-f0-9]{16}\/case\.json$/.test(preference.path))throw new Error('偏好结果路径无效');
+const preferenceBytes=await readFile(resolve(preferenceRoot,preference.path));
+if(createHash('sha256').update(preferenceBytes).digest('hex')!==preference.sha256)throw new Error('偏好结果哈希不一致');
+const preferencePayload=verifyPreference(JSON.parse(preferenceBytes));
+if(preferencePayload.run_id!==preference.run_id||preferencePayload.parent_run!==monitoring.resources.segments.run_id||preferencePayload.parent_sha256!==monitoring.resources.segments.sha256)throw new Error('偏好实验来源版本不一致');
 const decisionRoot=resolve(root,'apps/web/decision-results');
 const decision=JSON.parse(await readFile(resolve(decisionRoot,'manifest.json'),'utf8'));
 if(!/^[a-f0-9]{16}\/case\.json$/.test(decision.path))throw new Error('决策结果路径无效');

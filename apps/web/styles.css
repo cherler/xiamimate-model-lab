@@ -125,3 +125,14 @@ main,.sidebar,.workbench>*,.bottom-grid>*{min-width:0}
 
 .model-roadmap>h2{margin:8px 0 12px}.model-roadmap>p{margin:12px 0}.model-roadmap details{border-top:1px solid var(--line);padding:18px 0}.model-roadmap summary{cursor:pointer;line-height:1.8}.model-roadmap summary span{display:block;margin-top:4px;color:var(--muted);font-size:12px}.model-roadmap dl{margin:18px 0}.model-roadmap dl>div{display:grid;grid-template-columns:132px minmax(0,1fr);gap:18px;margin:14px 0;font-size:14px;line-height:1.8}.model-roadmap dt{font-weight:600}.model-roadmap dd{margin:0;color:#526d80;overflow-wrap:anywhere}@media(max-width:620px){.model-roadmap dl>div{grid-template-columns:1fr;gap:4px}.model-roadmap h2{font-size:18px}}
 .model-roadmap{scroll-margin-top:100px}.learning-context nav button{border:0;background:transparent;padding:0;font:inherit;color:var(--blue);text-align:left}
+
+/* Preference evidence stays within the existing business workspace. */
+.preference-conclusion { padding: 20px; border-left: 4px solid var(--accent, #087f9d); background: #edf6f8; margin: 20px 0; }
+.preference-pair { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+.preference-pair article { border:1px solid #d3e3eb; border-radius:8px; padding:16px; min-width:0; }
+.preference-products { list-style:none; padding:0; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.preference-products li { background:#f2f7fa; border-radius:6px; padding:12px; overflow-wrap:anywhere; }
+.preference-products strong,.preference-products small { display:block; }
+.preference-products small { margin-top:6px; color:#526b7d; }
+.preference-pair .preference-products { grid-template-columns:1fr; }
+@media(max-width:700px) { .preference-pair,.preference-products { grid-template-columns:1fr; } }

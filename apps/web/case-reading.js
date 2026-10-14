@@ -115,14 +115,29 @@ export const CASE_READINGS={
   evidenceTargets:['预测与策略的贡献对照','全部十二个窗口的模拟结果'],
  },
 };
+export function isPreferenceContext(page,params){return page==='segments'&&(params.has('basis')?params.get('basis')!=='rfm':!params.has('method'));}
+export function caseReading(page,params){
+ const original=CASE_READINGS[`${page}:${params.get('case')}`];
+ if(!original||!isPreferenceContext(page,params))return original;
+ return {...original,input:'前 180 天的顾客商品购买记录',output:'商品偏好社群、代表商品、价值层交叉画像与稳定性诊断',
+ verdict:'商品偏好能细化价值层；Leiden 未超过同群数 K-means，HDBSCAN 的核心群覆盖有限。',
+ evidence:'在相同偏好向量上对照方法，另保留 RFM 价值层。共同评价特征空间、后续购买重合、群数与未归群比例；指标与当前报告对应；轮廓分数不是准确率。',
+ scope:'两期已知公开数据上的开发实验；后续 30 天购买只作偏好延续诊断，不是独立测试或营销收益。',
+ delivery:'购买偏好编码、Leiden 社群、HDBSCAN 密度群、同特征方法对照、逐顾客关系解释与稳定性诊断。',
+ evidenceTargets:['特征与算法的分开对照','群体代表商品与后续购买的重合']};
+}
+export function caseExercise(page,params){
+ const original=CASE_EXERCISES[`${page}:${params.get('case')}`];
+ return isPreferenceContext(page,params)?{...original,metric:'顾客偏好、归属依据与群体商品占比',recipe:'核对购买记录到偏好编码、图邻居或中心距离，再查看群内购买人数占比；每种方法使用自己的归属依据。',failure:'近邻图变化、降维信息损失与大量未归群会影响解释；局部连接强度不是正确率。',anchor:null}:original;
+}
 export const READING_STEPS={example:{view:'experience',label:'1 · 看输入与结果'},evidence:{view:'report',label:'2 · 看效果与代价'},fit:{view:'data',label:'3 · 看适用与交付'}};
 export function readingHref(page,params,step){
  const q=new URLSearchParams(params);q.set('view',READING_STEPS[step].view);q.set('walk',step);q.delete('item');
  return `#${page}?${q}`;
 }
 export function readingHtml(page,params){
- const key=`${page}:${params.get('case')}`,c=CASE_READINGS[key];if(!c)return '';
- const exercise=CASE_EXERCISES[key],publicPath=publicCasePath(key);
+ const key=`${page}:${params.get('case')}`,c=caseReading(page,params);if(!c)return '';
+ const exercise=caseExercise(page,params),publicPath=publicCasePath(key);
  const lessonHref=exerciseHref(page,params);const focusedLesson=lessonHref?.startsWith('#learn?')?`${lessonHref}&focus=calculation`:lessonHref;
  const step=Object.hasOwn(READING_STEPS,params.get('walk'))?params.get('walk'):null;
  return `<section class="case-reading" aria-label="${esc(c.name)}案例结论"><div class="reading-summary"><div class="reading-intro"><strong>${esc(c.name)}</strong><p>${esc(c.input)} → ${esc(c.output)}。</p></div><div class="reading-conclusion"><span>${c.research?'本地研究结论':'固定评估结论'}</span><strong>${esc(c.verdict)}</strong><p>${esc(c.scope)}${c.research?' 对外使用许可尚未确认；公开构建不包含本案例结果。':''}</p></div></div><ol class="reading-steps">${Object.entries(READING_STEPS).map(([key,v])=>`<li><a data-reading-step="${key}" href="${esc(readingHref(page,params,key))}" ${step===key?'aria-current="step"':''}>${v.label}</a></li>`).join('')}</ol>${publicPath?`<nav class="reading-study-links" aria-label="本案例方法与计算"><span>继续了解本例</span><a data-reading-method href="${esc(caseMethodHref(page,params))}">查看建模方法</a><a data-reading-study href="${esc(focusedLesson)}">查看逐项计算</a></nav>`:''}<details class="reading-context"><summary>对照方法与证据范围</summary><p>${esc(c.evidence)}</p><p>上方是固定报告的结论摘要；切换下方样本、模型或规则时，以对应的页面结果和完整报告为准。</p></details><details class="reading-fit" ${step==='fit'?'open':''}><summary>适用条件与可委托范围</summary><dl><div><dt>所需条件</dt><dd>${esc(c.needs)}</dd></div><div><dt>已展示的能力</dt><dd>${esc(c.delivery)}</dd></div><div><dt>尚未证明</dt><dd>${esc(c.limit)}</dd></div></dl><p>以上能力可用于讨论定制范围；新业务的效果、接口与验收要求需另行约定。本站目前仅展示公开案例，没有接入客户数据。</p><a href="#delivery">查看定制服务与交付范围</a></details>${exercise?`<details class="reading-exercise"><summary>计算与实验阅读 · ${esc(exercise.metric)}</summary><p>${esc(exercise.recipe)}</p><p>失效条件：${esc(exercise.failure)}</p><a data-reading-calculation href="${esc(exerciseHref(page,params))}">打开真实记录与计算明细</a><p class="reading-scope">使用已有结果，不重新训练或选择最优样本；实验范围、输入版本及参数见原页面与报告记录。</p></details>`:''}</section>`;
@@ -131,7 +146,7 @@ export function canShowReading(host){
  return !/暂不可用|暂未就绪|案例不存在|正在读取|当前构建未包含/.test([...host.querySelectorAll('h1,h2,.loading-copy,.report-panel>p')].map(e=>e.textContent).join(' '));
 }
 export function mountCaseReading(host,page,params,{navigate=true}={}){
- const c=CASE_READINGS[`${page}:${params.get('case')}`];if(!c||!canShowReading(host))return;
+ const c=caseReading(page,params);if(!c||!canShowReading(host))return;
  const expanded=host.querySelector('.case-reading-disclosure')?.open;
  host.querySelector('.case-reading-disclosure')?.remove();
  host.querySelector('.reading-entry')?.remove();

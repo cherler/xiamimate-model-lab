@@ -7,7 +7,7 @@ test('all seven business plans describe data, outcomes and validation without in
  for(const {id} of BUSINESSES){
   const plan=MODEL_ROADMAPS[id];assert.equal(plan.paths.length,2);
   for(const p of plan.paths)for(const key of ['name','priority','problem','data','method','output','validation','limit'])assert.ok(p[key]?.length>3,`${id}: ${key}`);
-  const html=modelRoadmapHtml(id);assert.match(html,/规划 · 尚未运行以下升级实验/);assert.equal((html.match(/<details/g)||[]).length,2);assert.equal((html.match(/<details open/g)||[]).length,1);
+  const html=modelRoadmapHtml(id);assert.match(html,id==='segments'?/本轮已实现 · 保存结果见案例报告/:/规划 · 尚未运行以下升级实验/);assert.equal((html.match(/<details/g)||[]).length,2);assert.equal((html.match(/<details open/g)||[]).length,1);
   assert.doesNotMatch(html,/已超越|已提升|准确率达到|<script|NaN|undefined/);
  }
  assert.equal(modelRoadmapHtml('unknown'),'');
