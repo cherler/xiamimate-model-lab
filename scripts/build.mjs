@@ -1,3 +1,4 @@
+import {verifyRetrieval} from '../apps/web/retrieval-metrics.js';
 import {verifyClassification} from '../apps/web/classification-metrics.js';
 import { cp, mkdir, readFile, rm } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
@@ -52,6 +53,15 @@ const classificationBytes=await readFile(resolve(classificationRoot,classificati
 if(createHash('sha256').update(classificationBytes).digest('hex')!==classification.sha256)throw new Error('分类结果哈希不一致');
 const classificationPayload=verifyClassification(JSON.parse(classificationBytes));
 if(classificationPayload.run_id!==classification.run_id)throw new Error('分类结果版本不一致');
+const retrievalRoot=resolve(root,'apps/web/retrieval-results');
+const retrieval=JSON.parse(await readFile(resolve(retrievalRoot,'manifest.json'),'utf8'));
+if(!/^[a-f0-9]{16}\/case\.json$/.test(retrieval.path)||retrieval.notice!==retrieval.path.replace('case.json','NOTICE.txt'))throw new Error('检索资源路径无效');
+const retrievalBytes=await readFile(resolve(retrievalRoot,retrieval.path));
+if(createHash('sha256').update(retrievalBytes).digest('hex')!==retrieval.sha256)throw new Error('检索结果哈希不一致');
+const retrievalPayload=verifyRetrieval(JSON.parse(retrievalBytes));
+if(retrievalPayload.run_id!==retrieval.run_id)throw new Error('检索结果版本不一致');
+const retrievalNotice=await readFile(resolve(retrievalRoot,retrieval.notice));
+if(createHash('sha256').update(retrievalNotice).digest('hex')!==retrieval.notice_sha256||retrievalNotice.toString()!==retrievalPayload.notice)throw new Error('检索署名说明不一致');
 // Build output is disposable; validate all sources before replacing it.
 await rm(`${root}dist`, { recursive: true, force: true });
 await mkdir(`${root}dist`, { recursive: true });
