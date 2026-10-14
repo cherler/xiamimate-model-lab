@@ -78,7 +78,7 @@ async function route() {
   await rendering;
   if(token===routeGeneration){
     mountCaseReading(main,page,params);
-    const targetId=sidebarTarget(page,params),target=targetId&&main.querySelector(`#${targetId}`);
+    const targetId=sidebarTarget(page,params),target=targetId?main.querySelector(`#${targetId}`):page==='models'&&params.get('focus')==='detail'?main.querySelector('.guide-detail-section'):null;
     if(target){target.tabIndex=-1;target.focus({preventScroll:true});target.scrollIntoView({block:'start'});}
     sidebar.querySelectorAll('a').forEach(a=>a.onclick=()=>{if(a.getAttribute('href')===location.hash&&target)target.scrollIntoView({block:'start'});});
   }

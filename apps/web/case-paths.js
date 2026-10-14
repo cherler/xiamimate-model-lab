@@ -2,8 +2,8 @@ import {exerciseHref} from './case-exercises.js';
 
 // Public cases only. Research previews have separate access and usage limits.
 export const PUBLIC_CASE_PATHS=[
- {key:'recommend:tafeng',title:'商品推荐',caseName:'Ta Feng 购买行为',scene:'零售会员复购与商品发现',decision:'给一位顾客排出已购商品的复购顺序，并检验能否发现未购商品。',method:'个人复购规则对照 ALS 与衰减融合；未购商品发现单独评估。',methodHref:'#models?case=tafeng&task=repurchase&model=als_decay_25'},
- {key:'forecast:uci',title:'销量预测',caseName:'UCI 零售交易',scene:'多商品短期销量预估',decision:'估计每件商品未来七天的销售总量，供备货讨论使用。',method:'四周中位数对照 LightGBM，检查误差、偏差与逐窗口胜出。',methodHref:'#models?case=uci&task=weekly_sales&model=lightgbm'},
+ {key:'recommend:tafeng',title:'商品推荐',caseName:'Ta Feng 购买行为',scene:'零售会员复购与商品发现',decision:'给一位顾客排出已购商品的复购顺序，并检验能否发现未购商品。',method:'个人复购规则对照 ALS 与衰减融合；未购商品发现单独评估。',methodHref:'#models?case=tafeng&task=repurchase&model=als_decay_25&focus=detail'},
+ {key:'forecast:uci',title:'销量预测',caseName:'UCI 零售交易',scene:'多商品短期销量预估',decision:'估计每件商品未来七天的销售总量，供备货讨论使用。',method:'四周中位数对照 LightGBM，检查误差、偏差与逐窗口胜出。',methodHref:'#models?case=uci&task=weekly_sales&model=lightgbm&focus=detail'},
  {key:'classify:spambase',title:'分类与评分',caseName:'Spambase 邮件',scene:'待复核邮件筛选',decision:'在人工复核名额内找出更多垃圾邮件，同时控制正常邮件误标。',method:'固定规则对照逻辑回归与 LightGBM，分开看识别和误标。',methodHref:'#classify?case=spambase&view=models'},
  {key:'retrieve:scifact',title:'智能检索',caseName:'SciFact 文献',scene:'科研文献候选检索',decision:'按查询找出相关文献，并衡量排序质量与计算耗时。',method:'关键词、语义、融合与重排逐级比较，检查候选漏召回。',methodHref:'#retrieve?case=scifact&view=models'},
  {key:'anomaly:nab',title:'异常检测',caseName:'NAB 监控序列',scene:'设备监控告警',decision:'从连续观测中发出有限告警，兼顾事件发现与告警负担。',method:'固定阈值对照滚动统计、MAD 与孤立森林，检查冷却代价。',methodHref:'#anomaly?case=nab&view=models'},

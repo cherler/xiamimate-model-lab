@@ -19,6 +19,7 @@ test('seven public method and calculation links lead to the intended frozen case
   assert.equal(method.params.get('case'),id);
   assert.equal(method.page,page==='recommend'||page==='forecast'?'models':page);
   if(method.page==='models'){
+   assert.equal(method.params.get('focus'),'detail');
    const {selected}=resolveGuideSelection(method.params);
    assert.equal(selected.caseId,id);
    assert.equal(selected.task,method.params.get('task'));
