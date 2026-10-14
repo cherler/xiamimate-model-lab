@@ -1,4 +1,3 @@
-import {median,ruleFor} from './monitoring-metrics.js';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num=v=>v==null?'不适用':Number(v).toLocaleString('zh-CN',{maximumFractionDigits:4});
 const pct=v=>v==null?'不适用':`${(v*100).toFixed(2)}%`;
@@ -28,4 +27,46 @@ export function customerPair(p,snap,person){
 export function overlapView(p,snap){
  const c=overlapCounts(snap.rows);
  return `<section class="m5-section segment-overlap"><h2>同一批顾客在两种方法中的分布</h2><p>${esc(snap.origin)} 的全部 ${c.total} 位顾客，每位在表内只计一次。行是预设规则，列是模型群；单元格显示人数及该规则人群中的占比。</p>${table(['规则人群 → 模型群',...c.clusters.map((_,g)=>`群 ${g+1}`),'规则合计'],c.matrix.map((row,i)=>[esc(p.rule_names[i]),...row.map(n=>`${n} / ${pct(c.rules[i]?n/c.rules[i]:null)}`),c.rules[i]]).concat([['模型群合计',...c.clusters,c.total]]),'规则和模型群的全量交叉分布')}<p>这张表用于核查预设规则是否把不同消费组合放在一起，以及模型群是否混合了不同运营条件。两套划分没有“正确答案”标签，表格对角线不是准确率。是否需要细分，取决于运营行动能否做出区别并接受独立验证。</p></section>`;
+}
+
+export function alignAssignments(baseline,assignments){
+ if(baseline.length!==assignments.length||[...baseline,...assignments].some(v=>!Number.isInteger(v)||v<0||v>3))throw new Error('分群对齐样本无效');
+ const counts=Array.from({length:4},()=>[0,0,0,0]);baseline.forEach((g,i)=>counts[g][assignments[i]]++);let score=-1,mapping=null,ties=0;
+ const visit=(order,left)=>{if(!left.length){const n=order.reduce((sum,g,i)=>sum+counts[i][g],0);if(n>score){score=n;mapping=order;ties=1;}else if(n===score)ties++;return;}for(const g of left)visit([...order,g],left.filter(x=>x!==g));};visit([],[0,1,2,3]);
+ const inverse=mapping.map((_,g)=>mapping.indexOf(g));return {mapping,inverse,ties,matched:score,aligned:assignments.map(g=>inverse[g])};
+}
+const stabilityCache=new WeakMap();
+export function stabilityEvidence(p){
+ if(stabilityCache.has(p))return stabilityCache.get(p);
+ const first=p.snapshots[0],base=first.rows.map(r=>r.cluster),trials=p.stability.map(t=>({...alignAssignments(base,t.assignments),seed:t.seed}));
+ const people=first.rows.map((row,i)=>({id:row.id,group:row.cluster,retained:trials.filter(t=>t.aligned[i]===row.cluster).length,index:i}));
+ const result={trials,people};stabilityCache.set(p,result);return result;
+}
+export function temporalCustomer(p,id){
+ const [a,b]=p.snapshots.map(s=>s.rows.find(r=>r.id===id)||null);
+ if(!a&&!b)return null;
+ return {id,a,b,status:!a?'entered':!b?'exited':'common',delta:a&&b?b.rfm.map((v,i)=>v-a.rfm[i]):null};
+}
+export function migrationCohorts(p,method){
+ if(!['cluster','rule'].includes(method))throw new Error('未知分群方法');
+ const [a,b]=p.snapshots.map(s=>new Map(s.rows.map(r=>[r.id,r]))),ids=[...new Set([...a.keys(),...b.keys()])].sort();
+ return ids.map(id=>({id,kind:!a.has(id)?'entered':!b.has(id)?'exited':a.get(id)[method]===b.get(id)[method]?'same':'changed'}));
+}
+export function customerEvolution(p,id){
+ const t=temporalCustomer(p,id);if(!t)return '<p role="status">该顾客不在两个保存时点的人群内。</p>';
+ const evidence=stabilityEvidence(p),person=evidence.people.find(r=>r.id===id),pair=[t.a,t.b];
+ return `<section class="m5-section segment-evolution"><h2>同一顾客的跨月变化与抽样稳定性</h2><p>顾客 ${esc(id)}，固定对照 ${p.snapshots[0].origin} → ${p.snapshots[1].origin}。此处不随上方单期画像范围改变。</p><div class="depth-duel"><section><p class="depth-role">变化来源：顾客历史窗口</p><h3>固定模型的跨月记录</h3>${table(['内容',...p.snapshots.map(x=>x.origin)],['R（天）','F（单）','M（£）','规则组','模型群'].map((label,i)=>[label,...pair.map(r=>!r?'未入本期人群':i<3?num(r.rfm[i]):esc(name(p,i===3?'rule':'cluster',r[i===3?'rule':'cluster'])))]),'同顾客两期画像')}<p>${t.delta?`R、F、M 净变化：${signed(t.delta[0])} 天、${signed(t.delta[1])} 单、£${signed(t.delta[2])}。规则${t.a.rule===t.b.rule?'保持同组':'发生换组'}，模型${t.a.cluster===t.b.cluster?'保持同群':'发生换群'}。`:(t.status==='entered'?'后一期进入 180 天有效购买人群，不等同于新注册或首次购买。':'后一期不在 180 天有效购买人群，不等同于永久流失。')}</p><p class="small-note">两期复用相同缩放和中心，群编号已固定，无需重新匹配；不能事后换编号掩盖迁移。订单与金额是滚动窗口净变化，不能仅靠差值拆出新订单和旧订单滑出。</p></section><section><p class="depth-role">变化来源：拟合样本</p><h3>初始顾客的 10 次抽样重拟合</h3>${person?`<p>使用 ${p.snapshots[0].origin} 的同一份 RFM，10 次已保存重拟合中，${person.retained} 次仍归到初始群 ${person.group+1} 对应的群体。</p><p>每次从初始 ${p.snapshots[0].rows.length} 位顾客抽取 ${p.stability[0].sample_n} 位重拟合，再给全部初始顾客分群；先按全体最大重合匹配编号，才统计该顾客。</p><details class="depth-calculation"><summary>查看该顾客每次重拟合的归组</summary>${table(['种子','原重拟合群号','对齐初始后的群号','是否保留初始归属'],evidence.trials.map((trial,i)=>[trial.seed,`原号 ${p.stability[i].assignments[person.index]+1}`,`群 ${trial.aligned[person.index]+1}`,trial.aligned[person.index]===person.group?'是':'否']),'顾客逐次重拟合归属')}<p>4 群遍历 24 种匹配，以全体重合人数最大为准；并列取字典序最小映射。原群号只是标识，对齐不读取后续购买。10 次保留次数不是置信概率。</p></details>`:'<p>该顾客不在初始拟合人群，未保存其 10 次重拟合归属。此项未评估，不借用他人或后一期结果代替。</p>'}<p class="small-note">重拟合稳定不代表以后不会换群；跨月换群也不等于训练不稳定。两类分析不能合成一个“分群准确率”。</p></section></div></section>`;
+}
+export function stabilitySummaryView(p){
+ const e=stabilityEvidence(p),n=e.people.length,stable=e.people.filter(r=>r.retained===e.trials.length).length;
+ return `<section class="m5-section segment-stability"><h2>重拟合稳定与跨月变化分别评价</h2><p>初始 ${n} 位顾客中，${stable} 位（${pct(stable/n)}）在 ${e.trials.length} 次重拟合中均保留对齐后的初始归属；其余 ${n-stable} 位至少有一次变化。覆盖全部初始顾客，不以高稳定样本替代全体。</p>${table(['初始模型群','初始人数','10 次都保留','至少一次变化','逐次保留率最低 / 最高'],[0,1,2,3].map(g=>{const rows=e.people.filter(r=>r.group===g),all=rows.filter(r=>r.retained===e.trials.length).length,rates=p.stability.map(t=>t.retention[g]);return [`群 ${g+1}`,rows.length,`${all} / ${pct(rows.length?all/rows.length:null)}`,rows.length-all,`${pct(Math.min(...rates))} / ${pct(Math.max(...rates))}`];}),'重拟合稳定性的全体顾客覆盖')}<p>重拟合先匹配群标签再比较，指标来自同一初始顾客与特征；下方跨月比较则固定模型、滚动 180 天历史，群编号沿用相同中心。两者回答不同问题，不互相替代。</p></section>`;
+}
+const migrationNames={all:'全部两期顾客',same:'共同顾客 · 同组',changed:'共同顾客 · 换组',entered:'仅后一期入群',exited:'仅初始一期入群'};
+export function migrationExplorer(p,s){
+ const all=migrationCohorts(p,s.method),rows=s.migration==='all'?all:all.filter(r=>r.kind===s.migration);let person=rows.find(r=>r.id===s.person)||rows[0];s.person=person?.id||'';
+ const counts=Object.fromEntries(Object.keys(migrationNames).map(k=>[k,k==='all'?all.length:all.filter(r=>r.kind===k).length]));
+ return `<section class="m5-section segment-migration"><h2>跨月迁移的顾客记录</h2><p>固定两期 ${p.snapshots.map(x=>x.origin).join(' → ')}，按${s.method==='cluster'?'固定 K-means':'固定 RFM 规则'}分类，共同同组 ${counts.same}、共同换组 ${counts.changed}、仅后一期 ${counts.entered}、仅初始一期 ${counts.exited}，合计 ${all.length} 位不同顾客。新增与离开不算入共同顾客迁移比例。</p><div class="lesson-controls"><label for="mon-migration">迁移人群<select id="mon-migration">${Object.entries(migrationNames).map(([key,label])=>`<option value="${key}" ${s.migration===key?'selected':''}>${label}（${counts[key]}）</option>`).join('')}</select></label>${rows.length?`<label for="mon-person">顾客记录（${rows.length} 位，按编号）<select id="mon-person">${rows.map(r=>`<option value="${esc(r.id)}" ${s.person===r.id?'selected':''}>${esc(r.id)} · ${migrationNames[r.kind]}</option>`).join('')}</select></label>`:'<p role="status">该方法没有此类顾客，其他分组记录仍保留。</p>'}</div>${person?customerEvolution(p,person.id):''}${person?`<p><a href="#segments?${new URLSearchParams({case:'retail',view:'experience',origin:p.snapshots.find(x=>x.origin===s.origin&&x.rows.some(r=>r.id===person.id))?.origin||p.snapshots.find(x=>x.rows.some(r=>r.id===person.id)).origin,method:s.method,person:person.id})}">查看该顾客所在时点的双方法画像</a></p>`:''}</section>`;
+}
+export function actionView(p,snap,method){
+ return `<section class="m5-section segment-actions"><h2>群体特征对应的行动假设</h2><p>${snap.origin} · ${method==='cluster'?'K-means':'固定 RFM 规则'}。以下按各群当前 RFM 中位数提出讨论方向，尚未开展触达或干预；群内个体差异需要进一步核查，不直接决定个人待遇。</p>${table(['群体 / 样本','已观察画像（中位数）','可讨论的行动假设','实施前核查'],snap.profiles[method].map(g=>{const [r,f,m]=g.median_rfm||[];return [esc(name(p,method,g.group))+` / ${g.n} 人`,g.n?`${r} 天未买、${f} 单、£${num(m)}`:'空群，无画像',!g.n?'不生成行动假设':r>90?'讨论沉默人群的需求回访':f<=2?'讨论购买后的服务与二次购买需求':f>=5?'讨论补货提醒与服务优先级':'讨论不同购买周期的内容或商品匹配',!g.n?'需有足够样本':r>90?'季节采购与正常低频可能被误当流失':f<=2?'仅指当前窗口少单；核查批发与一次性采购':f>=5?'频繁或大额不等于高利润；需要退货和成本口径':'核查商品类别与周期，RFM 本身不含偏好信息'];}),'群体行动假设与前置核查')}<div class="depth-verdict"><strong>验证行动增益需要独立对照</strong><p>先固定目标、资格、时间窗与预算；在同类可触达人群中设置随机干预／保留对照，比较人均净收益、复购及退订等代价。样本量需按最小可接受效果和基准波动另行设计。本例没有干预分配、利润、许可或触达结果，不能给出营销提升。</p></div><p>当前可交付：可追溯的交易清洗、RFM 与规则／聚类、顾客归属、画像、稳定性和迁移报告。适用前提是稳定的顾客与订单标识、明确退货口径、足够的历史和可区分的运营方案；若群体无法对应不同动作，简单规则可能已经足够。后 30 天购买差异是观察性描述，不用于证明这些行动有效。</p></section>`;
 }
