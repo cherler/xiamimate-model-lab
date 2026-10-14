@@ -1,3 +1,4 @@
+import {verifyDecision} from '../apps/web/decision-metrics.js';
 import {verifyMonitoring} from '../apps/web/monitoring-metrics.js';
 import {verifyRetrieval} from '../apps/web/retrieval-metrics.js';
 import {verifyClassification} from '../apps/web/classification-metrics.js';
@@ -70,6 +71,12 @@ for(const kind of ['anomaly','segments']){
  const bytes=await readFile(resolve(monitoringRoot,spec.path));if(createHash('sha256').update(bytes).digest('hex')!==spec.sha256)throw new Error('监测结果哈希不一致');
  const payload=verifyMonitoring(JSON.parse(bytes),{deep:true});if(payload.kind!==kind||payload.run_id!==spec.run_id)throw new Error('监测结果版本不一致');
 }
+const decisionRoot=resolve(root,'apps/web/decision-results');
+const decision=JSON.parse(await readFile(resolve(decisionRoot,'manifest.json'),'utf8'));
+if(!/^[a-f0-9]{16}\/case\.json$/.test(decision.path))throw new Error('决策结果路径无效');
+const decisionBytes=await readFile(resolve(decisionRoot,decision.path));
+if(createHash('sha256').update(decisionBytes).digest('hex')!==decision.sha256)throw new Error('决策结果哈希不一致');
+if(verifyDecision(JSON.parse(decisionBytes)).run_id!==decision.run_id)throw new Error('决策结果版本不一致');
 // Build output is disposable; validate all sources before replacing it.
 await rm(`${root}dist`, { recursive: true, force: true });
 await mkdir(`${root}dist`, { recursive: true });

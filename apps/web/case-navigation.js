@@ -20,8 +20,8 @@ export function resolveRoute(hash){
   params.set('view',previous==='advanced'?'advanced':params.get('view')==='tuning'?'tuning':'selection');
  }
  if(page==='evidence'){page='recommend';params.set('view','report');}
- if(!['recommend','forecast','classify','retrieve','anomaly','segments','models','learn','delivery'].includes(page))page='recommend';
- if(['anomaly','segments'].includes(page)){
+ if(!['recommend','forecast','classify','retrieve','anomaly','segments','decision','models','learn','delivery'].includes(page))page='recommend';
+ if(['anomaly','segments','decision'].includes(page)){
   if(!params.has('case'))params.set('case',page==='anomaly'?'nab':'retail');
   if(!['experience','data','models','report'].includes(params.get('view')))params.set('view','experience');
  }
