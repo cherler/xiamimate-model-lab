@@ -18,6 +18,7 @@ export function validateExplanations(loaded,manifest){
 function missing(){return '<p class="small-note">当前样本没有匹配版本的解释产物，不以整体特征重要性替代。</p>';}
 export function mountRecommendationExplanation(host,loaded,sample,model){
  if(!host)return;
+ if(model.startsWith('lightgcn_')){mountGraphExplanation(host,loaded,sample,model);return;}
  if(!['behavior','attributes','cross'].includes(model)){host.innerHTML='';return;}
  const record=loaded['explanation-trees']?.data.recommendation.find(s=>s.origin===sample.origin&&s.customer===sample.customer)?.models[model];
  host.innerHTML=`<section class="report-panel"><h2>为什么推荐这件商品</h2>${record?`<label>解释商品<select id="explain-item">${sample.models[model].ranked.map(id=>`<option value="${esc(id)}">第 ${record.items[id].rank} 名 · ${esc(sample.names[id]||id)}</option>`).join('')}</select></label><div id="explain-detail"></div>`:missing()}</section>`;
@@ -35,4 +36,11 @@ export function mountForecastExplanation(host,loaded,sample,model){
  host.innerHTML=`<section class="report-panel"><h2>为什么给出这个销量预测</h2>${record?`<label>解释预测日<select id="explain-day">${sample.actual.map((_,i)=>`<option value="${i}">第 ${i+1} 天</option>`).join('')}</select></label><div id="explain-detail"></div>`:missing()}</section>`;
  if(!record)return;
  const draw=()=>{const day=Number(host.querySelector('#explain-day').value),row=record.days[day];host.querySelector('#explain-detail').innerHTML=`${contributionTable(record.features,row,'件／天')}<p class="small-note">树模型输出再截为非负，最终预测 ${num(sample.predictions.lightgbm[day])} 件。</p>${forecastReliability(sample,day,model)}`;};host.querySelector('#explain-day').onchange=draw;draw();
+}
+
+function mountGraphExplanation(host,loaded,sample,model){
+ const record=loaded['explanation-graph']?.data.find(s=>s.origin===sample.origin&&s.customer===sample.customer)?.models[model];
+ host.innerHTML=`<section class="report-panel"><h2>购买关系怎样影响这件推荐</h2>${record?`<label>解释商品<select id="explain-item">${sample.models[model].ranked.map(id=>`<option value="${esc(id)}">第 ${record.items[id].rank} 名 · ${esc(sample.names[id]||id)}</option>`).join('')}</select></label><div id="explain-detail"></div>`:missing()}</section>`;
+ if(!record)return;
+ const draw=()=>{const id=host.querySelector('#explain-item').value,row=record.items[id],ranks=Object.values(row.seed_ranks);host.querySelector('#explain-detail').innerHTML=`<p><strong>在 ${record.candidate_count} 件候选中排第 ${row.rank}。</strong>分数由顾客自身学到的向量贡献 ${num(row.own)} 与购买邻居贡献 ${signed(row.neighbor_total)} 相加，得到 ${num(row.score)}。</p><p>模型从该顾客在训练目录中买过的 ${row.neighbor_count} 件商品传播信息；下表列出对当前分数影响绝对值最大的 6 件。推荐商品在历史图中连接 ${row.item_support} 名顾客。</p>${table(['提供邻域信息的已购商品','推高／压低排序分'],row.neighbors.map(x=>[`${esc(x.name)}<small> · ${esc(x.item)}</small>`,signed(x.contribution)]).concat([['其余购买邻居合计',signed(row.other_neighbors)]]))}<h3>这个结果何时不可靠</h3><p>预测前可见：三个已训练种子给这件商品的名次为 ${Object.entries(row.seed_ranks).map(([key,rank])=>`${esc(key.replace('lightgcn_','种子 '))}：${rank}`).join('；')}，其中 ${ranks.filter(x=>x<=10).length}／${ranks.length} 次进入 Top 10。${ranks.some(x=>x>10)?'是否进入推荐列表会随训练随机性变化。':'这三个种子都将其放入 Top 10，但不能据此推断购买概率。'}这些名次不是置信区间。</p><p>历史关系少、新顾客／新商品、偏好变化时需要另行验证；本模型未使用名称、价格、促销等商品属性。事后核对：该商品${sample.models[model].target.includes(id)?'命中':'未命中'}随后首个购物篮，真实答案未用于这次分解。</p><details><summary>计算方式与解释边界</summary><p>将固定的商品最终向量，与顾客第 0／1／2 层向量的平均值相乘。第 1、2 层按顾客直接购买邻居聚合，使用训练时相同的度归一化权重；自身项与全部邻居项精确重建原分数，误差 ${esc(row.reconstruction_error.toExponential(2))}。</p><p>这解释的是保存权重下的信息路径。它不是删除某件购买记录后重新训练的效果，也不能证明顾客因这件商品而购买另一件商品；名称只是帮助辨认邻居。</p></details>`;};host.querySelector('#explain-item').onchange=draw;draw();
 }

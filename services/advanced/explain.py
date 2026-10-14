@@ -84,12 +84,81 @@ def trees(runs):
     return result
 
 
+def graphs(runs):
+    import torch
+    from graph import LightGCN, normalized_graph
+    torch.set_num_threads(2)
+    parent, run = runs['ranking'], runs['graph']
+    cfg = json.loads((run / 'config.json').read_text())['recommendation']['graph']
+    if cfg['layers'] != 2:
+        raise ValueError('This neighbor decomposition requires two layers')
+    if json.loads((run / 'report.json').read_text())['parent_ranking'] != parent.name:
+        raise ValueError('Graph parent mismatch')
+    samples = json.loads((run / 'samples.json').read_text())
+    output = []
+    for origin in sorted({s['origin'] for s in samples}):
+        with gzip.open(parent / f'snapshot-{origin}.pkl.gz', 'rb') as f:
+            bundle = pickle.load(f)
+        snapshot = bundle['snapshot']; x = snapshot['x']; nu = x.shape[0]
+        adj = normalized_graph(x)
+        queries = {q['customer']: q for q in bundle['queries']}
+        states = {}
+        for seed in cfg['seeds']:
+            name = f'lightgcn_{seed}'
+            model = LightGCN(*x.shape, cfg['dimensions'], cfg['layers'])
+            model.load_state_dict(torch.load(run / f'{name}-{origin}.pt', weights_only=True))
+            model.eval()
+            with torch.no_grad():
+                e0 = model.embedding.weight
+                e1 = torch.sparse.mm(adj, e0)
+                uf, it = model.propagate(adj)
+            saved = np.load(run / f'{name}-{origin}-embeddings.npz')
+            np.testing.assert_allclose(uf.numpy(), saved['users'], atol=1e-7)
+            np.testing.assert_allclose(it.numpy(), saved['items'], atol=1e-7)
+            states[name] = (e0.detach().numpy().astype(float), e1.detach().numpy().astype(float), saved['users'], saved['items'])
+        degrees_u = np.asarray(x.sum(axis=1)).ravel()
+        degrees_i = np.asarray(x.sum(axis=0)).ravel()
+        for sample in (s for s in samples if s['origin'] == origin):
+            q = queries[sample['customer']]; u = snapshot['ui'][sample['customer']]
+            rankings = {}; scores = {}
+            for name, (_, _, uf, it) in states.items():
+                scores[name] = it[q['ids']] @ uf[u]
+                order = np.argsort(-scores[name], kind='stable')
+                ranked = np.array(snapshot['items'])[q['ids'][order]].tolist()
+                if ranked[:10] != sample['models'][name]['ranked']:
+                    raise ValueError('Graph ranking replay differs')
+                rankings[name] = {item: rank + 1 for rank, item in enumerate(ranked)}
+            rec = {'origin': origin, 'customer': sample['customer'], 'models': {}}
+            neighbors = x.getrow(u).indices
+            weights = 1 / np.sqrt(degrees_u[u] * degrees_i[neighbors])
+            for name, (e0, e1, uf, it) in states.items():
+                items = {}
+                for item in sample['models'][name]['ranked']:
+                    j = snapshot['items'].index(item)
+                    candidate_pos = int(np.flatnonzero(q['ids'] == j)[0])
+                    vector = it[j].astype(float)
+                    own = float(e0[u] @ vector / 3)
+                    parts = ((e0[nu + neighbors] + e1[nu + neighbors]) @ vector) * weights / 3
+                    score = float(scores[name][candidate_pos])
+                    np.testing.assert_allclose(own + parts.sum(), score, atol=2e-6)
+                    order = np.argsort(-np.abs(parts), kind='stable')
+                    items[item] = {'score': score, 'own': own, 'neighbor_total': float(parts.sum()),
+                        'neighbors': [{'item': snapshot['items'][neighbors[k]], 'name': snapshot['names'][neighbors[k]], 'contribution': float(parts[k])} for k in order[:6]],
+                        'other_neighbors': float(parts[order[6:]].sum()), 'neighbor_count': len(neighbors),
+                        'item_support': int(degrees_i[j]), 'rank': rankings[name][item],
+                        'seed_ranks': {key: ranks[item] for key, ranks in rankings.items()},
+                        'reconstruction_error': float(abs(own + parts.sum() - score))}
+                rec['models'][name] = {'candidate_count': len(q['ids']), 'items': items}
+            output.append(rec)
+    return output
+
+
 def main(kind):
     runs = sources()
     payload = {'schema': 1, 'kind': kind, 'runs': {k: p.name for k, p in runs.items()},
                'reports': {k: sha(p / 'report.json') for k, p in runs.items()},
                'generator_sha256': sha(__file__), 'method': 'frozen_weight_replay',
-               'data': {'trees': trees}[kind](runs)}
+               'data': {'trees': trees, 'graph': graphs}[kind](runs)}
     write(ROOT / f'artifacts/advanced-explanation-{kind}.json', payload)
     print('Verified and explained', kind)
 

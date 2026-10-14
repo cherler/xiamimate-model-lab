@@ -28,3 +28,14 @@ test('every LightGBM sample reconstructs the shown score and all feature groups'
   assert.ok(Math.abs(Math.max(0,d.score)-sample.predictions.lightgbm[i])<1e-7);
  });}
 });
+test('graph neighbors reconstruct frozen scores and seed ranks match saved recommendations',()=>{
+ const data=loaded['explanation-graph'].data;assert.equal(data.length,loaded['recommendation-samples'].length);
+ for(const s of data){const sample=loaded['recommendation-samples'].find(x=>x.origin===s.origin&&x.customer===s.customer);
+  for(const [model,record] of Object.entries(s.models))for(const [id,row] of Object.entries(record.items)){
+   assert.equal(row.rank,sample.models[model].ranked.indexOf(id)+1);
+   assert.ok(Math.abs(row.own+row.neighbor_total-row.score)<2e-6);
+   assert.ok(Math.abs(row.neighbors.reduce((a,b)=>a+b.contribution,0)+row.other_neighbors-row.neighbor_total)<1e-9);
+   for(const [seed,rank] of Object.entries(row.seed_ranks))assert.equal(rank<=10,sample.models[seed].ranked.includes(id));
+  }
+ }
+});
