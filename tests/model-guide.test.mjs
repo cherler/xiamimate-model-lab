@@ -55,3 +55,12 @@ test('forecast evaluation links stay in forecasting and retain the selected task
  assert.ok(href.startsWith('#forecast?'));const q=new URLSearchParams(href.split('?')[1]);
  assert.equal(q.get('view'),'report');assert.equal(q.get('task'),'weekly_sales');
 });
+
+test('every saved UCI recommendation method has its own matching explanation',()=>{
+ const cards=GUIDE.filter(c=>c.caseId==='uci'&&c.task==='next_basket');
+ assert.deepEqual(cards.flatMap(c=>c.variants.map(v=>v.model)).sort(),Object.keys(reports.uci.recommendation.models).sort());
+ for(const [id,r] of Object.entries(reports.uci.recommendation.models)){
+  const c=cards.find(c=>c.variants.some(v=>v.model===id));assert.deepEqual(guideMetrics(c,id,reports.uci),r.metrics);
+  assert.ok(c.input&&c.process&&c.features&&c.limit&&c.use);
+ }
+});

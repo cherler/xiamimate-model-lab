@@ -1,3 +1,4 @@
+import {UCI_RECOMMENDATION_GUIDE} from './recommendation-guide.js';
 import {FORECAST_GUIDE} from './forecast-guide.js';
 import {loadManifest, loadShowcaseResource, MODEL_NAMES} from './showcase.js';
 import {saveSelection} from './navigation-state.js';
@@ -17,6 +18,7 @@ export const GUIDE = [
  {id:'lgbm',group:'forecast',title:'LightGBM',kind:'特征驱动的树模型',caseId:'tafeng',task:'weekly_sales',variants:[variant('lgbm_regression_l1_7')],input:'历史周销量、日销量统计、日历和固定商品编码。',process:'所有商品共用梯度提升树，以 L1 目标直接学习七天总销量；冻结版本每棵树最多 7 叶子。',output:'未来完整七天销量（件）',use:'学习历史趋势、波动和商品差异之间的非线性关系。',limit:'最终测试明显低估总销量，未通过偏差门槛；不能据此声称已适合自动补货。',features:'过去四周销量、均值／中位数、波动、最大值、零销量比例、趋势、日历与商品独热编码。',example:'商品编码帮助区分历史模式，但不等于使用品牌、用途或价格等商品属性。'},
  {id:'ridge',group:'forecast',title:'Ridge',kind:'线性预测',caseId:'uci',task:'daily_sales',variants:[variant('ridge','Ridge')],input:'历史销量、滞后统计与日历等构造特征。',process:'在对数销量上拟合带 L2 正则的线性模型，再转换回销量。',output:'未来 28 天逐日销量（件／天）',use:'作为特征驱动预测的线性参照。',limit:'对数反变换可能低估尖峰；逐日任务不能与七天总量任务直接比较 WAPE。',features:'历史滞后销量、统计、日历及商品编码，不使用商品文本。',example:'预测曲线平稳并不代表总量准确，还要同时检查 WAPE 和总量偏差。'},
  {id:'arima',group:'forecast',title:'AutoARIMA',kind:'统计时间序列',caseId:'uci',task:'daily_sales',variants:[variant('autoarima','AutoARIMA')],input:'UCI 每件商品在预测起点之前的日销量序列。',process:'自动选择 ARIMA 参数，利用序列的历史依赖进行预测。',output:'未来 28 天逐日销量（件／天）',use:'在原逐日任务中提供另一种统计模型对照。',limit:'稀疏销量可能导致拟合失败；页面与报告明确记录上周同期回退。',features:'销量序列的自回归、差分和移动平均结构，不使用商品属性。',example:'报告中的成绩包含实际回退结果，不能当作所有样本都由 ARIMA 成功预测。'},
+ ...UCI_RECOMMENDATION_GUIDE,
  ...FORECAST_GUIDE,
 ];
 export const FEATURES = [
