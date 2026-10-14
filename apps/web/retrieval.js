@@ -1,3 +1,4 @@
+import {studyPlaceholder,bindColbertStudy} from './colbert-study.js';
 import {saveSelection} from './navigation-state.js';
 import {traceView,GROUPS,groupedQueries,groupSummary,groupView,pipelineView} from './retrieval-depth.js';
 import {RETRIEVAL_METHODS as METHODS,retrievalMetrics,verifyRetrieval} from './retrieval-metrics.js';
@@ -71,6 +72,7 @@ export async function renderRetrieval(host,current,params){
   const draw=()=>{
    const active=host.ownerDocument.activeElement?.id;
    content.innerHTML=view==='data'?data(p):view==='models'?models(p.report):view==='report'?report(p,s):view==='learn'?lesson(p,s):experience(p,s);
+   if(['models','report','learn'].includes(view)){content.insertAdjacentHTML('beforeend',studyPlaceholder());bindColbertStudy(content,p,s.query);}
    const fields={'ret-model':'model','ret-base':'base','ret-k':'k','ret-query':'query','ret-document':'document','ret-outcome':'outcome','ret-group-by':'groupBy','ret-group':'group'};
    for(const [id,key] of Object.entries(fields)){const el=content.querySelector(`#${id}`);if(el)el.onchange=e=>{s[key]=key==='k'?Number(e.target.value):e.target.value;if(key==='groupBy')s.group='all';if(key==='query')s.document=null;draw();};}
    const form=content.querySelector('#ret-filter-form');if(form)form.onsubmit=e=>{e.preventDefault();s.filter=content.querySelector('#ret-filter').value.trim();draw();};

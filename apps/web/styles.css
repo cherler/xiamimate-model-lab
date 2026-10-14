@@ -140,3 +140,7 @@ main,.sidebar,.workbench>*,.bottom-grid>*{min-width:0}
 .readiness-review{margin:22px 0;padding:20px;border-left:3px solid var(--blue);background:#eff6f9}.readiness-review h3{margin-top:0}.readiness-review p{line-height:1.8}
 
 .scenario-expansion>h2{margin:8px 0 12px}.scenario-expansion>p{line-height:1.8}.scenario-index{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}.scenario-index button{white-space:normal;text-align:left;font-size:14px;line-height:1.6}.scenario-expansion details{scroll-margin-top:110px}.case-model-progress{margin-top:24px}.case-model-progress>summary{color:var(--muted)}.case-model-progress>h2{font-size:20px}
+
+.colbert-study details{border-top:1px solid var(--line);padding:16px 0;margin-top:16px}.colbert-study summary{cursor:pointer;line-height:1.8}.colbert-study blockquote{margin:16px 0;padding:14px 18px;border-left:3px solid var(--blue);background:var(--bg);line-height:1.8;overflow-wrap:anywhere}.colbert-notice{white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.6 inherit;max-height:300px;overflow:auto}.colbert-study [data-colbert-content]{min-width:0}.colbert-study select{width:100%;min-width:0}.colbert-study label{min-width:0}
+
+.colbert-study [data-colbert-load][hidden]{display:none}

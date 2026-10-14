@@ -1,3 +1,4 @@
+import {verifyColbert} from '../apps/web/colbert-metrics.js';
 import {readinessModule} from './export-model-readiness.mjs';
 import {verifyPreference} from '../apps/web/preference-segments.js';
 import {validateExplanations} from '../apps/web/advanced-explanations.js';
@@ -71,6 +72,14 @@ const retrievalPayload=verifyRetrieval(JSON.parse(retrievalBytes));
 if(retrievalPayload.run_id!==retrieval.run_id)throw new Error('检索结果版本不一致');
 const retrievalNotice=await readFile(resolve(retrievalRoot,retrieval.notice));
 if(createHash('sha256').update(retrievalNotice).digest('hex')!==retrieval.notice_sha256||retrievalNotice.toString()!==retrievalPayload.notice)throw new Error('检索署名说明不一致');
+const colbertRoot=resolve(root,'apps/web/colbert-results');
+const colbert=JSON.parse(await readFile(resolve(colbertRoot,'manifest.json'),'utf8'));
+if(!/^[a-f0-9]{16}\/case\.json$/.test(colbert.path))throw new Error('ColBERT 资源路径无效');
+const colbertBytes=await readFile(resolve(colbertRoot,colbert.path));
+if(createHash('sha256').update(colbertBytes).digest('hex')!==colbert.sha256)throw new Error('ColBERT 文件校验失败');
+const colbertPayload=verifyColbert(JSON.parse(colbertBytes),retrievalPayload);
+const colbertAudit=JSON.parse(await readFile(resolve(root,'docs/evaluation/colbert-development-v1.json'),'utf8'));
+if(colbertPayload.run_id!==colbert.run_id||colbertAudit.case_sha256!==colbert.sha256)throw new Error('ColBERT 实验版本不一致');
 const monitoringRoot=resolve(root,'apps/web/monitoring-results');
 const monitoring=JSON.parse(await readFile(resolve(monitoringRoot,'manifest.json'),'utf8'));
 for(const kind of ['anomaly','segments']){
