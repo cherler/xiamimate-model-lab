@@ -130,13 +130,14 @@ export function readingHtml(page,params){
 export function canShowReading(host){
  return !/暂不可用|暂未就绪|案例不存在|正在读取|当前构建未包含/.test([...host.querySelectorAll('h1,h2,.loading-copy,.report-panel>p')].map(e=>e.textContent).join(' '));
 }
-export function mountCaseReading(host,page,params){
+export function mountCaseReading(host,page,params,{navigate=true}={}){
  const c=CASE_READINGS[`${page}:${params.get('case')}`];if(!c||!canShowReading(host))return;
+ const expanded=host.querySelector('.case-reading-disclosure')?.open;
  host.querySelector('.case-reading-disclosure')?.remove();
  host.querySelector('.reading-entry')?.remove();
  const body=host.querySelector('#case-content'),heading=host.querySelector('.page-heading,.m5-heading');
  if(!heading)return;
- const html=`<details class="case-reading-disclosure"><summary>案例说明、评估结论与适用条件</summary>${readingHtml(page,params)}</details>`;
+ const html=`<details class="case-reading-disclosure" ${expanded?'open':''}><summary>案例说明、评估结论与适用条件</summary>${readingHtml(page,params)}</details>`;
  const footer=(body||host).querySelector('.showcase-source');
  if(footer)footer.insertAdjacentHTML('beforebegin',html);else (body||host).insertAdjacentHTML('beforeend',html);
  heading.insertAdjacentHTML('afterend','<div class="reading-entry"><button class="text-link" type="button">查看案例说明与评估范围 ↓</button></div>');
@@ -147,7 +148,7 @@ export function mountCaseReading(host,page,params){
  guide.querySelector('[data-reading-method]')?.addEventListener('click',e=>{e.currentTarget.href=caseMethodHref(page,new URLSearchParams(location.hash.split('?')[1]||''));});
  guide.querySelector('[data-reading-calculation]')?.addEventListener('click',e=>{e.currentTarget.href=exerciseHref(page,new URLSearchParams(location.hash.split('?')[1]||''));});
  guide.querySelector('[data-reading-study]')?.addEventListener('click',e=>{const href=exerciseHref(page,new URLSearchParams(location.hash.split('?')[1]||''));e.currentTarget.href=href?.startsWith('#learn?')?`${href}&focus=calculation`:href;});
- const walk=params.get('walk');let target;
+ const walk=navigate?params.get('walk'):null;let target;
  if(walk==='fit')target=guide.querySelector('.reading-fit');
  else if(walk==='evidence')target=[...host.querySelectorAll('h2')].find(h=>c.evidenceTargets.includes(h.textContent.trim()));
  else if(walk==='calculation'){const exercise=CASE_EXERCISES[`${page}:${params.get('case')}`];target=exercise?.anchor?host.querySelector(`[data-calculation="${exercise.anchor}"]`):null;if(target)target.parentElement.open=true;}

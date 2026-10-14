@@ -29,6 +29,10 @@ function documents(p,q,method,other,k){
   return `<li class="${hit?'retrieval-hit':''}"><div class="retrieval-result-meta"><strong>第 ${i+1} 名</strong><span>${hit?'标注相关':'未标注相关'}</span><span>${previous<0?'另一方法未进前 100':delta===0?'与另一方法同名次':`比另一方法${delta>0?'提前':'后移'} ${Math.abs(delta)} 名`}</span></div><h3 lang="en">${esc(d.title)}</h3><p class="retrieval-excerpt" lang="en">${esc(d.text.slice(0,220))}${d.text.length>220?'…':''}</p><details><summary>展开摘要与文献编号 ${esc(id)}</summary><p lang="en">${esc(d.text)}</p><a href="https://www.semanticscholar.org/search?q=${encodeURIComponent(d.title)}" target="_blank" rel="noreferrer">按标题查找原文</a><p class="small-note">编号为公开数据中的文献 ID；相关标签不表示研究主张已被证实。</p></details></li>`;
  }).join('')}</ol>`;
 }
+function lesson(p,s){
+ const q=p.queries.find(q=>q.id===s.query)||p.queries[0];s.query=q.id;
+ return `<div class="lesson-controls">${select('ret-query','已评估查询',p.queries.map(q=>[q.id,`${q.id} · ${q.text}`]),s.query)}${select('ret-k','最终展示截断',[[5,'前 5 篇'],[10,'前 10 篇']],s.k)}</div>${traceView(p,q,s,{teaching:true})}`;
+}
 function experience(p,s){
  const filtered=groupedQueries(p.queries,s.groupBy,s.group).filter(q=>`${q.id} ${q.text}`.toLowerCase().includes(s.filter.toLowerCase())),q=filtered.find(q=>q.id===s.query)||filtered[0];
  const top=`<p class="validation-boundary">整体基准：300 条查询平均 NDCG@10，BM25 ${num(p.report.summary.bm25.ndcg_at_10)}，混合检索 ${num(p.report.summary.hybrid.ndcg_at_10)}，重排 ${num(p.report.summary.rerank.ndcg_at_10)}。下方回放单条查询，命中与漏检均保留。</p><form id="ret-filter-form" class="retrieval-search"><label for="ret-filter">筛选已评估查询（英文关键词或编号）<input type="search" id="ret-filter" value="${esc(s.filter)}" placeholder="例如：cell 或查询编号"/></label><button class="primary" type="submit">筛选查询</button><button class="outline" type="button" id="ret-clear">清除筛选</button></form><p class="small-note">当前分组：${s.group==='all'?'全部查询':esc(GROUPS[s.groupBy].groups[s.group])}，共 ${groupedQueries(p.queries,s.groupBy,s.group).length} 条。筛选框仅查找已有查询，不运行新的文献搜索。</p>`;
@@ -66,7 +70,7 @@ export async function renderRetrieval(host,current,params){
   const content=host.querySelector('#retrieval-content');
   const draw=()=>{
    const active=host.ownerDocument.activeElement?.id;
-   content.innerHTML=view==='data'?data(p):view==='models'?models(p.report):view==='report'?report(p,s):experience(p,s);
+   content.innerHTML=view==='data'?data(p):view==='models'?models(p.report):view==='report'?report(p,s):view==='learn'?lesson(p,s):experience(p,s);
    const fields={'ret-model':'model','ret-base':'base','ret-k':'k','ret-query':'query','ret-document':'document','ret-outcome':'outcome','ret-group-by':'groupBy','ret-group':'group'};
    for(const [id,key] of Object.entries(fields)){const el=content.querySelector(`#${id}`);if(el)el.onchange=e=>{s[key]=key==='k'?Number(e.target.value):e.target.value;if(key==='groupBy')s.group='all';if(key==='query')s.document=null;draw();};}
    const form=content.querySelector('#ret-filter-form');if(form)form.onsubmit=e=>{e.preventDefault();s.filter=content.querySelector('#ret-filter').value.trim();draw();};

@@ -55,6 +55,6 @@ test('legacy Ta Feng lessons retain their dataset and control edits retain the a
    const r=resolveRoute(global.location.hash,false);assert.equal(r.page,mode);
    assert.equal(r.params.get('model'),'rerank');assert.equal(r.params.get('query'),'12');assert.equal(r.params.get('document'),'123');
   }
-  assert.equal(notified,2);
+  await Promise.resolve();assert.equal(notified,2);
  }finally{Object.assign(global,previous);}
 });

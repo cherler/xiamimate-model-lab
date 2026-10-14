@@ -1,3 +1,4 @@
+import {saveSelection} from './navigation-state.js';
 import {m5Evidence} from './evidence-bridge.js';
 import {forecastContribution} from './case-depth.js';
 import { renderForecastCoverage } from './coverage-studies.js';
@@ -73,7 +74,7 @@ export async function renderM5(host,isCurrent,routeParams) {
 
   function sync(){
    const q=new URLSearchParams({case:'m5',view:'experience',window:String(origin),model,baseline,level});if(level!=='store')q.set('category',category);if(level==='item')q.set('item',item.id);
-   history.replaceState(null,'',`#forecast?${q}`);
+   saveSelection('forecast',Object.fromEntries(q));
   }
   function itemOptions(){
    const search=host.querySelector('#m5-search').value.trim().toLowerCase();

@@ -110,3 +110,14 @@ main,.sidebar,.workbench>*,.bottom-grid>*{min-width:0}
 .delivery-toc{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}
 #main[data-mode="models"] .case-views,#main[data-mode="learn"] .case-views{display:none}
 #main[data-mode="learn"] .case-reading{display:none}
+
+.learning-context{display:grid;grid-template-columns:1.1fr 1fr;gap:18px 28px;background:#f0f6f8;border:1px solid #dce7ee;border-radius:5px;padding:20px;margin:0 0 24px}.learning-context h2{font-size:17px;margin:6px 0 10px;line-height:1.6}.learning-context p{font-size:13px;line-height:1.8;color:#486477}.learning-context strong{font-size:13px}.learning-context nav{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px 20px;border-top:1px solid #dce7ee;padding-top:12px;font-size:12px}.learning-context a{color:#087f9d;text-decoration:underline;text-underline-offset:3px}
+/* UCI forecasting keeps the same verified calculations and controls; the lesson omits the experience-only dashboard. */
+#main[data-mode="learn"][data-case="uci"][data-business="forecast"] #case-content>:not(.page-heading):not(.breadcrumb):not(.forecast-selectors):not(.public-forecast-pair):not(.task-switch):not(.learning-context):not(.small-note){display:none}
+#main[data-mode="models"] .guide-intro{display:none}
+@media(max-width:700px){.learning-context{grid-template-columns:1fr;padding:16px;gap:14px}.learning-context nav{grid-column:auto}}
+
+.guide-related{margin:24px 0}.guide-related>summary{padding:16px 0;cursor:pointer;font-weight:600;color:#536f82}
+#main[data-mode="learn"][data-case="m5"] #case-content>:not(.m5-heading):not(.breadcrumb):not(.m5-workbench):not(.learning-context):not(.m5-context):not(.showcase-source){display:none}
+#main[data-mode="learn"][data-case="m5"] #m5-plot>:not(.depth-errors):not(.loading-copy){display:none}
+#main[data-mode="learn"][data-case="dressipi"] #case-content>:not(.page-heading):not(.breadcrumb):not(.showcase-controls):not(.learning-context):not(.showcase-boundary):not(#dressipi-content):not(.showcase-source){display:none}

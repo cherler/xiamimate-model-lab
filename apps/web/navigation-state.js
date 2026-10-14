@@ -19,7 +19,7 @@ export function sectionHref(mode,business,params=new URLSearchParams()){
  if(mode==='delivery')return '#delivery';
  const entry=BUSINESSES.find(c=>c.id===business)||BUSINESSES[0],q=new URLSearchParams(params);
  if(!q.has('case'))q.set('case',entry.caseId);
- if(mode!=='case'&&q.has('view')&&!['models'].includes(q.get('view')))q.set('experienceView',q.get('view'));
+ if(mode!=='case'&&q.has('view')&&!['models','learn'].includes(q.get('view')))q.set('experienceView',q.get('view'));
  for(const key of ['topic','focus','lesson','walk','business','view'])q.delete(key);
  if(mode==='case'){
   q.set('view',q.get('experienceView')||'experience');q.delete('experienceView');
@@ -36,5 +36,6 @@ export function saveSelection(business,values){
  // Keep report/data views when writing state from an experience renderer.
  const href=mode==='case'?`#${business}?${q}`:sectionHref(mode,business,q);
  history.replaceState(null,'',href);
- window.dispatchEvent(new Event('selectionchange'));
+ // Renderers may write the URL before replacing their content. Notify after that draw.
+ queueMicrotask(()=>window.dispatchEvent(new Event('selectionchange')));
 }
