@@ -48,3 +48,14 @@ test('D8 delivery entry leads to seven available public evidence paths, not rese
  for(const link of links){const {page,params}=resolveRoute(link);assert.ok(CASE_READINGS[`${page}:${params.get('case')}`]);assert.equal(params.get('walk'),'fit');assert.notEqual(params.get('case'),'m5');assert.notEqual(params.get('case'),'dressipi');}
  assert.match(html,/不将公开案例成绩作为收益承诺/);
 });
+
+test('customer first-screen summaries cover every case and distinguish fixed conclusions from selectable replay',()=>{
+ for(const [key,c] of Object.entries(CASE_READINGS)){
+  const [page,id]=key.split(':'),html=readingHtml(page,new URLSearchParams({case:id,view:'experience'}));
+  assert.ok(c.verdict?.length>12,key);
+  assert.ok(html.indexOf('reading-conclusion')<html.indexOf('reading-steps'),key);
+  assert.match(html,/切换下方样本、模型或规则时，以对应的页面结果和完整报告为准/);
+  assert.match(html,/看效果与代价/);
+  assert.match(html,c.research?/本地研究结论/:/固定评估结论/);
+ }
+});
