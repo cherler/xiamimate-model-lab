@@ -1,0 +1,113 @@
+{
+  "schema": 1,
+  "protocol": {
+    "schema": 1,
+    "purpose": "CPU feasibility only; no relevance evaluation or fine tuning",
+    "model": "colbert-ir/colbertv2.0",
+    "revision": "c1e84128e85ef755c096a95bdb06b47793b13acf",
+    "parent_run": "scifact-20261014T000358068631Z",
+    "selection": "first 256 document IDs and 12 query IDs ordered by SHA256(ID); independent of relevance",
+    "documents": 256,
+    "queries": 12,
+    "device": "cpu",
+    "threads": 4,
+    "batch_size": 4,
+    "doc_maxlen": 180,
+    "query_maxlen": 32,
+    "dimensions": 128,
+    "query_marker_id": 1,
+    "document_marker_id": 2,
+    "query_augmentation": "PAD replaced by MASK; attention mask unchanged; all 32 query vectors contribute",
+    "document_mask": "PAD and first token ID of each ASCII punctuation symbol excluded",
+    "scoring": "sum over query token vectors of maximum cosine similarity to retained document token vectors",
+    "timing": "one warmup batch, one corpus encoding pass, three warm passes per query; separate query encoding, cached scoring all256 and first50; no network/model loading in latency",
+    "implementation": "local uncompressed exact MaxSim prototype using official BERT+projection safetensors; not PLAID or residual-compressed official index; engine parity remains to verify",
+    "data_policy": "read checksum-bound saved documents and query texts only; no qrels, quality scoring or modifications to original retrieval run",
+    "license": "checkpoint card MIT, official ColBERT code MIT; SciFact/BEIR attribution retained in existing case; no new rights inferred for other datasets"
+  },
+  "protocol_sha256": "298561de9ac7c0cbf3d308e364ddf4f25d6f689a6f6479c73a46c8973545d26c",
+  "script_sha256": "3843c98048bccf7ef30b0ff3b932a8f2d0915638ff40e5118fca1761a66b3a95",
+  "parent_hashes": {
+    "documents_sha256": "901c04a277e9f8c5eebd25faed7881d4aca5bc607cb0e81b57da3825a0994da1",
+    "rankings_sha256": "b0afad5190be2b96622d15e753128f78306d166d6951c206384f6c9aa1261c22"
+  },
+  "model_files": {
+    "model.safetensors": {
+      "bytes": 438349816,
+      "sha256": "3f58890b1dfdfec066ef12ba431fa9d56992da9e30a53489242c4156e37e9017"
+    },
+    "tokenizer_config.json": {
+      "bytes": 405,
+      "sha256": "a16a31c8d474339d7a46afe7eb8583b24f8b74806af6e25294506523f9d0acfb"
+    },
+    "special_tokens_map.json": {
+      "bytes": 112,
+      "sha256": "303df45a03609e4ead04bc3dc1536d0ab19b5358db685b6f3da123d05ec200e3"
+    },
+    "config.json": {
+      "bytes": 743,
+      "sha256": "cbdcc01dc7772fd0e5e1d85d5de695faf8c4935ae3c7ea3fdb6c24397b284f3c"
+    },
+    "tokenizer.json": {
+      "bytes": 466081,
+      "sha256": "5fd1c882abbd30517dced455a2c9768945ec726b96727927e4959348d9de550b"
+    },
+    "README.md": {
+      "bytes": 10407,
+      "sha256": "44e68292037d4fac7db91b9b24ae36535ae5807eef2b323adcc83a615b91751d"
+    },
+    "vocab.txt": {
+      "bytes": 231508,
+      "sha256": "07eced375cec144d27c900241f3e339478dec958f92fddbc551f295c992038a3"
+    },
+    "artifact.metadata": {
+      "bytes": 1633,
+      "sha256": "0ddc5a54234cff6d13bc9411250a5479d9d96f3ffbace76d8a1884144377e434"
+    }
+  },
+  "environment": {
+    "python": "3.12.9",
+    "torch": "2.14.1",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "device": "cpu",
+    "threads": 4
+  },
+  "corpus_count": 5183,
+  "query_count": 300,
+  "full_corpus_wordpiece_quantiles": {
+    "0.5": 317.0,
+    "0.9": 503.0,
+    "0.95": 568.8999999999996,
+    "1": 1940.0
+  },
+  "documents_truncated_at": {
+    "180": 4730,
+    "256": 3710,
+    "512": 459
+  },
+  "queries_truncated_at_32": 54,
+  "uncompressed_full_corpus_vector_bytes": {
+    "float32": 417603584,
+    "float16": 208801792
+  },
+  "existing_dense_vector_file_bytes": 7961216,
+  "sample_encoding_seconds": 10.184955624863505,
+  "linear_full_corpus_seconds_estimate": 206.20556642057636,
+  "peak_process_rss_bytes": 1383530496,
+  "timing_summary_ms": {
+    "query_ms": {
+      "median": 21.76266652531922,
+      "p95": 51.59882316365838
+    },
+    "score256_ms": {
+      "median": 5.664750002324581,
+      "p95": 11.730676400475204
+    },
+    "score50_ms": {
+      "median": 1.0815830901265144,
+      "p95": 1.424708403646946
+    }
+  },
+  "quality_metrics": null,
+  "official_engine_parity": false
+}

@@ -70,6 +70,9 @@
     "explain:advanced": "services/advanced/.venv/bin/python services/advanced/explain.py trees && services/advanced/.venv/bin/python services/advanced/explain.py graph && services/advanced/.venv/bin/python services/advanced/explain.py tft && services/advanced/.venv/bin/python services/advanced/export.py",
     "train:preferences": "uv run --project services/segmentation python services/segmentation/run.py",
     "verify:preferences": "uv run --project services/segmentation python services/segmentation/run.py verify",
-    "test:preferences": "uv run --project services/segmentation python -m unittest discover -s services/segmentation/tests -v"
+    "test:preferences": "uv run --project services/segmentation python -m unittest discover -s services/segmentation/tests -v",
+    "audit:sequences": "uv run python services/feasibility/sequence_audit.py",
+    "probe:colbert": "uv run --project services/retrieval python services/feasibility/colbert_probe.py",
+    "test:feasibility": "uv run --project services/retrieval python -m unittest discover -s services/feasibility -p test_colbert_probe.py -v"
   }
 }

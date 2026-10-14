@@ -1,0 +1,286 @@
+{
+  "schema": 1,
+  "purpose": "historical data readiness; not trained SASRec, independent test or next-basket accuracy",
+  "event_policy": "merge same-customer same-timestamp items into an unordered basket; sequence only between strictly different timestamps",
+  "script_sha256": "d9be280857e8bf0d9b32faaba243a0b74280c52df40ac6f7f68ef7516d5c6e0b",
+  "uci_source_sha256": "161e0fff40773161a69a0a4f5934a75527a441141e979fb9674db91132b9fb7a",
+  "tafeng_development_sha256": "963e27f1db56b968903fa56ba62c193096057a183907fb7152c35d37f6e131e9",
+  "uci": [
+    {
+      "start_inclusive": "2010-12-01",
+      "end_exclusive": "2011-06-01",
+      "rows": 143150,
+      "customers": 2716,
+      "items": 3108,
+      "baskets": 7351,
+      "basket_size_quantiles": {
+        "0": 1.0,
+        "0.25": 6.0,
+        "0.5": 15.0,
+        "0.75": 26.0,
+        "0.9": 43.0,
+        "0.95": 55.0,
+        "1": 271.0
+      },
+      "sequence_length_quantiles": {
+        "0": 1.0,
+        "0.25": 1.0,
+        "0.5": 2.0,
+        "0.75": 3.0,
+        "0.9": 5.0,
+        "0.95": 8.0,
+        "1": 86.0
+      },
+      "multi_item_baskets": 6797,
+      "multi_item_basket_share": 0.9246361039314379,
+      "users_with_at_least": {
+        "2": 1381,
+        "3": 821,
+        "5": 367,
+        "10": 97,
+        "20": 22
+      },
+      "training_transitions": 4635,
+      "targets_across_transitions": 83049,
+      "previously_seen_targets": 28729,
+      "historical_repeat_target_share": 0.3459283073847969,
+      "purchase_day_sequence_quantiles": {
+        "0": 1.0,
+        "0.25": 1.0,
+        "0.5": 1.0,
+        "0.75": 3.0,
+        "0.9": 5.0,
+        "0.95": 7.0,
+        "1": 46.0
+      },
+      "users_with_at_least_purchase_days": {
+        "2": 1328,
+        "3": 751,
+        "5": 323,
+        "10": 71,
+        "20": 13
+      },
+      "subday_transition_count": 723,
+      "gap_days_quantiles": {
+        "0": 0.0006944444444444445,
+        "0.25": 5.017013888888889,
+        "0.5": 18.756944444444443,
+        "0.75": 41.970486111111114,
+        "0.9": 70.15208333333334,
+        "0.95": 93.83923611111113,
+        "1": 169.93194444444444
+      },
+      "top_one_percent_users_transition_share": 0.1784250269687163,
+      "intraday_rows": 143150,
+      "invoices": 7364,
+      "invoices_spanning_timestamps": 23,
+      "timestamps_with_multiple_invoices": 36
+    },
+    {
+      "start_inclusive": "2010-12-01",
+      "end_exclusive": "2011-09-01",
+      "rows": 223127,
+      "customers": 3314,
+      "items": 3388,
+      "baskets": 11306,
+      "basket_size_quantiles": {
+        "0": 1.0,
+        "0.25": 6.0,
+        "0.5": 15.0,
+        "0.75": 26.0,
+        "0.9": 43.0,
+        "0.95": 56.0,
+        "1": 271.0
+      },
+      "sequence_length_quantiles": {
+        "0": 1.0,
+        "0.25": 1.0,
+        "0.5": 2.0,
+        "0.75": 4.0,
+        "0.9": 7.0,
+        "0.95": 10.0,
+        "1": 127.0
+      },
+      "multi_item_baskets": 10463,
+      "multi_item_basket_share": 0.9254378206262162,
+      "users_with_at_least": {
+        "2": 1937,
+        "3": 1285,
+        "5": 640,
+        "10": 192,
+        "20": 47
+      },
+      "training_transitions": 7992,
+      "targets_across_transitions": 148159,
+      "previously_seen_targets": 58629,
+      "historical_repeat_target_share": 0.39571676374705556,
+      "purchase_day_sequence_quantiles": {
+        "0": 1.0,
+        "0.25": 1.0,
+        "0.5": 2.0,
+        "0.75": 3.0,
+        "0.9": 6.0,
+        "0.95": 9.0,
+        "1": 78.0
+      },
+      "users_with_at_least_purchase_days": {
+        "2": 1884,
+        "3": 1217,
+        "5": 574,
+        "10": 161,
+        "20": 32
+      },
+      "subday_transition_count": 1080,
+      "gap_days_quantiles": {
+        "0": 0.0006944444444444445,
+        "0.25": 6.833333333333333,
+        "0.5": 21.749652777777776,
+        "0.75": 48.062847222222224,
+        "0.9": 86.01284722222226,
+        "0.95": 115.99076388888889,
+        "1": 259.9555555555556
+      },
+      "top_one_percent_users_transition_share": 0.17154654654654655,
+      "intraday_rows": 223127,
+      "invoices": 11342,
+      "invoices_spanning_timestamps": 26,
+      "timestamps_with_multiple_invoices": 62
+    }
+  ],
+  "tafeng": [
+    {
+      "start_inclusive": "2000-11-01",
+      "end_exclusive": "2001-01-01",
+      "rows": 401838,
+      "customers": 23589,
+      "items": 20278,
+      "baskets": 58626,
+      "basket_size_quantiles": {
+        "0": 1.0,
+        "0.25": 2.0,
+        "0.5": 5.0,
+        "0.75": 9.0,
+        "0.9": 15.0,
+        "0.95": 20.0,
+        "1": 102.0
+      },
+      "sequence_length_quantiles": {
+        "0": 1.0,
+        "0.25": 1.0,
+        "0.5": 2.0,
+        "0.75": 3.0,
+        "0.9": 5.0,
+        "0.95": 7.0,
+        "1": 43.0
+      },
+      "multi_item_baskets": 49978,
+      "multi_item_basket_share": 0.8524886569099035,
+      "users_with_at_least": {
+        "2": 12079,
+        "3": 6917,
+        "5": 2876,
+        "10": 659,
+        "20": 99
+      },
+      "training_transitions": 35037,
+      "targets_across_transitions": 212889,
+      "previously_seen_targets": 23739,
+      "historical_repeat_target_share": 0.11150881445260206,
+      "purchase_day_sequence_quantiles": {
+        "0": 1.0,
+        "0.25": 1.0,
+        "0.5": 2.0,
+        "0.75": 3.0,
+        "0.9": 5.0,
+        "0.95": 7.0,
+        "1": 43.0
+      },
+      "users_with_at_least_purchase_days": {
+        "2": 12079,
+        "3": 6917,
+        "5": 2876,
+        "10": 659,
+        "20": 99
+      },
+      "subday_transition_count": 0,
+      "gap_days_quantiles": {
+        "0": 1.0,
+        "0.25": 3.0,
+        "0.5": 7.0,
+        "0.75": 14.0,
+        "0.9": 24.0,
+        "0.95": 31.0,
+        "1": 59.0
+      },
+      "top_one_percent_users_transition_share": 0.12892085509604131,
+      "intraday_rows": 0
+    },
+    {
+      "start_inclusive": "2000-11-01",
+      "end_exclusive": "2001-02-01",
+      "rows": 618702,
+      "customers": 28610,
+      "items": 22542,
+      "baskets": 88527,
+      "basket_size_quantiles": {
+        "0": 1.0,
+        "0.25": 2.0,
+        "0.5": 5.0,
+        "0.75": 9.0,
+        "0.9": 15.0,
+        "0.95": 21.0,
+        "1": 112.0
+      },
+      "sequence_length_quantiles": {
+        "0": 1.0,
+        "0.25": 1.0,
+        "0.5": 2.0,
+        "0.75": 4.0,
+        "0.9": 6.0,
+        "0.95": 9.0,
+        "1": 61.0
+      },
+      "multi_item_baskets": 75457,
+      "multi_item_basket_share": 0.8523614264574649,
+      "users_with_at_least": {
+        "2": 16734,
+        "3": 10735,
+        "5": 5145,
+        "10": 1369,
+        "20": 269
+      },
+      "training_transitions": 59917,
+      "targets_across_transitions": 385540,
+      "previously_seen_targets": 45158,
+      "historical_repeat_target_share": 0.11712922135187011,
+      "purchase_day_sequence_quantiles": {
+        "0": 1.0,
+        "0.25": 1.0,
+        "0.5": 2.0,
+        "0.75": 4.0,
+        "0.9": 6.0,
+        "0.95": 9.0,
+        "1": 61.0
+      },
+      "users_with_at_least_purchase_days": {
+        "2": 16734,
+        "3": 10735,
+        "5": 5145,
+        "10": 1369,
+        "20": 269
+      },
+      "subday_transition_count": 0,
+      "gap_days_quantiles": {
+        "0": 1.0,
+        "0.25": 3.0,
+        "0.5": 8.0,
+        "0.75": 19.0,
+        "0.9": 36.0,
+        "0.95": 48.0,
+        "1": 89.0
+      },
+      "top_one_percent_users_transition_share": 0.12719261645275964,
+      "intraday_rows": 0
+    }
+  ]
+}

@@ -65,3 +65,5 @@ apps/web/uci-results/
 artifacts/preference-runs/
 artifacts/preference-latest.json
 apps/web/preference-results/
+
+artifacts/feasibility/
