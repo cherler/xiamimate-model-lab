@@ -13,7 +13,7 @@ export function readinessHtml(business){
  ['文本覆盖',`默认 ${r.docMaxlen} tokens 会截断 ${n(r.truncated)}／${n(r.documents)} 篇摘要；${r.queryMaxlen}-token 查询有 ${r.truncatedQueries}／${r.queries} 条超限。多向量不能补回被截掉的内容。`],
  ['实测运行成本',`${r.sampleDocuments} 篇编码 ${n(r.encodingSeconds)} 秒；查询编码中位 ${n(r.queryMedianMs)} ms，已缓存 50 篇文献的评分中位 ${n(r.score50MedianMs)} ms。后两项不含召回、文献编码、加载及下载，不是端到端延迟。`],
  ['存储估算',`按全库实际保留 token 数，float32 向量负载约 ${n(r.vectorFloat32Bytes/1048576)} MiB；现有单向量文件 ${n(r.denseBytes/1048576)} MiB。前者不含索引辅助结构，未使用官方压缩索引。`],
- ['下一项可验证能力','已完成官方核心例程核对与 300 查询同池分块重排；本页“长摘要重排”实验可查看当前结果。全库多向量召回及官方压缩引擎仍待验证。']
- ])}<p class="small-note">本段保留前期原型记录，当时未做领域微调、质量评分或官方 PLAID 验收；新的质量评分见本页受控实验，未做微调或 PLAID 验收。词片匹配不是事实证据。项目与权重卡声明 MIT，数据仍遵循原案例许可与署名。</p></section>`;
+ ['下一项可验证能力','已完成官方核心例程核对与 300 查询同池分块重排；模型解读页的“长摘要重排”实验可查看当前结果。全库多向量召回及官方压缩引擎仍待验证。']
+ ])}<p class="small-note">本段保留前期原型记录，当时未做领域微调、质量评分或官方 PLAID 验收；新的质量评分见模型解读页的受控实验，未做微调或 PLAID 验收。词片匹配不是事实证据。项目与权重卡声明 MIT，数据仍遵循原案例许可与署名。</p></section>`;
  return '';
 }

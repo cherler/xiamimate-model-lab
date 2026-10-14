@@ -62,7 +62,7 @@ test('standalone scenario reports link back to the same business and preserve ca
  for(const {id,caseId} of BUSINESSES){
   const host={innerHTML:'',querySelectorAll:()=>[]};
   renderScenarioExpansion(host,id,new URLSearchParams({case:caseId,model:'chosen',item:'84077',experienceView:'report'}));
-  assert.match(host.innerHTML,/<h1>场景扩展<\/h1>/);assert.doesNotMatch(host.innerHTML,/class="model-roadmap/);
+  assert.match(host.innerHTML,/<h1>场景扩展<\/h1>/);assert.equal((host.innerHTML.match(/class="model-roadmap/g)||[]).length,1);assert.match(host.innerHTML,/主案例模型扩展计划/);assert.match(host.innerHTML,/后续版本完成真实运行与评估后/);
   for(const match of host.innerHTML.matchAll(/href="(#[^"]+)"/g)){
    const r=resolveRoute(match[1].replaceAll('&amp;','&'));if(r.page==='delivery')continue;
    assert.equal(navigationContext(r.page,r.params).business,id);

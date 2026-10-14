@@ -2,7 +2,6 @@ import {CASE_READINGS,canShowReading,caseReading,caseExercise,isPreferenceContex
 import {CASE_EXERCISES} from './case-exercises.js';
 import {publicCasePath} from './case-paths.js';
 import {sectionHref} from './navigation-state.js';
-import {mountModelRoadmap} from './model-roadmap.js';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function learningContextHtml(business,params,mode){
  const key=`${business}:${params.get('case')}`,c=caseReading(business,params),exercise=caseExercise(business,params),path=publicCasePath(key);
@@ -19,7 +18,6 @@ export function learningContextHtml(business,params,mode){
 }
 export function refreshLearningContext(host,context,params){
  host.querySelector('.learning-context')?.remove();
- if(context.mode!=='models')host.querySelector('.model-roadmap')?.remove();
  if(!['models','learn'].includes(context.mode)||!canShowReading(host))return;
  // Preserve honest unavailable states rather than adding a success-looking intro.
  if(/尚未整理/.test(host.querySelector('h1')?.textContent||''))return;
@@ -28,9 +26,6 @@ export function refreshLearningContext(host,context,params){
  const title=context.business==='forecast'&&context.caseId==='uci'&&params.get('task')==='daily_sales'?'UCI 28 天逐日销量预测':c?.name;
  if(title){heading.querySelector('h1').textContent=`${title} · ${context.mode==='models'?'模型解读':'教学拆解'}`;const subtitle=heading.querySelector('p');if(subtitle)subtitle.textContent=context.mode==='models'?'从业务输入、模型方法到同范围证据，判断哪些能力可迁移。':'只核对当前案例的保存结果与计算，不重新训练或改变正式评分口径。';}
  heading.insertAdjacentHTML('afterend',learningContextHtml(context.business,params,context.mode));
- if(context.mode==='models'){
-  mountModelRoadmap(host,context.business);
- }
  if(context.mode==='learn'){
   const key=`${context.business}:${context.caseId}`,anchor=CASE_EXERCISES[key]?.anchor;
   const target=anchor?host.querySelector(`[data-calculation="${anchor}"]`):null;

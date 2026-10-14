@@ -1,3 +1,4 @@
+import {modelRoadmapHtml} from './model-roadmap.js';
 import {sectionHref} from './navigation-state.js';
 // Advisory scope only. A method used elsewhere is still unverified in these settings.
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -39,6 +40,7 @@ export function scenarioExpansionHtml(business){
 
 export function renderScenarioExpansion(host,business,params=new URLSearchParams()){
  const plan=SCENARIO_EXPANSIONS[business];if(!plan)return;
- host.innerHTML=`<div class="breadcrumb">模型工坊<span>/</span>场景扩展<span>/</span>${esc(plan.name)}</div><header class="page-heading"><div><h1>场景扩展</h1><p>按业务条件分析主案例之外的需求、解决方案和模型取舍。</p></div></header><nav class="scenario-context" aria-label="场景与案例关联"><a class="outline" href="${esc(sectionHref('case',business,params))}">查看本业务案例</a><a class="outline" href="${esc(sectionHref('models',business,params))}">查看已运行模型与证据</a><a class="outline" href="#delivery">讨论交付范围</a></nav><div class="scenario-report report-panel">${scenarioExpansionHtml(business)}</div>`;
+ host.innerHTML=`<div class="breadcrumb">模型工坊<span>/</span>场景扩展<span>/</span>${esc(plan.name)}</div><header class="page-heading"><div><h1>场景扩展</h1><p>业务场景扩展与主案例模型扩展：说明数据条件、方法取舍和验证计划。</p></div></header><nav class="scenario-context" aria-label="场景与案例关联"><a class="outline" href="${esc(sectionHref('case',business,params))}">查看本业务案例</a><a class="outline" href="${esc(sectionHref('models',business,params))}">查看已运行模型与证据</a><a class="outline" href="#delivery">讨论交付范围</a></nav><nav class="scenario-index" aria-label="扩展报告目录"><button class="outline" type="button" data-expansion-target="scenarios">业务场景扩展</button><button class="outline" type="button" data-expansion-target="models">主案例模型扩展计划</button></nav><div class="scenario-report report-panel">${scenarioExpansionHtml(business)}</div>${modelRoadmapHtml(business)}`;
+ host.querySelectorAll('[data-expansion-target]').forEach(button=>button.onclick=()=>{const target=host.querySelector(button.dataset.expansionTarget==='models'?'.model-roadmap':'.scenario-report');if(target){const details=target.querySelector('.case-model-progress');if(details)details.open=true;const focus=details?.querySelector('summary')||target;if(!details)focus.tabIndex=-1;focus.focus({preventScroll:true});target.scrollIntoView({block:'start',behavior:'smooth'});}});
  host.querySelectorAll('[data-scenario-jump]').forEach(button=>button.onclick=()=>{const target=host.querySelector(`#scenario-${button.dataset.scenarioJump}`);if(target){target.open=true;target.querySelector('summary').focus({preventScroll:true});target.scrollIntoView({block:'start',behavior:'smooth'});}});
 }
