@@ -173,7 +173,7 @@ def export(root=ROOT):
              'evidence': 'final_holdout', 'mode': 'saved_results', 'tasks': ['repurchase', 'discovery', 'weekly_sales'],
              'report_sha256': ta_sha, 'resources': {key: f'{TAFENG_DISPLAY}/{file}' for key, file in {'report': 'report.json', 'recommendations': 'recommendations.json', 'weekly': 'weekly.json', 'weekly_predictions': 'weekly-predictions.csv.gz'}.items()}},
             {'id': 'uci', 'label': 'UCI · 历史开发验证', 'dataset': 'UCI Online Retail II', 'run_id': UCI,
-             'evidence': 'development', 'mode': 'local_api', 'tasks': ['next_basket', 'daily_sales', 'weekly_sales'],
+             'evidence': 'development', 'mode': 'saved_replay', 'tasks': ['next_basket', 'daily_sales', 'weekly_sales'],
              'report_sha256': uc_sums['report.json'], 'resources': {'report': f'{UCI}/report.json'}}]}
         manifest['metric_definitions'] = {
             'ndcg_at_10': {'unit': 'score', 'direction': 'higher', 'cohort': 'all returning warm customers, empty targets count zero'},

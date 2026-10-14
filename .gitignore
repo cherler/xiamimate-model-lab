@@ -59,3 +59,5 @@ apps/web/monitoring-results/
 artifacts/decision-runs/
 artifacts/decision-latest.json
 apps/web/decision-results/
+
+apps/web/uci-results/
