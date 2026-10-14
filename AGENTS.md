@@ -22,3 +22,6 @@
 - R3 Spambase 已完成：运行 `spambase-20261013T233632651140Z`，UCI CC BY 4.0。保留特征分组的训练／校准／验证／留出分别 2797／728／429／647 条；测试访问记录在 `artifacts/classification-runs/test-access-b1ef93de71f97714d3d7d4f58fc9f718da7bbc8ac8a150eff2778616a8097b12.json`，不得删除重开。阈值与名额交互仅为已见结果的策略回放，不能作为新的独立测试。页面及公开构建保留署名、许可、分组随机历史评估范围与校准变差的结果。
 
 - R4 SciFact 已完成：运行 `scifact-20261014T000358068631Z`，全部 5,183 文献／300 查询的已知 BEIR 公开基准。协议在推理前冻结，排名保存后评分；两套预训练模型没有本地微调，不能声称全新独立测试或排除预训练重叠。保留 `artifacts/retrieval-runs/<run>/label-access.json` 及原排名，后续变更明确已有反馈。公开结果包保留 SciFact CC BY、S2ORC ODC-By 和 BEIR CC BY-SA 来源，改编数据按 CC BY-SA 提供；页面不生成事实核查结论，不将未标注视为确定不相关。
+
+
+- R5 已完成：NAB `anomaly-20261014T003448510097Z`，UCI 分群 `segments-20261014T003409031698Z`。保留冻结分数／分群、协议、模型和 NAB 标签访问记录，后续实验明确已知公开结果反馈。NAB MIT 完整许可及论文署名、UCI CC BY 4.0 署名随页面和导出保留。告警交互是保存结果回放；事件窗首报不等于真实故障延迟，日误报按日历跨度计算。分群 silhouette 不是准确率，后续消费描述不是营销增益。`verify:monitoring` 复核保存模型与源记录，不重训。决策优化 R6 尚未实施。

@@ -206,3 +206,22 @@ npm run build
 Dressipi 已准备会话切分、候选和评估逻辑及三类基线，但数据尚未取得、模型尚未训练。已核实的 SIHG4SR 开源方案是第四名，精确冠军代码仍未核实。数据使用条款限制对外接单展示；M5 对外使用范围也待确认，因此本轮不向网页发布新案例。
 
 详见 [完整复现记录](docs/competition-reproduction.md) 和 [命令与协议](services/competitions/README.md)。本轮共 87 项测试通过（26 JS、45 Python、16 进阶），完成保存预测复算、归档权重交叉核对与既有前端构建；未修改 UI，无新增布局验收。数据、权重、源码快照及访问日志只保存在本地忽略 Git 的目录，各功能已分项提交。
+
+
+## R5 异常检测与零售分群（2026-10-14）
+
+- `#anomaly?case=nab`：NAB 三条真实监控序列，固定阈值／滚动统计／Isolation Forest，事件窗口、误报、告警延迟及阈值与冷却期回放。
+- `#segments?case=retail`：UCI Online Retail II，RFM 规则与 K-means，群体画像、顾客查询、PCA 投影、抽样稳定性和跨月迁移。
+
+两案例均提供数据说明、特征与模型、完整报告及结果下载。NAB 保留 MIT 许可与论文署名；UCI 保留 Chen (2012) 与 CC BY 4.0。结果来自本站本地 CPU 实验，属于已知公开数据的历史评估；没有线上监控、客户数据接入或营销效果验证。详细结果和边界见 [R5 记录](docs/r5-plan.md)。
+
+```sh
+# 已保存的完整源数据和模型可恢复时，复核并导出（不重新训练）
+npm run verify:monitoring
+npm run build
+# 创建新实验；保留历史记录，并明确已有反馈
+npm run train:anomaly
+npm run train:segments
+```
+
+数据和模型不提交 Git。异常训练按冻结清单自动下载 NAB；分群训练要求已有核验通过的 UCI XLSX 和交易清洗缓存。资源不完整时明确报错。两项结果包在公开构建中进行哈希与指标复算，M5／Dressipi 的原构建排除规则保持有效。
