@@ -55,3 +55,7 @@ services/retrieval/.venv/
 artifacts/monitoring-runs/
 artifacts/monitoring-*.json
 apps/web/monitoring-results/
+
+artifacts/decision-runs/
+artifacts/decision-latest.json
+apps/web/decision-results/
