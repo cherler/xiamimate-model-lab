@@ -7,7 +7,7 @@ test('all seven business plans describe data, outcomes and validation without in
  for(const {id} of BUSINESSES){
   const plan=MODEL_ROADMAPS[id];assert.equal(plan.paths.length,2);
   for(const p of plan.paths)for(const key of ['name','priority','problem','data','method','output','validation','limit'])assert.ok(p[key]?.length>3,`${id}: ${key}`);
-  const html=modelRoadmapHtml(id);assert.match(html,id==='segments'?/本轮已实现 · 保存结果见案例报告/:id==='retrieve'?/同池重排开发评估已完成/:id==='recommend'?/适配审查已完成 · 模型效果尚待验证/:/规划 · 尚未运行以下升级实验/);assert.equal((html.match(/<details/g)||[]).length,6);assert.equal((html.match(/<details[^>]* open/g)||[]).length,1);
+  const html=modelRoadmapHtml(id);assert.match(html,id==='segments'?/本轮已实现 · 保存结果见案例报告/:id==='retrieve'?/同池重排开发评估已完成/:id==='recommend'?/适配审查已完成 · 模型效果尚待验证/:/规划 · 尚未运行以下升级实验/);assert.equal((html.match(/<details/g)||[]).length,3);assert.equal((html.match(/<details[^>]* open/g)||[]).length,0);assert.doesNotMatch(html,/scenario-expansion|data-scenario-jump/);
   assert.doesNotMatch(html,/已超越|已提升|准确率达到|<script|NaN|undefined/);
  }
  assert.equal(modelRoadmapHtml('unknown'),'');
@@ -53,4 +53,21 @@ test('scenario reports distinguish unverified business settings from local evide
  assert.match(scenarioExpansionHtml('recommend'),/真实时间戳/);assert.match(scenarioExpansionHtml('recommend'),/不自动建模实际时间间隔/);
  assert.match(scenarioExpansionHtml('segments'),/不是另一种聚类算法/);
  assert.match(scenarioExpansionHtml('decision'),/非预知约束/);
+});
+
+import {renderScenarioExpansion} from '../apps/web/scenario-expansion.js';
+import {resolveRoute} from '../apps/web/case-navigation.js';
+import {navigationContext} from '../apps/web/navigation-state.js';
+test('standalone scenario reports link back to the same business and preserve case selection',()=>{
+ for(const {id,caseId} of BUSINESSES){
+  const host={innerHTML:'',querySelectorAll:()=>[]};
+  renderScenarioExpansion(host,id,new URLSearchParams({case:caseId,model:'chosen',item:'84077',experienceView:'report'}));
+  assert.match(host.innerHTML,/<h1>场景扩展<\/h1>/);assert.doesNotMatch(host.innerHTML,/class="model-roadmap/);
+  for(const match of host.innerHTML.matchAll(/href="(#[^"]+)"/g)){
+   const r=resolveRoute(match[1].replaceAll('&amp;','&'));if(r.page==='delivery')continue;
+   assert.equal(navigationContext(r.page,r.params).business,id);
+   for(const [key,value] of Object.entries({case:caseId,model:'chosen',item:'84077'}))assert.equal(r.params.get(key),value);
+   if(r.page===id)assert.equal(r.params.get('view'),'report');
+  }
+ }
 });

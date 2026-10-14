@@ -4,8 +4,8 @@ import {sidebarHtml,sidebarTarget} from '../apps/web/sidebar-navigation.js';
 import {BUSINESSES,navigationContext,sectionHref} from '../apps/web/navigation-state.js';
 import {resolveRoute} from '../apps/web/case-navigation.js';
 
-test('all three modes use the same seven icons, names and business order',()=>{
- for(const mode of ['case','models','learn'])for(const c of BUSINESSES){
+test('all four business modes use the same seven icons, names and business order',()=>{
+ for(const mode of ['case','models','learn','expand'])for(const c of BUSINESSES){
   const route=resolveRoute(sectionHref(mode,c.id),false),html=sidebarHtml(route.page,route.params);
   assert.equal([...html.matchAll(/data-business=/g)].length,7);
   assert.equal([...html.matchAll(/aria-current="page"/g)].length,1);
@@ -23,7 +23,7 @@ test('all three modes use the same seven icons, names and business order',()=>{
 test('top-level changes preserve the business, task, model and selected sample',()=>{
  const q=new URLSearchParams({case:'tafeng',task:'discovery',model:'itemcf_excluding_history',customer:'00930574',view:'experience'});
  let route={page:'recommend',params:q};
- for(const mode of ['models','learn','case']){
+ for(const mode of ['models','expand','learn','case']){
   route=resolveRoute(sectionHref(mode,'recommend',route.params),false);
   const c=navigationContext(route.page,route.params);assert.equal(c.mode,mode);assert.equal(c.business,'recommend');
   for(const key of ['case','task','model','customer'])assert.equal(route.params.get(key),q.get(key));

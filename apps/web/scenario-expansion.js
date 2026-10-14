@@ -1,3 +1,4 @@
+import {sectionHref} from './navigation-state.js';
 // Advisory scope only. A method used elsewhere is still unverified in these settings.
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const SCENARIO_EXPANSIONS={
@@ -34,4 +35,10 @@ export function scenarioExpansionHtml(business){
  const p=SCENARIO_EXPANSIONS[business];if(!p)return '';
  const labels=[['业务特点','signal'],['需要补充的数据','data'],['先用什么对照','baseline'],['模型特点与选择理由','method'],['可形成的交付内容','deliverable'],['怎样证明适用','validation'],['失效条件与成本','limit']];
  return `<section class="scenario-expansion" aria-label="${esc(p.name)}场景扩展分析报告"><span class="guide-kicker">业务选型分析 · 以下扩展场景尚未实证</span><h2>${esc(p.name)} · 场景扩展</h2><p>${esc(p.gap)}</p><p class="small-note">下面说明主案例之外的需求如何建模，不是已运行功能清单。即使某个模型已在工坊其他任务运行，也不能替代这些扩展场景的验证；不提供未运行成绩，不要求将所有候选模型逐一训练。</p><div class="scenario-index">${p.scenarios.map((s,i)=>`<button type="button" class="outline" data-scenario-jump="${business}-${s.id}">${i+1} · ${esc(s.title)}</button>`).join('')}</div>${p.scenarios.map((s,i)=>`<details id="scenario-${business}-${s.id}" ${i===0?'open':''}><summary><strong>${esc(s.title)}</strong><span>未在此扩展场景运行 · 方法与验收设计</span></summary><dl>${labels.map(([label,key])=>`<div><dt>${label}</dt><dd>${esc(s[key])}</dd></div>`).join('')}</dl><a class="text-link" href="${esc(s.source)}" target="_blank" rel="noopener noreferrer">方法原始资料（不代表本站实测） ↗</a></details>`).join('')}<p class="small-note">委托前先确认决策目标、可用数据与约束，再从规则／基线开始验证。是否升级模型，以同范围的效果、成本和可靠性为依据。</p></section>`;
+}
+
+export function renderScenarioExpansion(host,business,params=new URLSearchParams()){
+ const plan=SCENARIO_EXPANSIONS[business];if(!plan)return;
+ host.innerHTML=`<div class="breadcrumb">模型工坊<span>/</span>场景扩展<span>/</span>${esc(plan.name)}</div><header class="page-heading"><div><h1>场景扩展</h1><p>按业务条件分析主案例之外的需求、解决方案和模型取舍。</p></div></header><nav class="scenario-context" aria-label="场景与案例关联"><a class="outline" href="${esc(sectionHref('case',business,params))}">查看本业务案例</a><a class="outline" href="${esc(sectionHref('models',business,params))}">查看已运行模型与证据</a><a class="outline" href="#delivery">讨论交付范围</a></nav><div class="scenario-report report-panel">${scenarioExpansionHtml(business)}</div>`;
+ host.querySelectorAll('[data-scenario-jump]').forEach(button=>button.onclick=()=>{const target=host.querySelector(`#scenario-${button.dataset.scenarioJump}`);if(target){target.open=true;target.querySelector('summary').focus({preventScroll:true});target.scrollIntoView({block:'start',behavior:'smooth'});}});
 }

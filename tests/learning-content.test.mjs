@@ -23,7 +23,7 @@ test('seven method and learning introductions link to their own evidence and pre
   for(const match of html.matchAll(/href="([^"]+)"/g)){
    const r=resolveRoute(match[1].replaceAll('&amp;','&'),false);
    assert.equal(r.params.get('case'),id);assert.equal(r.params.get('model'),'chosen');assert.equal(r.params.get('origin'),'2011-09-01');
-   if(['models','learn'].includes(r.page))assert.equal(r.params.get('business'),business);else assert.equal(r.page,business);
+   if(['models','learn','expand'].includes(r.page))assert.equal(r.params.get('business'),business);else assert.equal(r.page,business);
   }
  }
 });

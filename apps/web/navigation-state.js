@@ -10,9 +10,9 @@ export const BUSINESSES=[
 ];
 export function navigationContext(page,params=new URLSearchParams()){
  const topic=params.get('topic')?.split(':');
- const requested=topic?.[0]||params.get('business')||(['models','learn','delivery'].includes(page)?(['weekly_sales','daily_sales'].includes(params.get('task'))||params.get('lesson')==='forecast'?'forecast':'recommend'):page);
+ const requested=topic?.[0]||params.get('business')||(['models','learn','expand','delivery'].includes(page)?(['weekly_sales','daily_sales'].includes(params.get('task'))||params.get('lesson')==='forecast'?'forecast':'recommend'):page);
  const business=BUSINESSES.find(c=>c.id===requested)||BUSINESSES[0];
- const mode=['models','learn','delivery'].includes(page)?page:params.get('view')==='models'?'models':params.get('walk')==='calculation'?'learn':'case';
+ const mode=['models','learn','expand','delivery'].includes(page)?page:params.get('view')==='models'?'models':params.get('walk')==='calculation'?'learn':'case';
  return {mode,business:business.id,caseId:topic?.[1]||params.get('case')||(params.has('lesson')?'tafeng':business.caseId)};
 }
 export function sectionHref(mode,business,params=new URLSearchParams()){

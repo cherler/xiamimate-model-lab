@@ -1,3 +1,4 @@
+import {renderScenarioExpansion} from './scenario-expansion.js';
 import {refreshLearningContext} from './learning-context.js';
 import {renderUciRecommendationLesson} from './uci-recommendation-lesson.js';
 import {navigationContext,sectionHref} from './navigation-state.js';
@@ -18,7 +19,7 @@ import {sidebarHtml,sidebarTarget} from './sidebar-navigation.js';
 import { loadManifest, renderShowcase } from './showcase.js';
 import { renderCase, cancelCase } from './real-cases.js';
 const main = document.querySelector('#main');
-const labels = { decision: '决策优化', anomaly: '异常检测', segments: '零售分群', retrieve: '智能检索', classify: '分类与评分', m5: 'M5 预测案例', automl: 'AutoML 实验室', advanced: '进阶模型实验', recommend: '电商商品推荐', forecast: '销量预测', evidence: '效果报告', models: '模型解读', learn: '教学拆解', delivery: '交付方式' };
+const labels = { decision: '决策优化', anomaly: '异常检测', segments: '零售分群', retrieve: '智能检索', classify: '分类与评分', m5: 'M5 预测案例', automl: 'AutoML 实验室', advanced: '进阶模型实验', recommend: '电商商品推荐', forecast: '销量预测', evidence: '效果报告', expand: '场景扩展', models: '模型解读', learn: '教学拆解', delivery: '交付方式' };
 function heading(page,title,subtitle) {
   return `<div class="breadcrumb">模型工坊<span>/</span>${labels[page]}</div><div class="page-heading"><div><h1>${title}</h1><p>${subtitle}</p></div></div><div class="prototype-note"><span class="status-dot"></span>公开数据案例 · 展示训练、推理与评估记录；新业务效果需要独立验证。</div>`;
 }
@@ -82,7 +83,7 @@ function updateNavigation(){
 }
 async function route() {
  const token=++routeGeneration,{page,params,error}=resolveRoute(location.hash),context=navigationContext(page,params);
- if(['models','learn'].includes(page)){
+ if(['models','learn','expand'].includes(page)){
   params.set('case',context.caseId);params.set('business',context.business);params.delete('topic');
  }
  const canonical=`#${page}${params.size?'?'+params:''}`;
@@ -91,7 +92,8 @@ async function route() {
  const current=()=>token===routeGeneration,renderParams=new URLSearchParams(params),business=context.business;
  let rendering;
  const tafengLesson=context.mode==='learn'&&context.caseId==='tafeng'&&['recommend','forecast'].includes(business);
- if(context.mode==='delivery')delivery();
+ if(context.mode==='expand')renderScenarioExpansion(main,business,renderParams);
+ else if(context.mode==='delivery')delivery();
  else if(context.mode==='models'&&['recommend','forecast'].includes(business)&&!['m5','dressipi'].includes(context.caseId)){
   if(!renderParams.has('task'))renderParams.set('task',business==='forecast'?'weekly_sales':context.caseId==='uci'?'next_basket':'repurchase');
   rendering=renderModelGuide(main,current,renderParams);
