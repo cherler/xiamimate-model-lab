@@ -153,12 +153,90 @@ def graphs(runs):
     return output
 
 
+def tft_explanations(runs):
+    import pandas as pd
+    import torch
+    from pytorch_forecasting import TimeSeriesDataSet, TemporalFusionTransformer
+    torch.set_num_threads(2)
+    run = runs['tft']
+    report = json.loads((run / 'report.json').read_text())
+    cfg = report['architecture']['config']
+    samples = json.loads((run / 'samples.json').read_text())
+    with (run / 'dataset-parameters.pkl').open('rb') as f:
+        parameters = pickle.load(f)
+    model = TemporalFusionTransformer.load_from_checkpoint(run / report['checkpoint'], map_location='cpu', weights_only=False)
+    model.eval()
+    tree_inputs = np.load(run / 'tree-inputs.npz')['evaluation']
+    output = []
+    for origin_index, origin in enumerate(cfg['evaluation_origins']):
+        subset = [s for s in samples if s['origin'] == origin]
+        frames = []
+        for s in subset:
+            dates = pd.date_range(pd.Timestamp(origin) - pd.Timedelta(days=56), periods=63)
+            idx = report['items'].index(s['item'])
+            price = float(tree_inputs[(origin_index * len(report['items']) + idx) * 7, 17])
+            frame = pd.DataFrame({'date': dates, 'item': s['item'], 'time_idx': (dates - pd.Timestamp(cfg['train_start'])).days,
+                                  'quantity': np.array(s['history'] + [0.] * 7, dtype=float), 'log_price': price})
+            frame['time_scaled'] = frame.time_idx / 365
+            for key, period, values in [('weekday', 7, frame.date.dt.dayofweek), ('month', 12, frame.date.dt.month)]:
+                frame[f'{key}_sin'] = np.sin(2 * np.pi * values / period)
+                frame[f'{key}_cos'] = np.cos(2 * np.pi * values / period)
+            frames.append(frame)
+        query = pd.concat(frames, ignore_index=True)
+        def replay(frame):
+            ds = TimeSeriesDataSet.from_parameters(parameters, frame, predict=True, stop_randomization=True)
+            result = {}
+            with torch.no_grad():
+                for x, _ in ds.to_dataloader(train=False, batch_size=128, num_workers=0):
+                    out = model(x)
+                    index = ds.x_to_index(x)
+                    for i, item in enumerate(index['item']):
+                        result[str(item)] = {key: out[key][i].cpu().numpy() for key in
+                            ['prediction', 'encoder_attention', 'decoder_attention', 'encoder_variables', 'decoder_variables', 'static_variables']}
+            return result
+        original = replay(query)
+        # A declared sensitivity scenario, never an accuracy experiment or tuning input.
+        perturbed = query.copy()
+        for sample in subset:
+            prior = np.asarray(sample['history'][:49]).reshape(7, 7)
+            replacement = np.median(prior, axis=0)
+            mask = (perturbed.item == sample['item']) & (perturbed.date >= pd.Timestamp(origin) - pd.Timedelta(days=7)) & (perturbed.date < pd.Timestamp(origin))
+            perturbed.loc[mask, 'quantity'] = replacement
+        alternate = replay(perturbed)
+        for sample in subset:
+            row = original[sample['item']]
+            predictions = np.sort(np.maximum(0, row['prediction']), axis=1)
+            expected = np.column_stack([sample['q10'], sample['predictions']['tft'], sample['q90']])
+            error = float(np.abs(predictions - expected).max())
+            np.testing.assert_allclose(predictions, expected, atol=2e-4, rtol=1e-5)
+            scenario = np.sort(np.maximum(0, alternate[sample['item']]['prediction']), axis=1)[:, 1]
+            encoder = row['encoder_variables'].squeeze(-2).mean(axis=0)
+            decoder = row['decoder_variables'].squeeze(-2)
+            static = row['static_variables'].reshape(-1)
+            # Shapes: horizon × attention head × time. Keep raw attention mass;
+            # later horizons may also attend to earlier known-future decoder states.
+            attention = row['encoder_attention'].mean(axis=1)
+            future_attention = row['decoder_attention'].mean(axis=1)
+            np.testing.assert_allclose(attention.sum(axis=1) + future_attention.sum(axis=1), 1, atol=1e-5)
+            np.testing.assert_allclose(encoder.sum(), 1, atol=1e-5)
+            np.testing.assert_allclose(decoder.sum(axis=1), 1, atol=1e-5)
+            output.append({'origin': origin, 'item': sample['item'], 'replay_max_error': error,
+                'encoder_weights': dict(zip(model.encoder_variables, encoder.tolist())),
+                'static_weights': dict(zip(model.static_variables, static.tolist())),
+                'scenario_history': np.median(np.asarray(sample['history'][:49]).reshape(7, 7), axis=0).tolist(),
+                'days': [{'prediction': float(predictions[d, 1]), 'scenario_prediction': float(scenario[d]),
+                    'decoder_weights': dict(zip(model.decoder_variables, decoder[d].tolist())),
+                    'history_attention': attention[d].tolist(), 'decoder_attention_mass': float(future_attention[d].sum())}
+                    for d in range(7)]})
+    return output
+
+
 def main(kind):
     runs = sources()
     payload = {'schema': 1, 'kind': kind, 'runs': {k: p.name for k, p in runs.items()},
                'reports': {k: sha(p / 'report.json') for k, p in runs.items()},
                'generator_sha256': sha(__file__), 'method': 'frozen_weight_replay',
-               'data': {'trees': trees, 'graph': graphs}[kind](runs)}
+               'data': {'trees': trees, 'graph': graphs, 'tft': tft_explanations}[kind](runs)}
     write(ROOT / f'artifacts/advanced-explanation-{kind}.json', payload)
     print('Verified and explained', kind)
 

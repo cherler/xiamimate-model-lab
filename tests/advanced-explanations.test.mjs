@@ -39,3 +39,18 @@ test('graph neighbors reconstruct frozen scores and seed ranks match saved recom
   }
  }
 });
+test('TFT replays every frozen daily quantile and exposes normalized attention without future targets',()=>{
+ const data=loaded['explanation-tft'].data;assert.equal(data.length,72);
+ for(const s of data){const sample=loaded['forecast-samples'].find(x=>x.origin===s.origin&&x.item===s.item);
+  assert.ok(s.replay_max_error<.01);assert.equal(s.scenario_history.length,7);
+  for(const weights of [s.static_weights,s.encoder_weights])assert.ok(Math.abs(Object.values(weights).reduce((a,b)=>a+b,0)-1)<1e-5);
+  s.days.forEach((d,i)=>{
+   assert.ok(Math.abs(d.prediction-sample.predictions.tft[i])<.01);
+   assert.ok(Number.isFinite(d.scenario_prediction)&&d.scenario_prediction>=0);
+   assert.equal(d.history_attention.length,56);
+   assert.ok(Math.abs(d.history_attention.reduce((a,b)=>a+b,0)+d.decoder_attention_mass-1)<1e-5);
+   assert.ok(!('quantity' in d.decoder_weights));
+   assert.ok(Math.abs(Object.values(d.decoder_weights).reduce((a,b)=>a+b,0)-1)<1e-5);
+  });
+ }
+});

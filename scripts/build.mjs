@@ -1,3 +1,4 @@
+import {validateExplanations} from '../apps/web/advanced-explanations.js';
 import {verifyUciStatic} from './verify-uci-static.mjs';
 import {verifyDecision} from '../apps/web/decision-metrics.js';
 import {verifyMonitoring} from '../apps/web/monitoring-metrics.js';
@@ -24,13 +25,16 @@ const advancedAssets=resolve(root,'apps/web/advanced-results');
 let advanced;
 try { advanced=JSON.parse(await readFile(`${advancedAssets}/manifest.json`,'utf8')); }
 catch { throw new Error('请先运行 npm run export:advanced，生成完整进阶实验数据。'); }
-for(const key of ['ranking','graph','tft','recommendation-samples','forecast-samples']) {
+const advancedPayloads={};
+for(const key of ['ranking','graph','tft','recommendation-samples','forecast-samples','explanation-trees','explanation-graph','explanation-tft']) {
   const spec=advanced.resources?.[key];
   if(!spec || !/^[a-f0-9]{16}\/[a-z-]+\.json$/.test(spec.path))throw new Error(`进阶实验资源无效：${key}`);
   const bytes=await readFile(resolve(advancedAssets,spec.path));
+  advancedPayloads[key]=JSON.parse(bytes);
   if(createHash('sha256').update(bytes).digest('hex')!==spec.sha256)throw new Error(`进阶实验校验失败：${key}`);
   if(['ranking','graph','tft'].includes(key)&&JSON.parse(bytes).run_id!==advanced.runs[key])throw new Error(`进阶实验版本不一致：${key}`);
 }
+validateExplanations(advancedPayloads,advanced);
 const tuningAssets=resolve(root,'apps/web/tuning-results');
 let tuning;
 try { tuning=JSON.parse(await readFile(`${tuningAssets}/manifest.json`,'utf8')); }
