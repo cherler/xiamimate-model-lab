@@ -11,6 +11,7 @@ import { renderM5 } from './m5.js';
 import { renderAutoML } from './automl.js';
 import { renderAdvanced } from './advanced.js';
 import { renderModelGuide } from './model-guide.js';
+import {sidebarHtml,sidebarTarget} from './sidebar-navigation.js';
 import { loadManifest, renderShowcase } from './showcase.js';
 import { renderCase, cancelCase } from './real-cases.js';
 const main = document.querySelector('#main');
@@ -20,7 +21,7 @@ function heading(page,title,subtitle) {
 }
 
 function delivery() {
-  main.innerHTML = heading('delivery', '定制服务与交付范围', '公开案例展示建模和评估能力。新业务先明确目标与验收，再讨论实现范围。') + `<section class="delivery-path"><div class="delivery-path-heading"><h2>怎样开始</h2><p>先描述业务问题，不需要在本站上传数据。</p></div><ol><li><strong>说明目标</strong><p>选一个相近案例，写下需要做出的判断、希望得到的输出和衡量效果的方式。</p></li><li><strong>准备需求清单</strong><p>填写业务目标、现有数据类型和期望交付；文件只下载到本机，不会自动发送。</p><button class="outline contact-open" type="button">下载需求清单</button></li><li><strong>自行发起沟通</strong><p>将简要需求发至 <a href="mailto:xiamimate@xichenze.cn">xiamimate@xichenze.cn</a>。可选择附上清单；请勿在初次邮件中发送原始业务数据。</p><a class="primary" href="mailto:xiamimate@xichenze.cn">写邮件沟通</a><a class="delivery-about" href="https://xiamimate.com/about" target="_blank" rel="noopener noreferrer">也可通过企业微信联系</a></li></ol><p class="delivery-path-note">邮件由你的邮件客户端发送。本站没有在线提交、客户数据接入或自动回复；具体范围与验收在沟通后确定。</p></section><section class="delivery-intro"><h2>可讨论的交付阶段</h2></section><div class="delivery-options">${[['数据可行性评估', '数据条件与实施建议', ['字段与数据质量清单', '业务任务和基线验收口径', '可行性结论与风险']], ['模型与交互原型', '离线原型与评估报告', ['可运行模型与实验记录', '批量结果或接口样例', '基线对照与失败分析']], ['业务接入与交接', '按实际系统另定范围', ['数据更新、降级与日志方案', '部署和效果复核文档', '上线前独立验证要求']]].map(([t, sub, items]) => `<article><h2>${t}</h2><p>${sub}</p><ul>${items.map(x => `<li>${x}</li>`).join('')}</ul></article>`).join('')}</div><p class="delivery-teaching">需要项目教学与辅导，可在邮件中说明；<a href="#learn">教学拆解</a>展示了本站现有的复算方式。</p>${deliveryCaseLinks()}<section class="technical-panel"><div class="section-heading"><h2>推荐案例的本地接口示例</h2><span class="badge">仅推荐示例已实现</span></div><div class="tech-columns"><div><h3>推荐请求</h3><pre>POST /api/v1/recommendations
+  main.innerHTML = heading('delivery', '定制服务与交付范围', '公开案例展示建模和评估能力。新业务先明确目标与验收，再讨论实现范围。') + `<section class="delivery-path" id="delivery-start"><div class="delivery-path-heading"><h2>怎样开始</h2><p>先描述业务问题，不需要在本站上传数据。</p></div><ol><li><strong>说明目标</strong><p>选一个相近案例，写下需要做出的判断、希望得到的输出和衡量效果的方式。</p></li><li><strong>准备需求清单</strong><p>填写业务目标、现有数据类型和期望交付；文件只下载到本机，不会自动发送。</p><button class="outline contact-open" type="button">下载需求清单</button></li><li><strong>自行发起沟通</strong><p>将简要需求发至 <a href="mailto:xiamimate@xichenze.cn">xiamimate@xichenze.cn</a>。可选择附上清单；请勿在初次邮件中发送原始业务数据。</p><a class="primary" href="mailto:xiamimate@xichenze.cn">写邮件沟通</a><a class="delivery-about" href="https://xiamimate.com/about" target="_blank" rel="noopener noreferrer">也可通过企业微信联系</a></li></ol><p class="delivery-path-note">邮件由你的邮件客户端发送。本站没有在线提交、客户数据接入或自动回复；具体范围与验收在沟通后确定。</p></section><section class="delivery-intro" id="delivery-stages"><h2>可讨论的交付阶段</h2></section><div class="delivery-options">${[['数据可行性评估', '数据条件与实施建议', ['字段与数据质量清单', '业务任务和基线验收口径', '可行性结论与风险']], ['模型与交互原型', '离线原型与评估报告', ['可运行模型与实验记录', '批量结果或接口样例', '基线对照与失败分析']], ['业务接入与交接', '按实际系统另定范围', ['数据更新、降级与日志方案', '部署和效果复核文档', '上线前独立验证要求']]].map(([t, sub, items]) => `<article><h2>${t}</h2><p>${sub}</p><ul>${items.map(x => `<li>${x}</li>`).join('')}</ul></article>`).join('')}</div><p class="delivery-teaching">需要项目教学与辅导，可在邮件中说明；<a href="#learn">教学拆解</a>展示了本站现有的复算方式。</p>${deliveryCaseLinks()}<section class="technical-panel"><div class="section-heading"><h2>推荐案例的本地接口示例</h2><span class="badge">仅推荐示例已实现</span></div><div class="tech-columns"><div><h3>推荐请求</h3><pre>POST /api/v1/recommendations
 {
   "customer_id": "new",
   "strategy": "als",
@@ -60,8 +61,9 @@ async function route() {
   const token=++routeGeneration,{page,params,error}=resolveRoute(location.hash);
   const canonical=`#${page}${params.size?'?'+params:''}`;
   if(location.hash!==canonical)history.replaceState(null,'',canonical);
-  document.querySelectorAll('[data-page]').forEach(a=>{a.classList.toggle('active',a.dataset.page===page);if(a.dataset.page===page)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
-  document.querySelectorAll('[data-section]').forEach(a=>a.classList.toggle('active',a.dataset.section===(['models','learn','delivery'].includes(page)?page:'case')));
+  const sidebar=document.querySelector('.sidebar');sidebar.innerHTML=sidebarHtml(page,params);
+  const activeSection=['models','learn','delivery'].includes(page)?page:'case';
+  document.querySelectorAll('[data-section]').forEach(a=>{const active=a.dataset.section===activeSection;a.classList.toggle('active',active);if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
   cancelCase();
   let rendering;
   if(CASES[page])rendering=casePage(page,params,token,error);
@@ -74,7 +76,12 @@ async function route() {
   else delivery();
   document.title=`${labels[page]} · 模型工坊`;window.scrollTo(0,0);
   await rendering;
-  if(token===routeGeneration)mountCaseReading(main,page,params);
+  if(token===routeGeneration){
+    mountCaseReading(main,page,params);
+    const targetId=sidebarTarget(page,params),target=targetId&&main.querySelector(`#${targetId}`);
+    if(target){target.tabIndex=-1;target.focus({preventScroll:true});target.scrollIntoView({block:'start'});}
+    sidebar.querySelectorAll('a').forEach(a=>a.onclick=()=>{if(a.getAttribute('href')===location.hash&&target)target.scrollIntoView({block:'start'});});
+  }
 }
 window.addEventListener('hashchange', route);
 document.querySelector('.skip').onclick = e => { e.preventDefault(); main.focus(); main.scrollIntoView(); };
