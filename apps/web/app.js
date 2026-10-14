@@ -20,13 +20,13 @@ function heading(page,title,subtitle) {
 }
 
 function delivery() {
-  main.innerHTML = heading('delivery', '定制服务与交付范围', '先定义目标与数据条件，再确定模型、接口和交付范围。') + `<section class="delivery-intro"><h2>可选服务</h2><button class="primary contact-open">整理我的需求</button></section><div class="delivery-options">${[['数据可行性评估', '数据条件与实施建议', ['数据质量与字段梳理', '业务任务与评估口径', '基线结果和实施建议']], ['模型与交互原型', '模型原型与评估报告', ['可运行模型与实验记录', '接口或批量结果样例', '演示页面与评估报告']], ['业务接入与教学', '部署文档与项目讲解', ['数据更新、降级与日志方案', '部署文档与效果复核流程', '项目讲解与实践辅导']]].map(([t, sub, items]) => `<article><h2>${t}</h2><p>${sub}</p><ul>${items.map(x => `<li>${x}</li>`).join('')}</ul></article>`).join('')}</div>${deliveryCaseLinks()}<section class="technical-panel"><div class="section-heading"><h2>接口形态</h2><span class="badge">可选本地接口 · 已实现</span></div><div class="tech-columns"><div><h3>推荐请求</h3><pre>POST /api/v1/recommendations
+  main.innerHTML = heading('delivery', '定制服务与交付范围', '公开案例展示建模和评估能力。新业务先明确目标与验收，再讨论实现范围。') + `<section class="delivery-path"><div class="delivery-path-heading"><h2>怎样开始</h2><p>先描述业务问题，不需要在本站上传数据。</p></div><ol><li><strong>说明目标</strong><p>选一个相近案例，写下需要做出的判断、希望得到的输出和衡量效果的方式。</p></li><li><strong>准备需求清单</strong><p>填写业务目标、现有数据类型和期望交付；文件只下载到本机，不会自动发送。</p><button class="outline contact-open" type="button">下载需求清单</button></li><li><strong>自行发起沟通</strong><p>将简要需求发至 <a href="mailto:xiamimate@xichenze.cn">xiamimate@xichenze.cn</a>。可选择附上清单；请勿在初次邮件中发送原始业务数据。</p><a class="primary" href="mailto:xiamimate@xichenze.cn">写邮件沟通</a><a class="delivery-about" href="https://xiamimate.com/about" target="_blank" rel="noopener noreferrer">也可通过企业微信联系</a></li></ol><p class="delivery-path-note">邮件由你的邮件客户端发送。本站没有在线提交、客户数据接入或自动回复；具体范围与验收在沟通后确定。</p></section><section class="delivery-intro"><h2>可讨论的交付阶段</h2></section><div class="delivery-options">${[['数据可行性评估', '数据条件与实施建议', ['字段与数据质量清单', '业务任务和基线验收口径', '可行性结论与风险']], ['模型与交互原型', '离线原型与评估报告', ['可运行模型与实验记录', '批量结果或接口样例', '基线对照与失败分析']], ['业务接入与交接', '按实际系统另定范围', ['数据更新、降级与日志方案', '部署和效果复核文档', '上线前独立验证要求']]].map(([t, sub, items]) => `<article><h2>${t}</h2><p>${sub}</p><ul>${items.map(x => `<li>${x}</li>`).join('')}</ul></article>`).join('')}</div><p class="delivery-teaching">需要项目教学与辅导，可在邮件中说明；<a href="#learn">教学拆解</a>展示了本站现有的复算方式。</p>${deliveryCaseLinks()}<section class="technical-panel"><div class="section-heading"><h2>推荐案例的本地接口示例</h2><span class="badge">仅推荐示例已实现</span></div><div class="tech-columns"><div><h3>推荐请求</h3><pre>POST /api/v1/recommendations
 {
   "customer_id": "new",
   "strategy": "als",
   "limit": 10,
   "exclude_purchased": false
-}</pre></div><div><h3>交付时保留的内容</h3><p>请求与模型版本、推荐依据、触发的经营规则、降级原因和运行耗时。对照实验独立保存分组与结果。</p><p class="small-note">项目目前完全独立；没有接入主站账号、积分、客户数据或在线联系渠道。</p></div></div></section>`;
+}</pre></div><div><h3>交付时保留的内容</h3><p>请求与模型版本、推荐依据、触发的经营规则、降级原因和运行耗时。对照实验独立保存分组与结果。</p><p class="small-note">此接口属于本地推荐演示，不代表七类案例均已有在线接口。模型工坊作为虾米伙伴的模块化项目独立开发，共享联系入口，尚未接入主站账号、积分或客户数据。</p></div></div></section>`;
   bindContact();
 }
 
@@ -34,7 +34,7 @@ function toast(message) { const box = document.querySelector('#toast'); box.text
 function download(filename, content) { const url = URL.createObjectURL(new Blob([content], { type: 'text/plain;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); }
 function bindContact() { document.querySelectorAll('.contact-open').forEach(button => button.onclick = () => document.querySelector('#contact-dialog').showModal()); }
 document.querySelector('#close-dialog').onclick = () => document.querySelector('#contact-dialog').close();
-document.querySelector('#brief-form').onsubmit = e => { e.preventDefault(); const form = new FormData(e.target); download('模型工坊-定制需求.txt', `模型工坊 · 定制需求摘要\n\n业务目标：${form.get('goal')}\n现有数据：${form.get('data')}\n期望交付：${form.get('delivery')}\n\n该文件仅保存在本地，尚未发送。`); toast('需求摘要已下载，尚未发送'); };
+document.querySelector('#brief-form').onsubmit = e => { e.preventDefault(); const form = new FormData(e.target); download('模型工坊-定制需求.txt', `模型工坊 · 定制需求清单\n\n业务目标：${form.get('goal')}\n现有数据：${form.get('data')}\n期望交付：${form.get('delivery')}\n\n该文件仅保存在本地，尚未发送。如需沟通，请自行发送至 xiamimate@xichenze.cn。初次沟通无需发送原始业务数据。`); toast('需求清单已下载，邮件需由你自行发送'); };
 let routeGeneration = 0;
 async function casePage(page, params, token, routeError) {
   const caseId=params.get('case'), entry=CASES[page].find(c=>c.id===caseId),view=params.get('view'), choices=visibleCases(page), hidden=entry&&!choices.some(c=>c.id===caseId);
