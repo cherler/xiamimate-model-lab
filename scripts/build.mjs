@@ -1,3 +1,4 @@
+import {verifyMonitoring} from '../apps/web/monitoring-metrics.js';
 import {verifyRetrieval} from '../apps/web/retrieval-metrics.js';
 import {verifyClassification} from '../apps/web/classification-metrics.js';
 import { cp, mkdir, readFile, rm } from 'node:fs/promises';
@@ -62,6 +63,13 @@ const retrievalPayload=verifyRetrieval(JSON.parse(retrievalBytes));
 if(retrievalPayload.run_id!==retrieval.run_id)throw new Error('检索结果版本不一致');
 const retrievalNotice=await readFile(resolve(retrievalRoot,retrieval.notice));
 if(createHash('sha256').update(retrievalNotice).digest('hex')!==retrieval.notice_sha256||retrievalNotice.toString()!==retrievalPayload.notice)throw new Error('检索署名说明不一致');
+const monitoringRoot=resolve(root,'apps/web/monitoring-results');
+const monitoring=JSON.parse(await readFile(resolve(monitoringRoot,'manifest.json'),'utf8'));
+for(const kind of ['anomaly','segments']){
+ const spec=monitoring.resources?.[kind];if(!spec||!new RegExp(`^[a-f0-9]{16}/${kind}\\.json$`).test(spec.path))throw new Error('监测资源路径无效');
+ const bytes=await readFile(resolve(monitoringRoot,spec.path));if(createHash('sha256').update(bytes).digest('hex')!==spec.sha256)throw new Error('监测结果哈希不一致');
+ const payload=verifyMonitoring(JSON.parse(bytes),{deep:true});if(payload.kind!==kind||payload.run_id!==spec.run_id)throw new Error('监测结果版本不一致');
+}
 // Build output is disposable; validate all sources before replacing it.
 await rm(`${root}dist`, { recursive: true, force: true });
 await mkdir(`${root}dist`, { recursive: true });
