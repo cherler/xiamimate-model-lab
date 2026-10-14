@@ -12,6 +12,18 @@ export const PUBLIC_CASE_PATHS=[
 ];
 
 export function publicCasePath(key){return PUBLIC_CASE_PATHS.find(c=>c.key===key)||null;}
+export function caseMethodHref(page,params){
+ const id=params.get('case');
+ const fallback=publicCasePath(`${page}:${id}`)?.methodHref;
+ if(!fallback&&!['recommend','forecast'].includes(page))return null;
+ const q=new URLSearchParams(params);
+ q.delete('walk');q.delete('view');q.delete('topic');q.delete('lesson');
+ if(['recommend','forecast'].includes(page)){
+  if(!q.has('task'))q.set('task',page==='forecast'?'weekly_sales':id==='uci'?'next_basket':'repurchase');
+  q.set('focus','detail');return `#models?${q}`;
+ }
+ q.set('view','models');return `#${page}?${q}`;
+}
 export function publicLessonHref(key){
  const [page,id]=key.split(':');
  const href=exerciseHref(page,new URLSearchParams({case:id}));

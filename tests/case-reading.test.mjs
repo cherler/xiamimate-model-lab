@@ -43,7 +43,7 @@ test('D8 calculations route to real supported views without mixing cases or teac
 });
 test('D8 delivery entry leads to seven available public evidence paths, not research-only scores',async()=>{
  const {deliveryCaseLinks}=await import('../apps/web/case-reading.js');const html=deliveryCaseLinks();
- const {PUBLIC_CASE_PATHS}=await import('../apps/web/case-paths.js');
+ const {PUBLIC_CASE_PATHS,caseMethodHref}=await import('../apps/web/case-paths.js');
  for(const c of PUBLIC_CASE_PATHS){assert.match(html,new RegExp(c.scene));assert.match(html,new RegExp(c.decision));}
  assert.match(html,/要做的判断/);assert.match(html,/展示交付/);
  const links=[...html.matchAll(/href="([^"]+)"/g)].map(m=>m[1].replaceAll('&amp;','&'));assert.equal(links.length,7);
@@ -63,11 +63,11 @@ test('customer first-screen summaries cover every case and distinguish fixed con
  }
 });
 test('every public case links back to its method and its real calculation',async()=>{
- const {PUBLIC_CASE_PATHS}=await import('../apps/web/case-paths.js');
+ const {PUBLIC_CASE_PATHS,caseMethodHref}=await import('../apps/web/case-paths.js');
  for(const path of PUBLIC_CASE_PATHS){
   const [page,id]=path.key.split(':');const html=readingHtml(page,new URLSearchParams({case:id}));
   assert.match(html,/查看建模方法/);assert.match(html,/查看逐项计算/);
-  assert.ok(html.includes(path.methodHref.replaceAll('&','&amp;')));
+  assert.ok(html.includes(caseMethodHref(page,new URLSearchParams({case:id})).replaceAll('&','&amp;')));
  }
  assert.doesNotMatch(readingHtml('forecast',new URLSearchParams({case:'m5'})),/reading-study-links/);
 });

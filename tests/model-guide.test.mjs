@@ -48,3 +48,10 @@ test('every UCI daily and weekly forecast is explained and resolved to its own t
  assert.equal(resolveGuideSelection(new URLSearchParams('model=hybrid')).selected.id,'hybrid');
  assert.equal(resolveGuideSelection(new URLSearchParams('case=invalid&task=invalid&model=invalid')).selected.id,'hybrid');
 });
+
+test('forecast evaluation links stay in forecasting and retain the selected task',()=>{
+ const card=GUIDE.find(c=>c.caseId==='uci'&&c.task==='weekly_sales');
+ const href=guideLink(card,card.variants[0].model,'report');
+ assert.ok(href.startsWith('#forecast?'));const q=new URLSearchParams(href.split('?')[1]);
+ assert.equal(q.get('view'),'report');assert.equal(q.get('task'),'weekly_sales');
+});

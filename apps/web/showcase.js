@@ -1,3 +1,4 @@
+import {saveSelection} from './navigation-state.js';
 import {forecastPairEvidence,publicApplicability} from './public-comparison.js';
 // Read-only public results. Experiment metrics never depend on the selected example.
 export const MODEL_NAMES = {
@@ -144,6 +145,7 @@ function recommendation(host, report, data, entry) {
   const task=state.task, d=report.decisions[task];
   const model=state.models[task] ||= d.selected_model;
   const sample=data.samples.find(s=>s.customer===state.customer) || data.samples[0]; state.customer=sample.customer;
+  saveSelection('recommend',{case:'tafeng',task,model,customer:sample.customer});
   const status=sampleStatus(sample,task,model), row=sample.tasks[task]?.[model];
   const summary=report.recommendation[task][model].warm;
   host.innerHTML=title(entry,'Ta Feng 商品推荐','将老客复购与未购商品发现分开比较；同一任务中，每个方法面对相同的评估人群。')+
@@ -169,6 +171,7 @@ function bars(row, model, baseline) {
 function forecast(host,report,data,entry) {
   state.item ||= data.items[0]; state.origin ||= data.origins[0];state.forecastModel ||= report.decisions.weekly_sales.selected_model;state.forecastBaseline ||= report.decisions.weekly_sales.baseline;
   const baseline=state.forecastBaseline,model=state.forecastModel,row=forecastRow(data,state.item,state.origin),pred=row.predictions[model];
+  saveSelection('forecast',{case:'tafeng',task:'weekly_sales',model,baseline,item:state.item,origin:state.origin});
   const error=Math.abs(pred-row.actual), overall=report.weekly[model].metrics;
   host.innerHTML=title(entry,'Ta Feng 周销量预测','选择同一商品与预测起点，比较简单基线和已训练模型；同时观察绝对误差与总量偏差。')+
     `<section class="showcase-controls three"><label>预测方法<select id="tf-forecast-model">${Object.keys(report.weekly).map(name=>`<option value="${name}" ${name===model?'selected':''}>${esc(MODEL_NAMES[name])}</option>`).join('')}</select></label><label>对照方法<select id="tf-forecast-baseline">${Object.keys(report.weekly).map(id=>`<option value="${id}" ${id===baseline?'selected':''}>${esc(MODEL_NAMES[id])}</option>`).join('')}</select></label><label>商品编号<select id="tf-item">${data.items.map(id=>`<option value="${esc(id)}" ${id===state.item?'selected':''}>${esc(id)}</option>`).join('')}</select></label><label>七天预测起点<select id="tf-origin">${data.origins.map(id=>`<option value="${id}" ${id===state.origin?'selected':''}>${id}</option>`).join('')}</select></label></section><p class="showcase-model-note">${esc(EXPLANATIONS[model])} 参数在最终测试前冻结；每个起点只使用当时已发生的历史。</p><div class="forecast-guide-entry"><span>查看这个方法如何处理销量历史。</span><a class="outline small" href="#models?case=tafeng&task=weekly_sales&model=${model}">解读当前预测模型</a></div>`+
