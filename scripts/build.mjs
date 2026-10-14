@@ -1,3 +1,4 @@
+import {readinessModule} from './export-model-readiness.mjs';
 import {verifyPreference} from '../apps/web/preference-segments.js';
 import {validateExplanations} from '../apps/web/advanced-explanations.js';
 import {verifyUciStatic} from './verify-uci-static.mjs';
@@ -91,6 +92,7 @@ const decisionBytes=await readFile(resolve(decisionRoot,decision.path));
 if(createHash('sha256').update(decisionBytes).digest('hex')!==decision.sha256)throw new Error('决策结果哈希不一致');
 if(verifyDecision(JSON.parse(decisionBytes)).run_id!==decision.run_id)throw new Error('决策结果版本不一致');
 await verifyUciStatic(resolve(root,'apps/web/uci-results'),manifest);
+if(await readFile(resolve(root,'apps/web/model-readiness.js'),'utf8')!==await readinessModule())throw new Error('模型适配审查展示与来源报告不一致');
 // Build output is disposable; validate all sources before replacing it.
 await rm(`${root}dist`, { recursive: true, force: true });
 await mkdir(`${root}dist`, { recursive: true });
