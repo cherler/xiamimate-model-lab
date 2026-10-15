@@ -1,3 +1,4 @@
+import {renderAgent,cancelAgent} from './agent-case.js';
 import {initAssistant} from './assistant.js';
 import {renderCooperation} from './cooperation.js';
 import {renderScenarioExpansion} from './scenario-expansion.js';
@@ -21,7 +22,7 @@ import {sidebarHtml,sidebarTarget} from './sidebar-navigation.js';
 import { loadManifest, renderShowcase } from './showcase.js';
 import { renderCase, cancelCase } from './real-cases.js';
 const main = document.querySelector('#main');
-const labels = { decision: '决策优化', anomaly: '异常检测', segments: '零售分群', retrieve: '智能检索', classify: '分类与评分', m5: 'M5 预测案例', automl: 'AutoML 实验室', advanced: '进阶模型实验', recommend: '电商商品推荐', forecast: '销量预测', evidence: '效果报告', expand: '场景扩展', models: '模型解读', learn: '教学拆解', delivery: '方案与合作' };
+const labels = {agent:'AI Agent', decision: '决策优化', anomaly: '异常检测', segments: '零售分群', retrieve: '智能检索', classify: '分类与评分', m5: 'M5 预测案例', automl: 'AutoML 实验室', advanced: '进阶模型实验', recommend: '电商商品推荐', forecast: '销量预测', evidence: '效果报告', expand: '场景扩展', models: '模型解读', learn: '教学拆解', delivery: '方案与合作' };
 let routeGeneration = 0;
 async function casePage(page, params, token, routeError) {
   const caseId=params.get('case'), entry=CASES[page].find(c=>c.id===caseId),view=params.get('view'), choices=visibleCases(page), hidden=entry&&!choices.some(c=>c.id===caseId);
@@ -68,11 +69,12 @@ async function route() {
  }
  const canonical=`#${page}${params.size?'?'+params:''}`;
  if(location.hash!==canonical)history.replaceState(null,'',canonical);
- updateNavigation();cancelCase();
+ updateNavigation();cancelCase();cancelAgent();
  const current=()=>token===routeGeneration,renderParams=new URLSearchParams(params),business=context.business;
  let rendering;
  const tafengLesson=context.mode==='learn'&&context.caseId==='tafeng'&&['recommend','forecast'].includes(business);
- if(context.mode==='expand')renderScenarioExpansion(main,business,renderParams);
+ if(business==='agent'&&context.mode!=='delivery')rendering=renderAgent(main,current,renderParams,context.mode);
+ else if(context.mode==='expand')renderScenarioExpansion(main,business,renderParams);
  else if(context.mode==='delivery')renderCooperation(main);
  else if(context.mode==='models'&&['recommend','forecast'].includes(business)&&!['m5','dressipi'].includes(context.caseId)){
   if(!renderParams.has('task'))renderParams.set('task',business==='forecast'?'weekly_sales':context.caseId==='uci'?'next_basket':'repurchase');
@@ -90,7 +92,7 @@ async function route() {
   else if(business==='retrieve')rendering=renderRetrieval(main,current,renderParams);
   else if(business==='classify')rendering=renderClassification(main,current,renderParams);
  }
- document.title=`${labels[business]} · ${context.mode==='case'?'案例体验':labels[context.mode]} · 模型工坊`;window.scrollTo(0,0);
+ document.title=context.mode==='delivery'?'方案与合作 · 模型工坊':`${labels[business]} · ${context.mode==='case'?'案例体验':labels[context.mode]} · 模型工坊`; window.scrollTo(0,0);
  await rendering;
  if(current()){
   if(tafengLesson&&!main.querySelector('.case-picker')){

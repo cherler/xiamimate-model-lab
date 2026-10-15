@@ -15,7 +15,7 @@ test('assistant accepts only server evidence citations, preserves usage, and rej
 });
 test('tool requests cannot execute arbitrary functions and failures remain in the trace',async()=>{
  let n=0;const r=await runAssistant(body,{complete:async()=>++n===1?{message:{tool_calls:[{id:'bad',type:'function',function:{name:'shell',arguments:'{"cmd":"touch x"}'}}]}}:final()});
- assert.equal(r.trace.length,1);assert.equal(r.trace[0].ok,false);assert.match(r.trace[0].result.error,/范围/);
+ assert.equal(r.trace.length,2);assert.equal(r.trace[1].ok,false);assert.match(r.trace[1].result.error,/范围/);
 });
 test('repeated tool loops terminate without a fake successful answer',async()=>{
  await assert.rejects(runAssistant(body,{complete:async()=>({message:{tool_calls:[{id:'repeat',type:'function',function:{name:'list_cases',arguments:'{}'}}]}})}),/轮次上限/);

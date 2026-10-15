@@ -71,3 +71,5 @@ artifacts/colbert-reference/
 artifacts/colbert-runs/
 artifacts/colbert-latest.json
 apps/web/colbert-results/
+
+artifacts/assistant-runs/

@@ -1,13 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {sidebarHtml,sidebarTarget} from '../apps/web/sidebar-navigation.js';
-import {BUSINESSES,navigationContext,sectionHref} from '../apps/web/navigation-state.js';
+import {BUSINESSES,WORKSPACES,navigationContext,sectionHref} from '../apps/web/navigation-state.js';
 import {resolveRoute} from '../apps/web/case-navigation.js';
 
 test('all four business modes use the same seven icons, names and business order',()=>{
  for(const mode of ['case','models','learn','expand'])for(const c of BUSINESSES){
   const route=resolveRoute(sectionHref(mode,c.id),false),html=sidebarHtml(route.page,route.params);
-  assert.equal([...html.matchAll(/data-business=/g)].length,7);
+  assert.equal([...html.matchAll(/data-business=/g)].length,WORKSPACES.length);
   assert.equal([...html.matchAll(/aria-current="page"/g)].length,1);
   let position=-1;
   for(const entry of BUSINESSES){
@@ -58,3 +58,5 @@ test('legacy Ta Feng lessons retain their dataset and control edits retain the a
   await Promise.resolve();assert.equal(notified,2);
  }finally{Object.assign(global,previous);}
 });
+
+test('Agent retains the same identity across all top-level reading modes',()=>{for(const mode of ['case','models','learn','expand']){const route=resolveRoute(sectionHref(mode,'agent',new URLSearchParams({case:'retail',budget:'0.6'})));const c=navigationContext(route.page,route.params);assert.equal(c.business,'agent');assert.equal(c.mode,mode);assert.equal(route.params.get('budget'),'0.6');assert.match(sidebarHtml(route.page,route.params),/◎<\/span>AI Agent/);}});

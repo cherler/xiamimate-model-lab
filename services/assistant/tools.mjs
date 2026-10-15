@@ -38,7 +38,7 @@ export function compareRetail(p,args,review=false){
  validateArgs(review?'retail_review':'retail_compare',args);
  const w=p.windows.find(w=>w.origin===args.origin),plan=w&&findPlan(w,args);
  if(!plan)throw new Error('该组合没有保存结果，请使用支持的日期与倍率；未自动取最近值。');
- const x=decisionInput(w.items,plan,p.protocol),sources=[{id:'retail',title:'UCI 保存补货结果与复算',href:'#decision?'+new URLSearchParams({case:'retail',view:review?'report':'experience',...args})}];
+ const x=decisionInput(w.items,plan,p.protocol),sources=[{id:`retail:${args.origin}:${args.model}:${args.budget}:${args.capacity}:${args.shortage}:${review?'review':'compare'}`,title:'UCI 保存补货结果与复算',href:'#decision?'+new URLSearchParams({case:'retail',view:review?'report':'experience',...args})}];
  const policies=Object.fromEntries(Object.entries(POLICIES).map(([key,label])=>[key,{label,packs:plan.policies[key].packs,metrics:decisionMetrics(x,plan.policies[key].packs,review?w.items.map(r=>r.actual):null)}]));
  return {sources,kind:review?'事后模拟复算':'保存订单与历史需求场景复算',run:p.run_id,sourceForecast:p.protocol.source_run,selection:args,end:w.end,unit:'金额单位：英镑便士；数量：件',budget:x.budget,capacity:x.capacity,packSize:x.pack,
   items:w.items.map((r,i)=>({id:r.id,name:r.name,initial:r.initial,forecast:r.predictions[args.model],weeks:r.weeks,cost:r.cost,penalty:x.penalty[i],...(review?{recordedSales:r.actual}:{})})),policies,
@@ -57,6 +57,6 @@ export async function executeTool(name,args,{load=loadRetail}={}){
 export async function runWorkflow(selection,options={}){
  const start=performance.now(),trace=[];
  // Freeze the caller's explicit selection. The review never influences order choice.
- for(const name of ['retail_compare','retail_review']){const t=performance.now(),result=await executeTool(name,selection,options);trace.push({name,args:selection,result,ok:true,ms:Math.round(performance.now()-t)});}
+ for(const name of ['retail_compare','retail_review']){const t=performance.now();try{const result=await executeTool(name,selection,options);trace.push({name,args:selection,result,ok:true,ms:Math.round(performance.now()-t)});}catch(e){trace.push({name,args:selection,result:{error:e.message},ok:false,ms:Math.round(performance.now()-t)});throw Object.assign(new Error(e.message),{trace});}}
  return {mode:'workflow',summary:'固定流程已完成：读取保存订单，分别复算起点前需求场景与事后模拟；下方保留三策略和全部商品。此流程不调用语言模型，也不产生新订单。',trace,ms:Math.round(performance.now()-start),sources:trace[0].result.sources,usage:null};
 }
