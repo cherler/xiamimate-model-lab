@@ -60,3 +60,24 @@ test('context-free Ask AI and retail Agent always receive server-owned evidence 
  assert.equal(r.trace[0].name,'list_cases');assert.equal(r.trace[0].phase,'公开案例导航资料');
  const a=await runAssistant({mode:'agent',context:'agent:retail',question:'保证收益吗',selection:{origin:'2011-09-01',model:'lightgbm',budget:1,capacity:1.25,shortage:1.5}},{complete:async()=>final(['decision:retail'])});assert.equal(a.trace[0].args.key,'decision:retail');
 });
+
+const retailSelection={origin:'2011-09-01',model:'lightgbm',budget:1.4,capacity:.75,shortage:3};
+const reportRequest={mode:'agent',context:'agent:retail',question:'对比三种补货策略，分开说明起点前场景和事后模拟。',selection:retailSelection};
+const reportCall=args=>({message:{tool_calls:[{id:'report',function:{name:'retail_report',arguments:JSON.stringify(args)}}]},usage:{prompt_tokens:20,completion_tokens:10}});
+test('complete retail report returns after tool calculation without a slow second completion',async()=>{
+ let completions=0;const r=await runAssistant(reportRequest,{complete:async()=>{if(++completions>1)throw new Error('slow final model request should not happen');return reportCall({selections:[retailSelection],review:true});}});
+ assert.equal(completions,1);assert.equal(r.completion,'tool_report_ready');assert.equal(r.answerOrigin,'tool_report');assert.deepEqual(r.trace.slice(1).map(t=>t.name),['retail_compare','retail_review']);assert.ok(r.trace.every(t=>t.ok));assert.equal(r.usage.completion_tokens,10);
+ assert.match(r.summary,/事后模拟复算/);assert.match(r.summary,/预算 1.4 倍/);
+});
+test('fast budget report obtains explicit form baseline and fixes the direction',async()=>{
+ const r=await runAssistant(reportRequest,{complete:async()=>reportCall({selections:[{...retailSelection,budget:.6}],review:false})});
+ assert.equal(r.orderChanges[0].from.budget,1.4);assert.equal(r.orderChanges[0].to.budget,.6);assert.equal(r.trace.filter(t=>t.phase==='服务端读取明确表单基准').length,1);
+});
+test('unsupported report target keeps successful traces but never returns a complete report',async()=>{
+ await assert.rejects(runAssistant(reportRequest,{complete:async()=>reportCall({selections:[retailSelection,{...retailSelection,budget:.93}],review:true})}),e=>e.trace.some(t=>t.ok&&t.name==='retail_review')&&e.trace.some(t=>!t.ok)&&/部分条件计算失败/.test(e.message));
+});
+test('fast reports reject invalid nested args and honor cancellation after calculation',async()=>{
+ await assert.rejects(runAssistant(reportRequest,{complete:async()=>reportCall({selections:[{...retailSelection,secret:'x'}],review:true})}),/参数/);
+ const {executeTool}=await import('../services/assistant/tools.mjs'),controller=new AbortController();
+ await assert.rejects(runAssistant(reportRequest,{signal:controller.signal,complete:async()=>reportCall({selections:[retailSelection],review:true}),execute:async(name,args)=>{const r=await executeTool(name,args);if(name==='retail_report')controller.abort();return r;}}),/取消/);
+});

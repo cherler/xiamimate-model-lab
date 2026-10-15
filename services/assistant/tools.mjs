@@ -17,6 +17,7 @@ export const TOOL_DEFINITIONS=[
  tool('read_case','读取一个案例的已完成结论、范围与限制。不是逐样本数据。',obj({key:{type:'string',enum:PUBLIC_CASES.map(([k])=>k)}},['key'])),
  tool('read_expansion','读取业务场景扩展规划，所有内容尚未在对应扩展场景实证。',obj({business:{type:'string',enum:Object.keys(SCENARIO_EXPANSIONS)}},['business'])),
  tool('retail_options','读取零售补货回放支持的精确日期与倍率，不能猜测未提供的参数。',obj()),
+ tool('retail_report','完成补货数值报告并直接交付，不再等待模型整理。一次明确列出任务需要的全部条件（最多三组）；预算增减应包含表单原条件和目标条件。review=true 同时计算事后模拟，false 只计算起点前场景。适用于策略比较、订单排名、预算增减、约束及金额查询；原因推断和未支持条件不可由此证明。',obj({selections:{type:'array',items:selection,minItems:1,maxItems:3},review:{type:'boolean'}},['selections','review'])),
  tool('retail_compare','读取指定历史场景的保存订单，复算三策略预算/库容/预期成本。仅起点前信息，不含未来销量；不是在线求解。',selection),
  tool('retail_review','复算相同历史场景的事后模拟结果。只用于评估已冻结订单，不得拿它选当时最优策略或承诺收益。',selection),
 ];
@@ -25,7 +26,7 @@ export function validateArgs(name,args){
  if(!schema)throw new Error('未知工具');
  if(!args||typeof args!=='object'||Array.isArray(args)||Object.keys(args).some(k=>!Object.hasOwn(schema.properties,k)))throw new Error('工具参数无效');
  for(const key of schema.required)if(!Object.hasOwn(args,key))throw new Error('缺少参数：'+key);
- for(const [k,v] of Object.entries(args)){const s=schema.properties[k];if(typeof v!==s.type||s.enum&&!s.enum.includes(v)||s.type==='number'&&!Number.isFinite(v)||s.type==='string'&&v.length>120)throw new Error('工具参数无效：'+k);}
+ for(const [k,v] of Object.entries(args)){const s=schema.properties[k];if(s.type==='array'){if(!Array.isArray(v)||v.length<s.minItems||v.length>s.maxItems)throw new Error('工具参数无效：'+k);v.forEach(item=>validateArgs('retail_compare',item));continue;}if(typeof v!==s.type||s.enum&&!s.enum.includes(v)||s.type==='number'&&!Number.isFinite(v)||s.type==='string'&&v.length>120)throw new Error('工具参数无效：'+k);}
  return args;
 }
 export async function loadRetail(){
@@ -54,6 +55,14 @@ export async function executeTool(name,args,{load=loadRetail}={}){
  if(name==='read_case'){const c=PUBLIC_CASES.find(([k])=>k===args.key)?.[1];if(!c)throw new Error('案例未公开');const [business,caseId]=args.key.split(':');return {sources:[{id:args.key,title:c.name,href:`#${business}?case=${caseId}&view=report`},...(MODEL_ROADMAPS[business]?[{id:'expand:'+business,title:'业务模型升级状态',href:`#expand?business=${business}`}]:[])],status:'已有案例说明；本工具没有逐样本或逐方法精确成绩查询能力。不能暗示再提问即可获取这些数值。',case:c,...(args.key==='decision:retail'?{timeScope:'每个七日窗口在起点一次补货；预算与库容针对该窗口，不是逐日采购或每日独立预算。'}:{}),modelPaths:MODEL_ROADMAPS[business]?.paths.map(({name,priority,data,limit})=>({name,status:priority,...(business==='recommend'?{data,limit}:{})})),modelPathScope:'这些是业务升级路径，状态不代表当前案例已经实测。没有已运行成绩就回答未提供实测提升，不能指引用户寻找尚未运行模型的成绩。'};}
  if(name==='read_expansion')return {sources:[{id:'expand:'+args.business,title:'场景扩展规划',href:`#expand?business=${args.business}`}],status:'尚未在这些扩展场景实证',...SCENARIO_EXPANSIONS[args.business]};
  const p=await load();
+ if(name==='retail_report'){
+  const reports=[];
+  for(const argsSelection of args.selections)for(const name of args.review?['retail_compare','retail_review']:['retail_compare']){
+   const start=performance.now();try{const result=compareRetail(p,argsSelection,name==='retail_review');reports.push({name,args:argsSelection,ok:true,result,ms:Math.round(performance.now()-start),phase:'模型选择报告计划 · 工具计算'});}
+   catch(error){reports.push({name,args:argsSelection,ok:false,result:{error:error.message},ms:Math.round(performance.now()-start),phase:'模型选择报告计划 · 工具计算'});}
+  }
+  return {completed:reports.every(r=>r.ok),reports,sources:reports.filter(r=>r.ok).flatMap(r=>r.result.sources)};
+ }
  if(name==='retail_options')return {sources:[{id:'retail-options',title:'UCI 补货参数范围',href:'#decision?case=retail'}],...retailOptions(p)};
  return compareRetail(p,args,name==='retail_review');
 }

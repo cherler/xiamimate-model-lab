@@ -88,5 +88,19 @@
   },
   "question": "把预算从当前0.6提高到1倍，其他条件不变。哪些商品增加、哪些不变？",
   "review": "必须0.6→1，不受工具调用顺序影响；优化10增加2不变；三策略逐商品与冻结订单一致。"
+ },
+ {
+  "id": "report-timeout-regression",
+  "mode": "agent",
+  "context": "agent:retail",
+  "selection": {
+   "origin": "2011-09-01",
+   "model": "lightgbm",
+   "budget": 1.4,
+   "capacity": 0.75,
+   "shortage": 3
+  },
+  "question": "在所选资源条件下，对比三种补货策略。哪些商品的订单不同？哪些建议不可靠？请分开说明起点前场景成本和事后模拟。",
+  "review": "复现用户超时参数；compare/review均计算完整，直接交付工具报告，不发模型收尾请求；记录真实总耗时。"
  }
 ]
