@@ -1,3 +1,4 @@
+import {initAssistant} from './assistant.js';
 import {renderCooperation} from './cooperation.js';
 import {renderScenarioExpansion} from './scenario-expansion.js';
 import {refreshLearningContext} from './learning-context.js';
@@ -104,5 +105,6 @@ async function route() {
 }
 window.addEventListener('selectionchange',()=>{updateNavigation();const {page,params}=resolveRoute(location.hash),context=navigationContext(page,params);if(context.mode==='case')mountCaseReading(main,context.business,params,{navigate:false});});
 window.addEventListener('hashchange', route);
+initAssistant();
 document.querySelector('.skip').onclick = e => { e.preventDefault(); main.focus(); main.scrollIntoView(); };
 route();
