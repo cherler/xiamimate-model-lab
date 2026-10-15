@@ -1,6 +1,6 @@
 import {renderAgent,cancelAgent} from './agent-case.js';
 import {initAssistant} from './assistant.js';
-import {renderCooperation} from './cooperation.js';
+import {renderCooperation,cancelCooperation} from './cooperation.js';
 import {renderScenarioExpansion} from './scenario-expansion.js';
 import {refreshLearningContext} from './learning-context.js';
 import {renderUciRecommendationLesson} from './uci-recommendation-lesson.js';
@@ -69,13 +69,13 @@ async function route() {
  }
  const canonical=`#${page}${params.size?'?'+params:''}`;
  if(location.hash!==canonical)history.replaceState(null,'',canonical);
- updateNavigation();cancelCase();cancelAgent();
+ updateNavigation();cancelCase();cancelAgent();cancelCooperation();
  const current=()=>token===routeGeneration,renderParams=new URLSearchParams(params),business=context.business;
  let rendering;
  const tafengLesson=context.mode==='learn'&&context.caseId==='tafeng'&&['recommend','forecast'].includes(business);
  if(business==='agent'&&context.mode!=='delivery')rendering=renderAgent(main,current,renderParams,context.mode);
  else if(context.mode==='expand')renderScenarioExpansion(main,business,renderParams);
- else if(context.mode==='delivery')renderCooperation(main);
+ else if(context.mode==='delivery')renderCooperation(main,current);
  else if(context.mode==='models'&&['recommend','forecast'].includes(business)&&!['m5','dressipi'].includes(context.caseId)){
   if(!renderParams.has('task'))renderParams.set('task',business==='forecast'?'weekly_sales':context.caseId==='uci'?'next_basket':'repurchase');
   rendering=renderModelGuide(main,current,renderParams);

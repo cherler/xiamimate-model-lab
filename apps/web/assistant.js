@@ -3,12 +3,8 @@ import {navigationContext} from './navigation-state.js';
 import {resolveRoute} from './case-navigation.js';
 import {setBriefDraft} from './cooperation.js';
 export const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-export async function assistantRequest(path,body,signal){
- if(location.protocol==='file:')throw new Error('当前为文件预览。请通过本地服务打开；案例静态内容仍可浏览。');
- const r=await fetch(new URL('./api/assistant/'+path,location.href),{signal,method:body?'POST':'GET',headers:body?{'Content-Type':'application/json'}:{},...(body?{body:JSON.stringify(body)}:{})});
- let data;try{data=await r.json();}catch{throw new Error('当前为静态预览，未连接 AI 服务；已有案例和方案整理仍可使用。');}
- if(!r.ok)throw Object.assign(new Error(data.error||'分析服务暂不可用'),{trace:data.trace||[],validation:data.validation||[]});return data;
-}
+import {assistantRequest} from './assistant-client.js';
+export {assistantRequest} from './assistant-client.js';
 export function sourcesHtml(sources=[]){return `<nav class="assistant-sources" aria-label="本次回答来源">${sources.filter(s=>/^#(?:recommend|forecast|classify|retrieve|anomaly|segments|decision|expand|delivery)(?:\?|$)/.test(s.href)).map(s=>`<a href="${esc(s.href)}">${esc(s.title)}</a>`).join('')}</nav>`;}
 const TOOL_LABELS={list_cases:'查询公开案例',read_case:'读取案例证据',read_expansion:'读取扩展规划',retail_options:'读取可用场景',retail_compare:'读取订单并复算场景成本',retail_review:'复算事后模拟'};
 export function traceHtml(trace=[]){return trace.length?`<details class="assistant-trace"><summary>实际工具执行记录（${trace.length} 次）</summary><ol>${trace.map(t=>`<li><strong>${esc(TOOL_LABELS[t.name]||t.name)} · ${t.ok?'完成':'失败'} · ${esc(t.ms)} ms</strong><details><summary>参数与返回内容</summary><pre>${esc(JSON.stringify({phase:t.phase||'模型选择工具',parameters:t.args,result:t.result},null,2))}</pre></details></li>`).join('')}</ol></details>`:'';}
