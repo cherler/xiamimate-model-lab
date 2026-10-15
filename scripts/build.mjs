@@ -1,3 +1,4 @@
+import {conditionsReport} from './report-uci-conditions.mjs';
 import {verifyUciReliability} from '../apps/web/uci-reliability.js';
 import {verifyClassificationExplanations} from '../apps/web/classification-explanations.js';
 import {verifyColbert} from '../apps/web/colbert-metrics.js';
@@ -85,6 +86,8 @@ const reliabilityPayload=verifyUciReliability(JSON.parse(reliabilityBytes),{seri
 const reliabilityAudit=JSON.parse(await readFile(resolve(root,'docs/evaluation/uci-reliability-v1.json'),'utf8'));
 const reliabilityProtocol=await readFile(resolve(root,'services/reliability/uci-protocol.json'));
 if(reliabilityAudit.sha256!==reliabilityManifest.sha256||reliabilityPayload.protocol_sha256!==createHash('sha256').update(reliabilityProtocol).digest('hex')||JSON.stringify(reliabilityPayload.protocol)!==JSON.stringify(JSON.parse(reliabilityProtocol))||reliabilityPayload.exporter_sha256!==createHash('sha256').update(await readFile(resolve(root,'services/reliability/uci.py'))).digest('hex')||reliabilityManifest.parent_run!==reliabilityPayload.parent_run||reliabilityManifest.protocol_sha256!==reliabilityPayload.protocol_sha256)throw new Error('UCI 可靠性协议审计不一致');
+const conditionsAudit=JSON.parse(await readFile(resolve(root,'docs/evaluation/uci-conditions-v1.json'),'utf8'));
+if(JSON.stringify(conditionsAudit)!==JSON.stringify(await conditionsReport()))throw new Error('UCI 使用条件审计或诊断结果不一致');
 const retrievalRoot=resolve(root,'apps/web/retrieval-results');
 const retrieval=JSON.parse(await readFile(resolve(retrievalRoot,'manifest.json'),'utf8'));
 if(!/^[a-f0-9]{16}\/case\.json$/.test(retrieval.path)||retrieval.notice!==retrieval.path.replace('case.json','NOTICE.txt'))throw new Error('检索资源路径无效');
