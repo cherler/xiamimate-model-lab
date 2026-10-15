@@ -75,3 +75,6 @@ apps/web/colbert-results/
 artifacts/assistant-runs/
 
 apps/web/classification-explanations/
+
+# Derived UCI reliability replay
+apps/web/uci-reliability-results/

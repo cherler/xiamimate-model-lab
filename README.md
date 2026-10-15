@@ -250,3 +250,8 @@ npm run run:decision
 ### 分类逐样本解释（E2）
 
 已保存 Spambase 模型和父结果就绪后，执行 `npm run explain:classification`，从已发布的 1,076 条验证／留出样本导出 LightGBM TreeSHAP 与逻辑回归逐项贡献。该命令只重新推理及核验，不拟合模型或重新打开测试分区。`apps/web/classification-explanations/` 不提交 Git；公开构建需要这份解释包及 `docs/evaluation/classification-explanations-v1.json` 一致。原始分数、校准映射和完整贡献在体验页可追溯；默认展示关键贡献，贡献不等于因果。
+
+
+### UCI 预测可靠性（E3）
+
+`npm run audit:uci-reliability` 审查已发布窗口，`npm run export:uci-reliability` 按 `services/reliability/uci-protocol.json` 复算历史残差参考区间。仅使用冻结的周点预测，前四窗积累残差，后八窗评估；原模型参数曾参考同批开发窗口，且商品／时序相关，因此没有未来覆盖保证。28 日逐日任务只有三个起点，不提供本轮区间。结果目录 `apps/web/uci-reliability-results/` 不入 Git；公开构建要求其哈希、协议、父数据及全部指标复算通过。

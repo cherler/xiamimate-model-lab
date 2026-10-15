@@ -1,0 +1,156 @@
+{
+  "schema": "uci-reliability-v1",
+  "path": "1c30ec03d5251a34/case.json",
+  "sha256": "1c30ec03d5251a341d57e22799407f64e98ba2b952e227b669f05821b1bb68ed",
+  "parent_run": "retail-20261012T001149Z",
+  "protocol_sha256": "4fdd6abafce569dfc82037cbbdd4c30f3ee4f5e8e21ecefa22b731041c52ec4b",
+  "exporter_sha256": "c9575617d2cd3bfa22c126c19b4c21f214bdb99f511533563869a449875a7ee8",
+  "eligible_windows": 8,
+  "eligible_rows": 96,
+  "summary": {
+    "zero": {
+      "all_point": {
+        "n": 144,
+        "wape": 1.0,
+        "mae": 629.7361111111111,
+        "bias": -1.0
+      },
+      "eligible_point": {
+        "n": 96,
+        "wape": 1.0,
+        "mae": 696.0520833333334,
+        "bias": -1.0
+      },
+      "interval": {
+        "n": 96,
+        "covered": 86,
+        "below": 0,
+        "above": 10,
+        "coverage": 0.8958333333333334,
+        "mean_width": 1487.3443105801814,
+        "mean_scaled_width": 2.5553684060217075,
+        "interval_score": 3146.9749021514253
+      }
+    },
+    "last_week": {
+      "all_point": {
+        "n": 144,
+        "wape": 0.7058401887916014,
+        "mae": 444.49305555555554,
+        "bias": -0.028925255287708698
+      },
+      "eligible_point": {
+        "n": 96,
+        "wape": 0.7346193561904192,
+        "mae": 511.3333333333333,
+        "bias": -0.004998428637703716
+      },
+      "interval": {
+        "n": 96,
+        "covered": 85,
+        "below": 4,
+        "above": 7,
+        "coverage": 0.8854166666666666,
+        "mean_width": 1936.2402016340275,
+        "mean_scaled_width": 3.1926458326360927,
+        "interval_score": 3575.606833607102
+      }
+    },
+    "four_week_mean": {
+      "all_point": {
+        "n": 144,
+        "wape": 0.6055088110099027,
+        "mae": 381.3107638888889,
+        "bias": -0.04310392360115569
+      },
+      "eligible_point": {
+        "n": 96,
+        "wape": 0.6252525403690457,
+        "mae": 435.2083333333333,
+        "bias": -0.07459481300788674
+      },
+      "interval": {
+        "n": 96,
+        "covered": 87,
+        "below": 0,
+        "above": 9,
+        "coverage": 0.90625,
+        "mean_width": 1553.2769943510966,
+        "mean_scaled_width": 2.591179377807053,
+        "interval_score": 3116.1128151484695
+      }
+    },
+    "four_week_median": {
+      "all_point": {
+        "n": 144,
+        "wape": 0.5408129507509759,
+        "mae": 340.56944444444446,
+        "bias": -0.21924968571491585
+      },
+      "eligible_point": {
+        "n": 96,
+        "wape": 0.547986411457476,
+        "mae": 381.4270833333333,
+        "bias": -0.2556681282830248
+      },
+      "interval": {
+        "n": 96,
+        "covered": 88,
+        "below": 0,
+        "above": 8,
+        "coverage": 0.9166666666666666,
+        "mean_width": 1607.4032973971214,
+        "mean_scaled_width": 2.7118190807902405,
+        "interval_score": 2962.8149101900854
+      }
+    },
+    "autoets": {
+      "all_point": {
+        "n": 144,
+        "wape": 0.5660274637068606,
+        "mae": 356.447933776844,
+        "bias": -0.03788608948112779
+      },
+      "eligible_point": {
+        "n": 96,
+        "wape": 0.5834277588866574,
+        "mae": 406.09610704755556,
+        "bias": -0.10735690078727668
+      },
+      "interval": {
+        "n": 96,
+        "covered": 84,
+        "below": 0,
+        "above": 12,
+        "coverage": 0.875,
+        "mean_width": 1455.7888979331608,
+        "mean_scaled_width": 2.564058920078254,
+        "interval_score": 3035.227181314223
+      }
+    },
+    "lightgbm": {
+      "all_point": {
+        "n": 144,
+        "wape": 0.5248258328034578,
+        "mae": 330.50177896029976,
+        "bias": -0.1502338084054275
+      },
+      "eligible_point": {
+        "n": 96,
+        "wape": 0.5475197028056545,
+        "mae": 381.10222980392336,
+        "bias": -0.19754576882106037
+      },
+      "interval": {
+        "n": 96,
+        "covered": 86,
+        "below": 1,
+        "above": 9,
+        "coverage": 0.8958333333333334,
+        "mean_width": 1334.589917047477,
+        "mean_scaled_width": 2.287159692409616,
+        "interval_score": 3117.946066461382
+      }
+    }
+  }
+}

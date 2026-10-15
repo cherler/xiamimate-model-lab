@@ -9,3 +9,10 @@
 
 .uci-recommend-workbench{min-height:0}.uci-recommend-workbench #history{max-height:260px;overflow:auto}.uci-rec-pair .section-heading{flex-wrap:wrap}.uci-rec-pair .section-heading label{min-width:180px}.uci-rec-pair .depth-duel>section:first-child .score-bar span{background:#af8038}.evidence-bridge{margin-top:22px}.evidence-bridge .depth-duel p{line-height:1.85}
 @media(max-width:760px){.uci-recommend-workbench #history{max-height:220px}.uci-rec-pair .section-heading label{width:100%}}
+
+.uci-reliability,.uci-stability{scroll-margin-top:100px}
+.uci-reliability>p,.uci-stability>p{margin:14px 0;line-height:1.75}
+.uci-reliability>h3{margin:24px 0 12px}
+.uci-reliability details,.uci-stability details{margin-top:16px;padding:14px 0;border-top:1px solid var(--line)}
+.uci-reliability summary,.uci-stability summary{cursor:pointer;color:var(--blue)}
+.uci-reliability .table-scroll,.uci-stability .table-scroll{margin:16px 0}
