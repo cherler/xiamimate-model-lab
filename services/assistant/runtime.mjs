@@ -58,13 +58,13 @@ export async function runAssistant(body,{complete,execute=executeTool,signal}={}
   let answer;
   try{answer=validateAnswer(m.content,sources);const normalized=normalizeCalendar(answer,trace);answer=normalized.answer;validation.push(...normalized.corrections.map(c=>({...c,attempt:repairs+1})));validateEvidence(answer,trace);}
   catch(error){
-   validation.push({kind:error.kind||'answer_format',attempt:repairs+1,ok:false,code:error.code,message:error.message});
+   validation.push({kind:error.kind||'answer_format',attempt:repairs+1,ok:false,code:error.code,message:error.message,...(response.formatMode?{formatMode:response.formatMode}:{})});
    if(repairs>=1||round===5)throw fail(error.message+'；有限修正后仍未通过，请缩小问题范围后重试');
    repairs++;
    messages.push({...m,role:'assistant'},{role:'user',content:JSON.stringify({instruction:'上次回答未通过格式、来源或金额/日期校验。仅用现有证据重新组织最终回答，不调用工具，不新增事实。只输出一个合法 JSON 对象，不加代码块、前后说明或未转义换行。summary 和 brief 必须是字符串，citations 必须是字符串数组；仅有这三个字段。没有需求摘要时 brief 为空字符串。若没有来源可用则 citations 为空；有来源时引用实际使用的来源。无法给出实测提升或收益保证时，在 summary 中直接说明。',validationError:error.message,allowedSourceIds:[...sources.keys()]})});
    continue;
   }
-  validation.push({kind:'answer_format',attempt:repairs+1,ok:true});
+  validation.push({kind:'answer_format',attempt:repairs+1,ok:true,...(response.formatMode?{formatMode:response.formatMode}:{})});
   return {mode:body.mode,summary:answer.summary,brief:answer.brief||'',sources:[...new Set(answer.citations)].map(id=>sources.get(id)),trace,validation,usage:usageKnown?usage:null,ms:Math.round(performance.now()-start)};
  }
  throw fail('分析达到轮次上限，未形成有效报告；请缩小问题范围');

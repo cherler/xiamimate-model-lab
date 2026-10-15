@@ -50,6 +50,14 @@ test('repair exposes no business tools and M3 OpenAI must use structured submit_
  assert.equal(providerRequest(config,[],[],{finalOnly:true}).tools,undefined);
  const data={choices:[{message:{tool_calls:[{function:{name:'submit_answer',arguments:'{"summary":"x","citations":[],"brief":""}'}}]}}]};
  assert.equal(JSON.parse(providerResponse(open,data,{finalOnly:true}).message.content).summary,'x');
- assert.throws(()=>providerResponse(open,{choices:[{message:{content:'{}'}}]},{finalOnly:true}),/结构化回答工具/);
+ assert.equal(providerResponse(open,{choices:[{message:{content:'{}'}}]},{finalOnly:true}).formatMode,'validated_text_required');
+ assert.throws(()=>providerResponse(open,{choices:[{message:{tool_calls:[{function:{name:'shell',arguments:'{}'}}]}}]},{finalOnly:true}),/结构化回答工具/);
  const client=completionClient(open,{fetcher:async()=>new Response(JSON.stringify(data))});assert.equal((await client([],[],null,{finalOnly:true})).message.tool_calls,undefined);
+});
+
+test('plain text returned despite forced submit is still schema-checked, never silently trusted',async()=>{
+ const c={...config,protocol:'openai'};let n=0;
+ const complete=completionClient(c,{fetcher:async()=>new Response(JSON.stringify({choices:[{message:{content:++n===1?'bad':'{"summary":"无法保证收益。","citations":[],"brief":""}'}}]}))});
+ const r=await runAssistant({mode:'ask',question:'保证收益吗'},{complete});assert.equal(r.validation.at(-1).formatMode,'validated_text_required');
+ await assert.rejects(runAssistant({mode:'ask',question:'q'},{complete:completionClient(c,{fetcher:async()=>new Response(JSON.stringify({choices:[{message:{content:'bad'}}]}))})}),/结构化/);
 });

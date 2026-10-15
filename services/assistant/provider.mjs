@@ -45,8 +45,9 @@ export function providerResponse(config,data,{finalOnly=false}={}){
  if(!choice?.message)throw new Error('OpenAI 兼容模型响应格式不受支持');
  if(finalOnly&&config.model==='MiniMax-M3'){
   const calls=choice.message.tool_calls;
+  if(!calls?.length&&typeof choice.message.content==='string')return {message:{role:'assistant',content:choice.message.content},usage:data.usage,formatMode:'validated_text_required'};
   if(calls?.length!==1||calls[0].function?.name!=='submit_answer'||typeof calls[0].function.arguments!=='string')throw new Error('模型未使用约定的结构化回答工具');
-  return {message:{role:'assistant',content:calls[0].function.arguments},usage:data.usage};
+  return {message:{role:'assistant',content:calls[0].function.arguments},usage:data.usage,formatMode:'submit_answer'};
  }
  return {message:choice.message,usage:data.usage};
 }
