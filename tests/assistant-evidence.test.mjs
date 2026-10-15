@@ -90,3 +90,8 @@ test('invented ordering and universal budget claims in model prose never enter r
  assert.equal(output.answerOrigin,'tool_report');assert.equal(output.brief,'');assert.doesNotMatch(output.summary,/虚构商品|99999|不可能增加/);assert.equal(output.orderChanges[0].from.budget,1);assert.equal(output.orderChanges[0].to.budget,.6);
  assert.equal(output.trace.filter(t=>t.phase==='服务端读取明确表单基准').length,1);assert.equal(output.orderChanges[0].policies.point.increased.length,0);
 });
+
+test('calendar questions publish exact tool dates despite a false model generalization',async()=>{
+ let count=0;const result=await runAssistant({mode:'agent',question:'是不是都是周四？2011-10-01与2011-11-01是否支持？',selection:s},{complete:async()=>++count===1?{message:{tool_calls:[{id:'dates',function:{name:'retail_options',arguments:'{}'}}]}}:{message:{content:JSON.stringify({summary:'支持起点全部为周四。',citations:['retail-options']})}}});
+ assert.equal(result.answerOrigin,'tool_report');assert.match(result.summary,/2011-10-01（星期六）：支持/);assert.match(result.summary,/2011-11-01（星期二）：支持/);assert.doesNotMatch(result.summary,/全部为周四/);
+});

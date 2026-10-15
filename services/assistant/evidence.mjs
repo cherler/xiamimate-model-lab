@@ -84,6 +84,16 @@ export function orderRankings(r){
 }
 const selectionLabel=s=>`${s.origin} / ${s.model} / 预算 ${s.budget} 倍 / 库容 ${s.capacity} 倍 / 缺货 ${s.shortage} 倍`;
 export const sameSelection=(a,b)=>!!a&&!!b&&['origin','model','budget','capacity','shortage'].every(k=>a[k]===b[k]);
+export function calendarAnswer(trace,question){
+ if(!/(?:星期|周[几一二三四五六日天])/.test(question))return null;
+ const r=trace.findLast(t=>t.ok&&t.name==='retail_options')?.result;
+ if(!r?.windows?.length)return null;
+ const dates=[...new Set(question.match(/\d{4}-\d{2}-\d{2}/g)||[])];
+ const lines=dates.map(date=>{const w=r.windows.find(w=>w.origin===date);return w?`${date}（${weekday(date)}）：支持，窗口截至 ${w.end}。`:`${date}：不在支持的起点列表。`;});
+ lines.push('支持的离散起点如下：'+r.windows.map(w=>`${w.origin}（${weekday(w.origin)}）`).join('、')+'。');
+ lines.push(r.calendarNote,'以上星期由服务端日历计算。仅列出的历史窗口可回放，不代表连续日期或每周定期运行。');
+ return {summary:lines.join('\n\n'),brief:'',sources:r.sources,answerOrigin:'tool_report'};
+}
 // Quantitative retail prose is compiled, never copied from the language model draft.
 // All rows remain available in the report; the preview includes every tie at rank 3.
 export function retailAnswer(trace,selection){

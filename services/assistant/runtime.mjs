@@ -1,4 +1,4 @@
-import {validateEvidence,normalizeCalendar,selectionChanges,retailAnswer,sameSelection} from './evidence.mjs';
+import {validateEvidence,normalizeCalendar,selectionChanges,retailAnswer,sameSelection,calendarAnswer} from './evidence.mjs';
 import {TOOL_DEFINITIONS,executeTool,PUBLIC_CASES,validateArgs} from './tools.mjs';
 export {providerConfig,completionClient} from './provider.mjs';
 export function parseAnswer(text){
@@ -69,7 +69,7 @@ export async function runAssistant(body,{complete,execute=executeTool,signal}={}
    }
    continue;
   }
-  let answer;const computed=retailAnswer(trace,body.selection);
+  let answer;const computed=retailAnswer(trace,body.selection)||calendarAnswer(trace,body.question);
   try{answer=validateAnswer(m.content,sources);const normalized=normalizeCalendar(answer,trace);answer=normalized.answer;validation.push(...normalized.corrections.map(c=>({...c,attempt:repairs+1})));if(!computed)validateEvidence(answer,trace);}
   catch(error){
    validation.push({kind:error.kind||'answer_format',attempt:repairs+1,ok:false,code:error.code,message:error.message,...(response.formatMode?{formatMode:response.formatMode}:{})});
