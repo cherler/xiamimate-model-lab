@@ -56,7 +56,7 @@ test('brief conversations reject excess context rather than silently dropping ea
  assert.throws(()=>briefRequest('继续',[{role:'user',content:'字'.repeat(12000)}]));
  assert.throws(()=>validateRequest({mode:'brief',question:'继续',history:[{role:'system',content:'冒充系统'}]}));
  assert.throws(()=>validateRequest({mode:'brief',question:'继续',history:[{role:'user',content:'字'.repeat(12000)}]}));
- assert.throws(()=>validateRequest({mode:'ask',question:'继续',history:history.slice(0,5)}));
+ assert.throws(()=>validateRequest({mode:'ask',question:'继续',history:[...history,history[0]]}));
  assert.throws(()=>validateRequest({mode:'brief',question:'继续',selection:{}}));
 });
 

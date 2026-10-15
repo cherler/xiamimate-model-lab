@@ -26,3 +26,11 @@
 .agent-client-report td:not(:first-child),.agent-client-report th:not(:first-child){white-space:nowrap;font-variant-numeric:tabular-nums}
 .agent-client-report .assistant-prose{max-width:80ch}
 @media(max-width:760px){.agent-strategy-group,.agent-change-summary{padding:16px 0}.agent-report-heading>span{width:100%}.agent-conclusions{padding-left:12px}.agent-client-report{min-width:0}.agent-client-report td:first-child{min-width:108px}}
+
+/* Keep case Q&A subordinate to the page; conversation survives closing this panel. */
+.ai-dialog [hidden]{display:none}
+.ai-turn{margin:20px 0;overflow-wrap:anywhere}
+.ai-user{white-space:pre-wrap;background:#f1f7f9;border-left:3px solid var(--blue);padding:12px 16px}
+.ai-turn .assistant-answer{margin-top:12px;padding-top:0;border:0}
+.ai-turn .assistant-answer>.small-note{font-size:11px}
+.ai-dialog .download-actions{display:flex;flex-wrap:wrap;gap:10px}

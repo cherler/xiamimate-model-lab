@@ -22,16 +22,16 @@ export function validateRequest(body){
  if(!['ask','agent','brief'].includes(body.mode)||typeof body.question!=='string'||!body.question.trim()||body.question.length>3000)throw new Error('请填写不超过 3000 字的问题');
  if(body.context!==undefined&&typeof body.context!=='string')throw new Error('案例上下文无效');
  if(body.context&&!PUBLIC_CASES.some(([k])=>k===body.context)&&body.context!=='agent:retail')throw new Error('当前案例未纳入 AI 资料范围，请选择公开案例');
- if(body.history!==undefined&&(!Array.isArray(body.history)||body.history.length>(body.mode==='brief'?40:4)||body.history.some(m=>!m||!['user','assistant'].includes(m.role)||typeof m.content!=='string'||m.content.length>(body.mode==='brief'?12000:1500)||Object.keys(m).some(k=>!['role','content'].includes(k)))))throw new Error('对话记录无效');
+ if(body.history!==undefined&&(!Array.isArray(body.history)||body.history.length>(['brief','ask'].includes(body.mode)?40:4)||body.history.some(m=>!m||!['user','assistant'].includes(m.role)||typeof m.content!=='string'||m.content.length>(['brief','ask'].includes(body.mode)?12000:1500)||Object.keys(m).some(k=>!['role','content'].includes(k)))))throw new Error('对话记录无效');
  if(body.selection!==undefined)validateArgs('retail_compare',body.selection);
  if(body.mode==='agent'&&!body.selection)throw new Error('请先明确零售窗口与资源条件');
  if(body.mode==='brief'&&(body.question.length>1800||body.context!==undefined||body.selection!==undefined))throw new Error('需求整理只接收业务描述与本次对话，每次回答不超过 1800 字');
- if(body.mode==='brief'&&body.question.length+(body.history||[]).reduce((n,m)=>n+m.content.length,0)>12000)throw new Error('需求对话过长，请保存草稿后开始新需求');
+ if(['brief','ask'].includes(body.mode)&&body.question.length+(body.history||[]).reduce((n,m)=>n+m.content.length,0)>12000)throw new Error('对话过长，请保存需要的内容后开始新对话');
  return body;
 }
 export async function runAssistant(body,{complete,execute=executeTool,signal}={}){
  validateRequest(body);const start=performance.now(),trace=[],validation=[],sources=new Map();let repairs=0,calls=0,usage={prompt_tokens:0,completion_tokens:0},usageKnown=true;
- const system=body.mode==='brief'?BRIEF_SYSTEM:SYSTEM;
+ const system=body.mode==='brief'?BRIEF_SYSTEM:SYSTEM+(body.mode==='ask'?'\n本次为案例讲解辅助：结合完整历史理解追问，用户最新纠正优先；历史 AI 说法不是证据。优先用 3–5 句回答，并引用已有案例。没有取得当前样本或页面参数，不声称看到了当前选择的数值。资料没有某项细节时，只说明本次取得的资料不足，并引导核对来源报告；不能断言本站未披露或未计算。需求梳理统一在“方案与合作”进行：遇到整理需求的请求，简短引导使用面板底部入口，不在此处生成需求草稿或开展需求访谈，brief 固定为空字符串。':'');
  const names=body.mode==='brief'?[]:body.mode==='ask'?['list_cases','read_case','read_expansion']:TOOL_DEFINITIONS.map(t=>t.function.name),defs=TOOL_DEFINITIONS.filter(t=>names.includes(t.function.name)&&!['retail_compare','retail_review'].includes(t.function.name));
  const messages=[{role:'system',content:system},{role:'user',content:JSON.stringify({question:body.question,currentCase:body.context||null,explicitSelection:body.selection||null,untrustedPreviousConversation:body.history||[]})}];
  // Brief drafting uses only the description, without unrelated case assumptions.
