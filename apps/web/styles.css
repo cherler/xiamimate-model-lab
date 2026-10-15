@@ -147,3 +147,8 @@ main,.sidebar,.workbench>*,.bottom-grid>*{min-width:0}
 
 .scenario-context{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 22px}.topnav{min-width:0}.topnav a{white-space:nowrap}@media(max-width:900px){.topnav{gap:16px}}@media(max-width:620px){.topnav{overflow-x:auto;gap:16px;justify-content:space-between}.topnav a{flex-shrink:0}}
 @media(min-width:621px) and (max-width:900px){.topbar{height:auto;flex-wrap:wrap;gap:12px;padding-top:12px}.topnav{order:2;width:100%;height:48px;overflow-x:auto}.topbar>.outline{margin-left:auto}}
+
+/* Cooperation keeps the case evidence first, with a single editable brief. */
+.cooperation-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;margin-top:24px}
+.cooperation-grid label{display:block;font-size:14px;font-weight:600;margin-bottom:15px}.cooperation-grid textarea{width:100%;display:block;margin-top:8px;padding:12px;border:1px solid var(--line);border-radius:4px;color:var(--ink);background:#fff;font:inherit;line-height:1.7;resize:vertical}.brief-preview{border-left:1px solid var(--line);padding-left:30px;min-width:0}.cooperation-grid p{overflow-wrap:anywhere}.cooperation-grid button{min-height:40px}#brief-status{min-height:25px;font-size:13px;color:var(--blue)}
+@media(max-width:760px){.cooperation-grid{grid-template-columns:1fr}.brief-preview{border-left:0;border-top:1px solid var(--line);padding:24px 0 0}}
