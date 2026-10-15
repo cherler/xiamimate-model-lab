@@ -118,6 +118,13 @@ export const CASE_READINGS={
 export function isPreferenceContext(page,params){return page==='segments'&&(params.has('basis')?params.get('basis')!=='rfm':!params.has('method'));}
 export function caseReading(page,params){
  const original=CASE_READINGS[`${page}:${params.get('case')}`];
+ if(original&&page==='retrieve'&&params.get('experiment')==='colbert')return {...original,
+  verdict:'全块 ColBERT 在同文本、同候选比较中提高了平均排名质量，仍有退步查询。',
+  evidence:'同文本比较模型，同模型比较首块与全块；并列查询质量、离线编码、缓存存储和重排耗时。候选池不变，不代表召回能力提高。',
+  scope:'300 条已知英文基准查询的开发重排；未本地微调，不能排除预训练重叠。',
+  limit:'仅重排原混合候选前 50；不证明全库多向量召回、中文迁移、并发或客户收益。',
+  evidenceTargets:['长摘要重排：ColBERT 与交叉编码器'],
+ };
  if(!original||!isPreferenceContext(page,params))return original;
  return {...original,input:'前 180 天的顾客商品购买记录',output:'商品偏好社群、代表商品、价值层交叉画像与稳定性诊断',
  verdict:'商品偏好能细化价值层；Leiden 未超过同群数 K-means，HDBSCAN 的核心群覆盖有限。',
