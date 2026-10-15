@@ -1,3 +1,5 @@
+import {retailDisplay,weekday} from './evidence.mjs';
+import {MODEL_ROADMAPS} from '../../apps/web/model-roadmap.js';
 import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
@@ -33,22 +35,23 @@ export async function loadRetail(){
  if(createHash('sha256').update(bytes).digest('hex')!==m.sha256)throw new Error('补货数据校验失败');
  const p=JSON.parse(bytes);verifyDecision(p);return p;
 }
-export function retailOptions(p){return {origins:p.windows.map(w=>w.origin),models:p.protocol.forecast_models,budget:p.protocol.budget_ratios,capacity:p.protocol.capacity_ratios,shortage:p.protocol.shortage_price_ratios,default:{origin:p.windows[0].origin,...p.protocol.default}};}
+export function retailOptions(p){return {calendarNote:'只支持列出的离散窗口；不是连续日期范围，各月起点不固定为同一星期。',windows:p.windows.map(w=>({origin:w.origin,end:w.end,weekday:weekday(w.origin)})),origins:p.windows.map(w=>w.origin),models:p.protocol.forecast_models,budget:p.protocol.budget_ratios,capacity:p.protocol.capacity_ratios,shortage:p.protocol.shortage_price_ratios,default:{origin:p.windows[0].origin,...p.protocol.default}};}
 export function compareRetail(p,args,review=false){
  validateArgs(review?'retail_review':'retail_compare',args);
  const w=p.windows.find(w=>w.origin===args.origin),plan=w&&findPlan(w,args);
  if(!plan)throw new Error('该组合没有保存结果，请使用支持的日期与倍率；未自动取最近值。');
  const x=decisionInput(w.items,plan,p.protocol),sources=[{id:`retail:${args.origin}:${args.model}:${args.budget}:${args.capacity}:${args.shortage}:${review?'review':'compare'}`,title:'UCI 保存补货结果与复算',href:'#decision?'+new URLSearchParams({case:'retail',view:review?'report':'experience',...args})}];
  const policies=Object.fromEntries(Object.entries(POLICIES).map(([key,label])=>[key,{label,packs:plan.policies[key].packs,metrics:decisionMetrics(x,plan.policies[key].packs,review?w.items.map(r=>r.actual):null)}]));
- return {sources,kind:review?'事后模拟复算':'保存订单与历史需求场景复算',run:p.run_id,sourceForecast:p.protocol.source_run,selection:args,end:w.end,unit:'金额单位：英镑便士；数量：件',budget:x.budget,capacity:x.capacity,packSize:x.pack,
+ const result={sources,kind:review?'事后模拟复算':'保存订单与历史需求场景复算',run:p.run_id,sourceForecast:p.protocol.source_run,selection:args,end:w.end,unit:'金额单位：英镑便士；数量：件',budget:x.budget,capacity:x.capacity,packSize:x.pack,
   items:w.items.map((r,i)=>({id:r.id,name:r.name,initial:r.initial,forecast:r.predictions[args.model],weeks:r.weeks,cost:r.cost,penalty:x.penalty[i],...(review?{recordedSales:r.actual}:{})})),policies,
   limits:['历史开发回放，非独立新测试。','库存、采购成本、容量、整包与到货时间是假设；记录销量不是完整潜在需求。','预期成本用过去八周构造的场景；没有未来区间覆盖保证。','求解最优不保证事后成本更低，更不证明真实经营收益。'],
   notice:p.notice};
+ return {...result,display:retailDisplay(result)};
 }
 export async function executeTool(name,args,{load=loadRetail}={}){
  validateArgs(name,args);
  if(name==='list_cases')return {sources:[{id:'catalog',title:'公开业务案例',href:'#delivery?section=cases'}],cases:PUBLIC_CASES.map(([key,c])=>({key,name:c.name,input:c.input,output:c.output}))};
- if(name==='read_case'){const c=PUBLIC_CASES.find(([k])=>k===args.key)?.[1];if(!c)throw new Error('案例未公开');const [business,caseId]=args.key.split(':');return {sources:[{id:args.key,title:c.name,href:`#${business}?case=${caseId}&view=report`}],status:'已有案例说明；精确逐样本数值需在案例页查看',case:c};}
+ if(name==='read_case'){const c=PUBLIC_CASES.find(([k])=>k===args.key)?.[1];if(!c)throw new Error('案例未公开');const [business,caseId]=args.key.split(':');return {sources:[{id:args.key,title:c.name,href:`#${business}?case=${caseId}&view=report`},...(MODEL_ROADMAPS[business]?[{id:'expand:'+business,title:'业务模型升级状态',href:`#expand?business=${business}`}]:[])],status:'已有案例说明；本工具没有逐样本或逐方法精确成绩查询能力。不能暗示再提问即可获取这些数值。',case:c,modelPaths:MODEL_ROADMAPS[business]?.paths.map(({name,priority,data,limit})=>({name,status:priority,data,limit})),modelPathScope:'这些是业务升级路径，状态不代表当前案例已经实测。没有已运行成绩就回答未提供实测提升，不能指引用户寻找尚未运行模型的成绩。'};}
  if(name==='read_expansion')return {sources:[{id:'expand:'+args.business,title:'场景扩展规划',href:`#expand?business=${args.business}`}],status:'尚未在这些扩展场景实证',...SCENARIO_EXPANSIONS[args.business]};
  const p=await load();
  if(name==='retail_options')return {sources:[{id:'retail-options',title:'UCI 补货参数范围',href:'#decision?case=retail'}],...retailOptions(p)};

@@ -1,0 +1,36 @@
+// Presentation facts are derived from verified tool results, not model arithmetic.
+export const moneyGBP=pence=>'£'+(pence/100).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
+export const weekday=date=>'星期'+'日一二三四五六'[new Date(date+'T00:00:00Z').getUTCDay()];
+const n=value=>Number(value).toLocaleString('zh-CN',{maximumFractionDigits:2});
+const moneyFields=['purchase','holding','shortage_cost','total_cost','budget_slack'];
+export function retailDisplay(r){
+ const reference=r.policies.point.metrics;
+ const policies=Object.fromEntries(Object.entries(r.policies).map(([key,p])=>[key,{
+  label:p.label,...Object.fromEntries(moneyFields.map(k=>[k,moneyGBP(p.metrics[k])])),
+  total_cost_change_from_point:moneyGBP(p.metrics.total_cost-reference.total_cost),
+  shortage_change_from_point:n(p.metrics.shortage_units-reference.shortage_units)+' 件',
+  statement:`${p.label}：总成本 ${moneyGBP(p.metrics.total_cost)}，采购 ${moneyGBP(p.metrics.purchase)}，持有 ${moneyGBP(p.metrics.holding)}，缺货成本 ${moneyGBP(p.metrics.shortage_cost)}；缺货 ${n(p.metrics.shortage_units)} 件，需求满足率 ${n(p.metrics.fill_rate*100)}%。预算余量 ${moneyGBP(p.metrics.budget_slack)}，库容余量 ${n(p.metrics.capacity_slack)} 件。`,
+ }]));
+ return {currency:'GBP',moneyRule:'原始金额为便士；此处已除以 100 换成英镑。回答引用这里的 £ 金额，勿再次换算、改币种或省略单位。',
+  window:{origin:r.selection.origin,originWeekday:weekday(r.selection.origin),end:r.end,endWeekday:weekday(r.end)},
+  budget:moneyGBP(r.budget),policies,items:r.items.map(i=>({id:i.id,name:i.name,cost:moneyGBP(i.cost),penalty:moneyGBP(i.penalty)})),
+  comparison:`${r.kind}，仅当前窗口和所选参数：场景成本优化相对按点预测补货，总成本${r.policies.milp.metrics.total_cost<reference.total_cost?'减少':'增加'} ${moneyGBP(Math.abs(r.policies.milp.metrics.total_cost-reference.total_cost))}，缺货量${r.policies.milp.metrics.shortage_units<reference.shortage_units?'减少':'增加'} ${n(Math.abs(r.policies.milp.metrics.shortage_units-reference.shortage_units))} 件。`,
+  interpretation:'预期成本平均了起点前构造的八个需求场景，事后成本使用记录销量；总需求均值的变化不能单独证明成本变化的原因，商品结构和需求波动也影响缺货及持有成本。库存占用=初始库存+到货量；包数与件数按 packSize 区分。'};
+}
+function evidenceError(code,message){return Object.assign(new Error(message),{code,kind:'evidence'});}
+// Focused guards catch known monetary/date failures. They do not prove all prose is true.
+export function validateEvidence(answer,trace){
+ const results=trace.filter(t=>t.ok).map(t=>t.result),retail=results.filter(r=>r.display),text=answer.summary+'\n'+(answer.brief||'');
+ if(retail.length){
+  const money=[...JSON.stringify(retail.map(r=>r.display)).matchAll(/£(-?[\d,]+\.\d{2})/g)].map(m=>Number(m[1].replaceAll(',','')));
+  for(const m of text.matchAll(/£\s*(-?[\d,]+(?:\.\d+)?)/g)){
+   const value=Number(m[1].replaceAll(',',''));if(!money.some(v=>Math.abs(v-value)<.011))throw evidenceError('unsupported_money','回答金额未匹配已复算的英镑证据。请直接引用 display 中的 £ 金额；新差值没有工具证据时不报数。');
+  }
+  if(/(?:总成本|采购金额|持有成本|缺货成本|预算余量|预算总额|成本减少|成本增加)\s*[：:=为]?\s*-?\d/.test(text)||/\d[\d,.]*\s*(?:便士|英镑|GBP|GBp)/i.test(text))throw evidenceError('money_unit','回答金额单位不统一。具体金额请按 display 使用 £ 前缀，不能直接引用原始便士或省略单位。');
+ }
+ const hasCalendar=results.some(r=>r.windows||r.display);
+ if(hasCalendar){
+  for(const m of text.matchAll(/(\d{4}-\d{2}-\d{2})[\s（(，,]*(?:星期|周)([日天一二三四五六])/g))if(weekday(m[1])!=='星期'+m[2].replace('天','日'))throw evidenceError('wrong_weekday','回答日期与星期不一致。请引用工具中的精确日期，或按 window/windows 的星期字段说明。');
+  if(/(?:若干|均为|都是|全部为|每个)[\s的]*(?:星期|周)[一二三四五六日天]/.test(text))throw evidenceError('calendar_generalization','支持日期是离散保存窗口，不能概括为固定星期。请直接引用精确日期，不推断连续范围或每周规律。');
+ }
+}

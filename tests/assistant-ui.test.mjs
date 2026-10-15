@@ -16,5 +16,5 @@ test('retail report keeps expected and retrospective costs distinct, includes th
 
 test('format checks are shown separately from tool calls and safely escaped',()=>{
  const html=answerHtml({summary:'ok',ms:1,trace:[],validation:[{attempt:1,ok:false,message:'<script>bad</script>'},{attempt:2,ok:true}]});
- assert.match(html,/回答格式修正记录/);assert.match(html,/通过校验/);assert.doesNotMatch(html,/<script>|实际工具执行记录/);
+ assert.match(html,/回答校验与修正记录/);assert.match(html,/通过校验/);assert.doesNotMatch(html,/<script>|实际工具执行记录/);
 });
