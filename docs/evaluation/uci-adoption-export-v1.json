@@ -1,0 +1,14 @@
+{
+  "schema": "uci-adoption-v1",
+  "path": "db891d723bf2dc2e/case.json",
+  "sha256": "db891d723bf2dc2ed89b5ca7d338aea11f03b377ef4da00cd08c7b124d2de8fd",
+  "parent_run": "retail-20261012T001149Z",
+  "parent_version": "3fa4577447882c31",
+  "protocol_sha256": "8cf7d848abfe2c95f07ba05cc3de6fd3a2f9ad27b6fe5623d303797f5e12fee5",
+  "bytes": 4010830,
+  "rows": 4280,
+  "source_code_sha256": {
+    "services/adoption/uci.py": "999e51f1b30c50fc1a4773cbb9a9ac8bf024c48027cbc40280c3e10463efa1f6",
+    "services/adoption/export.py": "48e0f9eff66137206382116e8ec1c8f3a8b2d12ee5058e420fa3028d76fb170a"
+  }
+}

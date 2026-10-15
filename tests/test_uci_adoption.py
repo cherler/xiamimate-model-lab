@@ -1,6 +1,6 @@
 import copy
 import unittest
-from services.adoption.uci import load_sources,normalize,audit,activity
+from services.adoption.uci import ROOT,read,load_sources,normalize,audit,activity
 
 class UciAdoptionTest(unittest.TestCase):
     @classmethod
@@ -26,3 +26,9 @@ class UciAdoptionTest(unittest.TestCase):
         with self.assertRaises(ValueError):normalize(self.p,self.data,model)
     def test_groups_depend_on_prior_catalog_history_count_only(self):
         self.assertEqual([activity(n) for n in [0,1,5,6,20,21]],['cold','1–5','1–5','6–20','6–20','21+'])
+
+    def test_published_rows_exactly_match_all_original_rankings_and_groups(self):
+        manifest=read(ROOT/'apps/web/uci-adoption-results/manifest.json')
+        payload=read(ROOT/'apps/web/uci-adoption-results'/manifest['path'])
+        expected,_=normalize(self.p,self.data,self.model)
+        self.assertEqual(payload['records'],expected)

@@ -255,3 +255,7 @@ npm run run:decision
 ### UCI 预测可靠性（E3）
 
 `npm run audit:uci-reliability` 审查已发布窗口，`npm run export:uci-reliability` 按 `services/reliability/uci-protocol.json` 复算历史残差参考区间。仅使用冻结的周点预测，前四窗积累残差，后八窗评估；原模型参数曾参考同批开发窗口，且商品／时序相关，因此没有未来覆盖保证。28 日逐日任务只有三个起点，不提供本轮区间。结果目录 `apps/web/uci-reliability-results/` 不入 Git；公开构建要求其哈希、协议、父数据及全部指标复算通过。
+
+### UCI 推荐采用证据（E5）
+
+原 UCI 静态包及冻结运行 `retail-20261012T001149Z` 的源码／十一月模型就绪后，执行 `npm run audit:uci-adoption`，再执行 `npm run export:uci-adoption`。前者复算九方法全部 4,280 顾客窗口并核对推荐前历史分组，后者校验审计与 `services/adoption/uci-protocol.json` 后导出静态配对证据；均不重训或读取新的测试标签。结果目录 `apps/web/uci-adoption-results/` 不入 Git，公开构建会校验其内容、来源和源码哈希。体验和报告展示人群增益／退步、热门回退、复购与其余目标及候选上限；已有三窗口均属开发证据，不执行按事后胜负选择模型的路由。复现与验收记录见 [E5 计划记录](docs/case-depth-plan.md)。

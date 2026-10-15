@@ -78,3 +78,6 @@ apps/web/classification-explanations/
 
 # Derived UCI reliability replay
 apps/web/uci-reliability-results/
+
+# Audited UCI paired recommendation evidence
+apps/web/uci-adoption-results/

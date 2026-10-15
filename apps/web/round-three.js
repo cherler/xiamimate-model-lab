@@ -1,3 +1,4 @@
+import {loadAdoption,mountAdoption} from './uci-adoption.js';
 import {conditionsHtml} from './uci-conditions.js';
 import {loadUciReliability,reliabilityHtml,pointStabilityHtml} from './uci-reliability.js';
 import {saveSelection} from './navigation-state.js';
@@ -32,6 +33,14 @@ export async function renderRoundThree(page,main,r,isCurrent){
   }
   await renderRoundTwo(page,main,r,isCurrent);
   if(page==='evidence'&&isCurrent()){
+    if(location.hash.startsWith('#recommend')){
+      let adoption=null,error='';try{adoption=await loadAdoption();}catch(e){error=e.message;}
+      if(!isCurrent())return;
+      const host=document.createElement('section');host.className='report-panel uci-adoption';
+      main.querySelector('.page-heading').after(host);
+      const params=new URLSearchParams(location.hash.split('?')[1]||'');
+      mountAdoption(host,adoption,{report:r,model:Object.hasOwn(r.recommendation.models,params.get('model'))?params.get('model'):'hybrid',baseline:Object.hasOwn(r.recommendation.models,params.get('baseline'))?params.get('baseline'):'personal_decay',controls:true,error});
+    }
     const data=await uciData('diagnostics');if(!isCurrent())return;if(data.run_id!==r.run_id)throw new Error('实验版本已更新，请刷新。');
     main.insertAdjacentHTML('beforeend',diagnostics(r,data.diagnostics));
     const weeklyData=await uciData('weekly-forecasts');let reliability=null,reliabilityError='';
