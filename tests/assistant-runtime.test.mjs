@@ -35,3 +35,22 @@ test('optional assistant HTTP rejects cross-origin, bad host, oversize and uncon
   assert.equal((await fetch(base+'/')).status,200);
  }finally{server.close();await once(server,'close');}
 });
+
+test('one format repair keeps failed check, uses final-only mode and accumulates usage',async()=>{
+ let n=0;const result=await runAssistant(body,{complete:async(messages,defs,signal,options)=>{
+  if(++n===1)return {message:{role:'assistant',content:'这不是 JSON',reasoning_content:'private test reasoning'},usage:{prompt_tokens:5,completion_tokens:3}};
+  assert.equal(options.finalOnly,true);assert.equal(messages.at(-2).reasoning_content,'private test reasoning');
+  assert.match(messages.at(-1).content,/forecast:uci/);return final();
+ }});
+ assert.equal(n,2);assert.deepEqual(result.validation.map(c=>c.ok),[false,true]);assert.equal(result.validation[0].code,'invalid_json');
+ assert.equal(result.usage.prompt_tokens,15);assert.equal(result.usage.completion_tokens,13);assert.doesNotMatch(JSON.stringify(result),/private test reasoning|这不是 JSON/);
+});
+test('format repair cannot invent citations, retry forever, or invoke another tool',async()=>{
+ let n=0;await assert.rejects(runAssistant(body,{complete:async()=>{n++;return final(['fake-source']);}}),e=>e.validation.length===2&&e.validation.every(c=>c.code==='unknown_source'));assert.equal(n,2);
+ n=0;await assert.rejects(runAssistant(body,{complete:async()=>++n===1?{message:{content:'broken'}}:{message:{tool_calls:[{id:'x',function:{name:'list_cases',arguments:'{}'}}]}}}),/修正阶段/);
+});
+test('format repair respects abort and strict object fields',async()=>{
+ const c=new AbortController();let n=0;await assert.rejects(runAssistant(body,{signal:c.signal,complete:async()=>{n++;c.abort();return {message:{content:'broken'}};}}),/取消/);assert.equal(n,1);
+ const {validateAnswer}=await import('../services/assistant/runtime.mjs');
+ for(const answer of [{summary:'x',citations:[],extra:'x'},{summary:'x',citations:[],brief:{}},{summary:'x',citations:[{}]}])assert.throws(()=>validateAnswer(JSON.stringify(answer),new Map()),/格式/);
+});

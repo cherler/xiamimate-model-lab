@@ -21,7 +21,7 @@ export function createAssistantHandler({config=providerConfig(),complete=config&
    const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>48000)throw new Error('请求过长');chunks.push(chunk);}
    const body=JSON.parse(Buffer.concat(chunks).toString('utf8')),result=path.endsWith('/workflow')?await workflow(body):await runAssistant(body,{complete,execute,signal:controller.signal});
    send(200,{...result,model:path.endsWith('/workflow')?null:config?.model||'测试替身'});
-  }catch(e){const known=/请求|参数|缺少|请填写|案例|组合|模型|工具|回答|任务|分析|补货|日期|服务|JSON|校验/.test(e.message);send(400,{error:controller.signal.aborted?'任务已取消或超时':known?e.message:'分析失败，请检查服务和结果文件后重试',trace:e.trace||[]});}
+  }catch(e){const known=/请求|参数|缺少|请填写|案例|组合|模型|工具|回答|任务|分析|补货|日期|服务|JSON|校验/.test(e.message);send(400,{error:controller.signal.aborted?'任务已取消或超时':known?e.message:'分析失败，请检查服务和结果文件后重试',trace:e.trace||[],validation:e.validation||[],usage:e.usage||null});}
   finally{clearTimeout(timer);res.off('close',disconnect);active--;}
   return true;
  };

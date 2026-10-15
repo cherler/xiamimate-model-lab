@@ -1,4 +1,4 @@
-import {assistantRequest,answerHtml,traceHtml,esc,sourcesHtml} from './assistant.js';
+import {assistantRequest,answerHtml,traceHtml,validationHtml,esc,sourcesHtml} from './assistant.js';
 import {downloadText} from './cooperation.js';
 import {saveSelection} from './navigation-state.js';
 const labelsForError=key=>({origin:'日期',model:'模型',budget:'预算倍率',capacity:'库容倍率',shortage:'缺货倍率'}[key]);
@@ -34,7 +34,7 @@ export async function renderAgent(host,current,params,mode='case'){
   form.onchange=()=>{resultHost.innerHTML='';saveSelection('agent',{case:'retail',...selectionNow()});};
   const run=async mode=>{running?.abort();running=new AbortController();const controller=running,s=selectionNow();form.querySelectorAll('select,textarea').forEach(e=>e.disabled=true);buttons.forEach(b=>b.disabled=true);cancel.hidden=false;resultHost.textContent=mode==='workflow'?'正在读取保存订单并复算…':'AI 正在选择工具、读取结果并形成解释…';
    try{const r=await assistantRequest(mode==='workflow'?'workflow':'run',mode==='workflow'?s:{mode:'agent',question:form.querySelector('textarea').value,context:'agent:retail',selection:s},controller.signal);if(!current())return;resultHost.innerHTML=answerHtml(r)+retailReportHtml(r);if(!r.trace.some(t=>t.ok&&t.name==='retail_compare'))resultHost.insertAdjacentHTML('beforeend','<p class="agent-status">本次未返回补货对照工具结果。请检查是否需要补充条件；当前文字不算已完成的补货分析。</p>');const button=document.createElement('button');button.className='outline';button.textContent='下载本次报告与工具记录';button.onclick=()=>downloadText('模型工坊-零售分析报告.json',JSON.stringify(r,null,2));resultHost.append(button);}
-   catch(e){if(current())resultHost.innerHTML=`<p class="agent-status">${esc(e.name==='AbortError'?'本次分析已取消，未生成报告。':e.message)}</p>${traceHtml(e.trace)}`;}
+   catch(e){if(current())resultHost.innerHTML=`<p class="agent-status">${esc(e.name==='AbortError'?'本次分析已取消，未生成报告。':e.message)}</p>${traceHtml(e.trace)}${validationHtml(e.validation)}`;}
    finally{if(current()){form.querySelectorAll('select,textarea').forEach(e=>e.disabled=false);buttons[0].disabled=false;buttons[1].disabled=!status.configured;cancel.hidden=true;}}
   };
   form.onsubmit=e=>{e.preventDefault();if(!form.querySelector('textarea').value.trim()){resultHost.textContent='请先填写任务。';return;}run('agent');};buttons[0].onclick=()=>run('workflow');cancel.onclick=()=>running?.abort();

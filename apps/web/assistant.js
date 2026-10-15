@@ -7,12 +7,13 @@ export async function assistantRequest(path,body,signal){
  if(location.protocol==='file:')throw new Error('当前为文件预览。请通过本地服务打开；案例静态内容仍可浏览。');
  const r=await fetch(new URL('./api/assistant/'+path,location.href),{signal,method:body?'POST':'GET',headers:body?{'Content-Type':'application/json'}:{},...(body?{body:JSON.stringify(body)}:{})});
  let data;try{data=await r.json();}catch{throw new Error('当前为静态预览，未连接 AI 服务；已有案例和方案整理仍可使用。');}
- if(!r.ok)throw Object.assign(new Error(data.error||'分析服务暂不可用'),{trace:data.trace||[]});return data;
+ if(!r.ok)throw Object.assign(new Error(data.error||'分析服务暂不可用'),{trace:data.trace||[],validation:data.validation||[]});return data;
 }
 export function sourcesHtml(sources=[]){return `<nav class="assistant-sources" aria-label="本次回答来源">${sources.filter(s=>/^#(?:recommend|forecast|classify|retrieve|anomaly|segments|decision|expand|delivery)(?:\?|$)/.test(s.href)).map(s=>`<a href="${esc(s.href)}">${esc(s.title)}</a>`).join('')}</nav>`;}
 const TOOL_LABELS={list_cases:'查询公开案例',read_case:'读取案例证据',read_expansion:'读取扩展规划',retail_options:'读取可用场景',retail_compare:'读取订单并复算场景成本',retail_review:'复算事后模拟'};
 export function traceHtml(trace=[]){return trace.length?`<details class="assistant-trace"><summary>实际工具执行记录（${trace.length} 次）</summary><ol>${trace.map(t=>`<li><strong>${esc(TOOL_LABELS[t.name]||t.name)} · ${t.ok?'完成':'失败'} · ${esc(t.ms)} ms</strong><details><summary>参数与返回内容</summary><pre>${esc(JSON.stringify({parameters:t.args,result:t.result},null,2))}</pre></details></li>`).join('')}</ol></details>`:'';}
-export function answerHtml(r){return `<section class="assistant-answer"><h3>${r.mode==='workflow'?'固定流程说明':'AI 解释 · 请结合来源核对'}</h3><p class="assistant-prose">${esc(r.summary)}</p>${sourcesHtml(r.sources)}<p class="small-note">${r.model?`模型：${esc(r.model)} · `:''}本次总耗时 ${esc(r.ms)} ms${r.usage?` · 输入 ${esc(r.usage.prompt_tokens)} / 输出 ${esc(r.usage.completion_tokens)} tokens`:' · 无语言模型用量或服务未提供统计'}。未配置单价，不估算费用。</p>${traceHtml(r.trace)}</section>`;}
+export function validationHtml(checks=[]){return checks.some(c=>!c.ok)?`<details class="assistant-trace"><summary>回答格式修正记录</summary><ul>${checks.map(c=>`<li>第 ${esc(c.attempt)} 次：${c.ok?'通过校验':esc(c.message)}</li>`).join('')}</ul><p class="small-note">格式与引用校验不代表事实正确；原失败记录保留。</p></details>`:'';}
+export function answerHtml(r){return `<section class="assistant-answer"><h3>${r.mode==='workflow'?'固定流程说明':'AI 解释 · 请结合来源核对'}</h3><p class="assistant-prose">${esc(r.summary)}</p>${sourcesHtml(r.sources)}<p class="small-note">${r.model?`模型：${esc(r.model)} · `:''}本次总耗时 ${esc(r.ms)} ms${r.usage?` · 输入 ${esc(r.usage.prompt_tokens)} / 输出 ${esc(r.usage.completion_tokens)} tokens`:' · 无语言模型用量或服务未提供统计'}。未配置单价，不估算费用。</p>${traceHtml(r.trace)}${validationHtml(r.validation)}</section>`;}
 export function initAssistant(){
  const dialog=document.createElement('dialog');dialog.id='ai-dialog';dialog.className='ai-dialog';dialog.setAttribute('aria-labelledby','ai-heading');document.body.append(dialog);
  let controller;document.querySelector('#ask-ai').onclick=async()=>{
@@ -26,7 +27,7 @@ export function initAssistant(){
   form.onsubmit=async e=>{e.preventDefault();controller?.abort();controller=new AbortController();button.disabled=true;answer.textContent='正在查阅资料并回答…';
    try{const r=await assistantRequest('run',{mode:'ask',question:dialog.querySelector('#ai-question').value,history:history.slice(-4),...(allowed?{context:key}:{})},controller.signal);if(!dialog.open)return;history.push({role:'user',content:dialog.querySelector('#ai-question').value.slice(0,1500)},{role:'assistant',content:r.summary.slice(0,1500)});answer.innerHTML=answerHtml(r);
     if(r.brief){const preview=document.createElement('textarea');preview.value=r.brief;preview.rows=8;preview.setAttribute('aria-label','AI 整理的需求摘要');answer.append(preview);const transfer=document.createElement('button');transfer.className='outline';transfer.textContent='带到方案与合作继续编辑';transfer.onclick=()=>{setBriefDraft(preview.value);dialog.close();location.hash='#delivery?section=start';};answer.append(transfer);}
-   }catch(e){if(e.name!=='AbortError'){answer.innerHTML=`<p>${esc(e.message)}</p>${traceHtml(e.trace)}`;}}finally{button.disabled=false;}
+   }catch(e){if(e.name!=='AbortError'){answer.innerHTML=`<p>${esc(e.message)}</p>${traceHtml(e.trace)}${validationHtml(e.validation)}`;}}finally{button.disabled=false;}
   };
  };
  dialog.addEventListener('close',()=>controller?.abort());

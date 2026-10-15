@@ -24,11 +24,11 @@ function anthropicMessages(messages){
  }
  return result;
 }
-export function providerRequest(config,messages,tools,{mode='ask'}={}){
+export function providerRequest(config,messages,tools,{mode='ask',finalOnly=false}={}){
  const m3=config.model==='MiniMax-M3',thinking=m3?{type:config.thinking==='auto'?(mode==='agent'?'adaptive':'disabled'):config.thinking}:null;
  if(config.protocol==='anthropic')return {model:config.model,system:messages.filter(m=>m.role==='system').map(m=>m.content).join('\n\n'),messages:anthropicMessages(messages),
-  tools:tools.map(({function:f})=>({name:f.name,description:f.description,input_schema:f.parameters})),tool_choice:{type:'auto'},max_tokens:config.maxTokens,stream:false,...(thinking?{thinking}:{})};
- return {model:config.model,messages:messages.map(({_anthropic_content,...m})=>m),tools,tool_choice:'auto',...(m3?{max_completion_tokens:config.maxTokens}:{max_tokens:config.maxTokens}),stream:false,...(thinking?{thinking,reasoning_split:true}:{})};
+  ...(!finalOnly?{tools:tools.map(({function:f})=>({name:f.name,description:f.description,input_schema:f.parameters})),tool_choice:{type:'auto'}}:{}),max_tokens:config.maxTokens,stream:false,...(thinking?{thinking}:{})};
+ return {model:config.model,messages:messages.map(({_anthropic_content,...m})=>m),...(!finalOnly?{tools,tool_choice:'auto'}:{}),...(m3?{max_completion_tokens:config.maxTokens}:{max_tokens:config.maxTokens}),stream:false,...(thinking?{thinking,reasoning_split:true}:{})};
 }
 export function providerResponse(config,data){
  if(data.error||data.base_resp?.status_code)throw new Error('模型服务返回错误，请检查模型权限或配置');

@@ -42,3 +42,7 @@ test('response byte guard accommodates large reasoning budgets while remaining b
  assert.equal((await completionClient(c,{fetcher})([],[])).message.content,'{}');
  await assert.rejects(completionClient(c,{fetcher:async()=>new Response('x'.repeat(2*1024*1024+1))})([],[]),/响应过大/);
 });
+
+test('format-only repair omits tools for both protocols',()=>{
+ for(const c of [config,{...config,protocol:'openai'}]){const payload=providerRequest(c,[],[{function:{name:'list_cases',parameters:{}}}],{finalOnly:true});assert.equal(payload.tools,undefined);assert.equal(payload.tool_choice,undefined);}
+});
