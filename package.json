@@ -85,6 +85,7 @@
     "audit:uci-reliability": "uv run python -m services.reliability.uci_audit",
     "export:uci-reliability": "uv run python -m services.reliability.uci",
     "audit:uci-conditions": "uv run python -m services.reliability.uci_conditions_audit",
-    "report:uci-conditions": "node scripts/report-uci-conditions.mjs"
+    "report:uci-conditions": "node scripts/report-uci-conditions.mjs",
+    "audit:uci-adoption": "uv run python -m services.adoption.uci"
   }
 }

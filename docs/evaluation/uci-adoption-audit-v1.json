@@ -1,0 +1,42 @@
+{
+  "schema": "uci-adoption-audit-v1",
+  "parent_run": "retail-20261012T001149Z",
+  "parent_version": "3fa4577447882c31",
+  "protocol_sha256": "8cf7d848abfe2c95f07ba05cc3de6fd3a2f9ad27b6fe5623d303797f5e12fee5",
+  "sources": {
+    "report.json": "5b7f55030fd626541f44a883cb2269bd3d1e294a20f96be0497a30465a3395b1",
+    "diagnostics.json": "48d7ef14c629d300933d60c8475c960c1ad1f3911295b0b9fcf6528818203b98",
+    "recommendation-diagnostics.csv.gz": "9e1c00d16777d380639c0427f8133219e2957f92f933eb82c294aeb77aa04830",
+    "validation-predictions-popular.csv.gz": "e1605147688fc73526b4e1eead1da4f6d29f93926efa5bc566fd2c7bf287a0d1",
+    "validation-predictions-itemcf.csv.gz": "dc01840089170b086eaaff4af19bae48348805395b7febb1e349702a5bacec9b",
+    "validation-predictions-basket.csv.gz": "73e737259e72969607c09b1b0a1fca0a94046774cb68a80d0b2f0f6bcc573edf",
+    "validation-predictions-als.csv.gz": "6873c0faedf9669053c283733c3a7066d8b4680e90b182709fdfbcab72321306",
+    "validation-predictions-ease.csv.gz": "7eae0760ae24bfe3de59c4826f457e7f22adbd64696eb02e9b6d039218d7d095",
+    "validation-predictions-personal_frequency.csv.gz": "eb4c2ff59c95ce5a6b8de5943f0e6ecaddc29ce5f0d4385c5b42a2521dcf9c5c",
+    "validation-predictions-personal_recent.csv.gz": "a8fc0131870b57507b90c6f4b6fe599b8443221a686eacd678e0e9afb87c8d28",
+    "validation-predictions-personal_decay.csv.gz": "b1828a521715aecf8879bcd6491dd0e7ab05428e895699e15f47089d6d03bbbc",
+    "validation-predictions-hybrid.csv.gz": "66aedc7fa8a2ebded28a95095936bc623aeed1c503a3dffd3602d8d7d7a8c7a9"
+  },
+  "rows_per_method": 4280,
+  "unique_customers": 2845,
+  "model_count": 9,
+  "origins": {
+    "2011-09-01": 1259,
+    "2011-10-01": 1361,
+    "2011-11-01": 1660
+  },
+  "groups": {
+    "cold": 600,
+    "1–5": 83,
+    "6–20": 391,
+    "21+": 3206
+  },
+  "november_history_checks": 14940,
+  "cold_method_checks": 5400,
+  "history_evidence": "Sep/Oct: frozen activity categories and hash-verified generating code (training date < origin, catalog intersected history). Nov: additionally checked every evaluated customer against saved as_of model histories. No reconstruction of earlier exact histories.",
+  "restrictions": [
+    "No retraining, tuning, new labels, or changes to parent outputs.",
+    "Earlier two windows retain coarse frozen history groups with verified generating code; exact per-user histories not present in these published evaluation CSVs. Do not invent recency, order counts or new segments.",
+    "Ta Feng repurchase/discovery retain their existing separate frozen evaluation and gates; do not transfer UCI cohort effects or fallback policy to Ta Feng or Dressipi."
+  ]
+}
