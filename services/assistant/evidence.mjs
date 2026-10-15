@@ -49,8 +49,11 @@ export function validateEvidence(answer,trace){
  }
  if(results.some(r=>r.timeScope)&&/本案例[^。\n]{0,20}(?:单日预算|每日独立预算)/.test(text))throw evidenceError('wrong_time_scope','本站补货案例是七日窗口起点一次补货，不是单日预算系统。请将用户希望每日补货的需求与主案例的时间粒度分开说明。');
  if(retail.length)for(const sentence of text.split(/[。！？\n]/)){
-  if(/(?:需求|销量)[^。]{0,60}(?:均值|平均)[^。]{0,40}(?:因此|所以|导致|主因)/.test(sentence)&&!/(?:不能|不等于|未验证|不能单独)/.test(sentence))throw evidenceError('unsupported_cause','不能仅用总需求均值变化断言成本变化的原因。只说明历史场景与记录销量两种计算口径、已复算差值及无法从总量判定成因。');
+  const cause=sentence.match(/(?:需求|销量)[^。]{0,60}(?:均值|平均)[^。]{0,40}(?:因此|所以|导致|主因)/);
+  if(cause&&!/(?:不能|不等于|未验证|不能单独)/.test(sentence.slice(0,cause.index)))throw evidenceError('unsupported_cause','不能仅用总需求均值变化断言成本变化的原因。只说明历史场景与记录销量两种计算口径、已复算差值及无法从总量判定成因。');
  }
+ if(retail.some(r=>r.kind==='事后模拟复算')&&retail.some(r=>r.kind==='保存订单与历史需求场景复算')&&/(?:排序|排名|位次)[^。\n]{0,50}(?:一致|相同)/.test(text))throw evidenceError('mixed_rank_scope','两种口径的总成本排序与缺货排序不能合并概括。请直接分别引用两份 display.comparison，不概括跨口径排名。');
+ if(retail.length&&/单位缺货(?:代价|成本)[^。\n]{0,20}(?:高于|低于|更高|更低)/.test(text))throw evidenceError('penalty_scope','同一组参数下各策略使用相同的逐商品缺货惩罚系数。请只比较已复算的缺货总成本和缺货件数，不把它说成策略的单位惩罚改变。');
  const hasCalendar=results.some(r=>r.windows||r.display);
  if(hasCalendar){
   for(const m of text.matchAll(/(\d{4}-\d{2}-\d{2})[\s（(，,]*(?:星期|周)([日天一二三四五六])/g))if(weekday(m[1])!=='星期'+m[2].replace('天','日'))throw evidenceError('wrong_weekday','回答日期与星期不一致。请引用工具中的精确日期，或按 window/windows 的星期字段说明。');

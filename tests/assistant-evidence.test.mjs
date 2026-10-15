@@ -48,3 +48,10 @@ test('upgrade notes do not mix experiment sample sizes and retail time scope is 
  const retail=await executeTool('read_case',{key:'decision:retail'});assert.match(retail.timeScope,/七日窗口/);
  assert.throws(()=>validateEvidence({summary:'没有达到预设的统计或业务门槛，不能外推。'},[{ok:true,result:forecast}]),/统计显著性/);
 });
+
+test('a later disclaimer does not excuse an unsupported cause or mixed policy ranking',()=>{
+ assert.throws(()=>validateEvidence({summary:'记录销量低于场景均值，因此缺货成本下降，但这不能证明收益。'},trace),e=>e.code==='unsupported_cause');
+ const both=[...trace,{ok:true,result:compareRetail(p,s,true)}];
+ assert.throws(()=>validateEvidence({summary:'三策略的相对位次在预期与事后两种视角下保持一致。'},both),e=>e.code==='mixed_rank_scope');
+ assert.throws(()=>validateEvidence({summary:'优化策略的单位缺货代价高于点预测。'},trace),e=>e.code==='penalty_scope');
+});
