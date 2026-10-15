@@ -15,8 +15,8 @@ test('supported windows have exact calendar dates without assuming one weekday',
  const options=retailOptions(p);assert.equal(options.windows.length,12);assert.equal(new Set(options.windows.map(w=>w.weekday)).size,3);assert.match(options.calendarNote,/离散/);
 });
 test('money and calendar regressions are rejected, valid amounts and dates survive',()=>{
- for(const summary of ['总成本 624714.70','总成本 £624,714.70','总成本 624714.70 便士','总成本 6247.15 英镑','2011-10-01（周四）','支持若干周四'])assert.throws(()=>validateEvidence({summary},trace),e=>e.kind==='evidence');
- for(const summary of ['总成本 £6,247.15，减少 £228.41；缺货增加 364.37 件。','2011-10-01（星期六）','记录销量不等于潜在需求。'])validateEvidence({summary},trace);
+ for(const summary of ['总成本 624714.70','总成本 £624,714.70','总成本 6247.15 便士','总成本 624714.70 英镑','2011-10-01（周四）','支持若干周四'])assert.throws(()=>validateEvidence({summary},trace),e=>e.kind==='evidence');
+ for(const summary of ['总成本 £6,247.15，减少 £228.41；缺货增加 364.37 件。','2011-10-01（星期六）','记录销量不等于潜在需求。','总成本 624714.70 便士 = 6247.15 英镑','并非都是周四，2011-10-01（星期六）。'])validateEvidence({summary},trace);
 });
 test('one evidence correction uses existing evidence and retains the rejected check',async()=>{
  let n=0;const result=await runAssistant({mode:'agent',question:'成本多少',selection:s},{complete:async()=>{

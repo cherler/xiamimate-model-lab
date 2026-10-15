@@ -26,11 +26,17 @@ export function validateEvidence(answer,trace){
   for(const m of text.matchAll(/£\s*(-?[\d,]+(?:\.\d+)?)/g)){
    const value=Number(m[1].replaceAll(',',''));if(!money.some(v=>Math.abs(v-value)<.011))throw evidenceError('unsupported_money','回答金额未匹配已复算的英镑证据。请直接引用 display 中的 £ 金额；新差值没有工具证据时不报数。');
   }
-  if(/(?:总成本|采购金额|持有成本|缺货成本|预算余量|预算总额|成本减少|成本增加)\s*[：:=为]?\s*-?\d/.test(text)||/\d[\d,.]*\s*(?:便士|英镑|GBP|GBp)/i.test(text))throw evidenceError('money_unit','回答金额单位不统一。具体金额请按 display 使用 £ 前缀，不能直接引用原始便士或省略单位。');
+  for(const m of text.matchAll(/(-?[\d,]+(?:\.\d+)?)\s*(英镑便士|便士|GBp|英镑|GBP)/g)){
+   const value=Number(m[1].replaceAll(',',''))/(['英镑便士','便士','GBp'].includes(m[2])?100:1);
+   if(!money.some(v=>Math.abs(v-value)<.011))throw evidenceError('money_unit','回答金额与单位不匹配。请核对便士与英镑的 100 倍关系，优先引用 display 中的 £ 金额。');
+  }
+  for(const m of text.matchAll(/(?:总成本|采购金额|持有成本|缺货成本|预算余量|预算总额|成本减少|成本增加)\s*[：:=为]?\s*(-?\d[\d,.]*)/g)){
+   if(!/^\s*(英镑便士|便士|GBp|英镑|GBP)/.test(text.slice(m.index+m[0].length)))throw evidenceError('money_unit','回答具体金额缺少单位。请按 display 使用 £ 前缀，不能省略单位。');
+  }
  }
  const hasCalendar=results.some(r=>r.windows||r.display);
  if(hasCalendar){
   for(const m of text.matchAll(/(\d{4}-\d{2}-\d{2})[\s（(，,]*(?:星期|周)([日天一二三四五六])/g))if(weekday(m[1])!=='星期'+m[2].replace('天','日'))throw evidenceError('wrong_weekday','回答日期与星期不一致。请引用工具中的精确日期，或按 window/windows 的星期字段说明。');
-  if(/(?:若干|均为|都是|全部为|每个)[\s的]*(?:星期|周)[一二三四五六日天]/.test(text))throw evidenceError('calendar_generalization','支持日期是离散保存窗口，不能概括为固定星期。请直接引用精确日期，不推断连续范围或每周规律。');
+  for(const m of text.matchAll(/(?:若干|均为|都是|全部为|每个)[\s的]*(?:星期|周)[一二三四五六日天]/g))if(!/(?:不是|并非|并不|不能|不可)/.test(text.slice(Math.max(0,m.index-8),m.index)))throw evidenceError('calendar_generalization','支持日期是离散保存窗口，不能概括为固定星期。请直接引用精确日期，不推断连续范围或每周规律。');
  }
 }
