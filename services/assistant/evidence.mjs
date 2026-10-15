@@ -60,3 +60,16 @@ export function validateEvidence(answer,trace){
   for(const m of text.matchAll(/(?:若干|均为|都是|全部为|每个)[\s的]*(?:星期|周)[一二三四五六日天]/g))if(!/(?:不是|并非|并不|不能|不可)/.test(text.slice(Math.max(0,m.index-8),m.index)))throw evidenceError('calendar_generalization','支持日期是离散保存窗口，不能概括为固定星期。请直接引用精确日期，不推断连续范围或每周规律。');
  }
 }
+
+export function selectionChanges(before,after){
+ if(!before?.policies||!after?.policies||before.run!==after.run||before.selection.origin!==after.selection.origin||before.selection.model!==after.selection.model||before.packSize!==after.packSize||JSON.stringify(before.items.map(i=>i.id))!==JSON.stringify(after.items.map(i=>i.id)))return null;
+ const changed=['budget','capacity','shortage'].filter(k=>before.selection[k]!==after.selection[k]);if(!changed.length)return null;
+ const policies=Object.fromEntries(Object.entries(after.policies).map(([key,p])=>{
+  const items=after.items.map((item,i)=>({id:item.id,name:item.name,fromPacks:before.policies[key].packs[i],toPacks:p.packs[i],deltaPacks:p.packs[i]-before.policies[key].packs[i],deltaUnits:(p.packs[i]-before.policies[key].packs[i])*after.packSize}));
+  const increased=items.filter(i=>i.deltaPacks>0),decreased=items.filter(i=>i.deltaPacks<0),unchanged=items.filter(i=>i.deltaPacks===0);
+  return [key,{label:p.label,increased,decreased,unchanged,
+   statement:`${p.label}：补货增加 ${increased.length} 件商品，减少 ${decreased.length} 件商品，不变 ${unchanged.length} 件商品；当前预算与库容约束${p.metrics.feasible?'满足':'不满足'}。`,
+   capacityRule:'库容按初始库存＋订货到货量计算，不能只用采购到货量相减。'}];
+ }));
+ return {sourceIds:[before.sources[0].id,after.sources[0].id],from:before.selection,to:after.selection,changed,packSize:after.packSize,policies,scope:'服务端逐商品逐策略计算的前后差值；增加/减少方向为 from → to。其他条件仅在未列入 changed 时相同，不推断收益或可行域大小。'};
+}

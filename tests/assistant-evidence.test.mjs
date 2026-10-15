@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {moneyGBP,weekday,validateEvidence,normalizeCalendar} from '../services/assistant/evidence.mjs';
+import {moneyGBP,weekday,validateEvidence,normalizeCalendar,selectionChanges} from '../services/assistant/evidence.mjs';
 import {loadRetail,compareRetail,retailOptions,executeTool} from '../services/assistant/tools.mjs';
 import {runAssistant} from '../services/assistant/runtime.mjs';
 const p=await loadRetail(),s={origin:'2011-09-01',model:'lightgbm',budget:1,capacity:1.25,shortage:1.5},r=compareRetail(p,s),trace=[{ok:true,result:r}];
@@ -54,4 +54,10 @@ test('a later disclaimer does not excuse an unsupported cause or mixed policy ra
  const both=[...trace,{ok:true,result:compareRetail(p,s,true)}];
  assert.throws(()=>validateEvidence({summary:'三策略的相对位次在预期与事后两种视角下保持一致。'},both),e=>e.code==='mixed_rank_scope');
  assert.throws(()=>validateEvidence({summary:'优化策略的单位缺货代价高于点预测。'},trace),e=>e.code==='penalty_scope');
+});
+
+test('cross-budget item deltas are computed by the tool in the explicit direction',()=>{
+ const low=compareRetail(p,{...s,budget:.6}),change=selectionChanges(r,low);assert.deepEqual(change.changed,['budget']);assert.equal(change.from.budget,1);assert.equal(change.to.budget,.6);
+ for(const [key,c] of Object.entries(change.policies)){assert.equal(c.increased.length,0);assert.equal(c.decreased.length+c.unchanged.length,12);for(const item of [...c.decreased,...c.unchanged]){const i=low.items.findIndex(x=>x.id===item.id);assert.equal(item.deltaPacks,low.policies[key].packs[i]-r.policies[key].packs[i]);assert.equal(item.deltaUnits,item.deltaPacks*6);}}
+ assert.equal(selectionChanges(r,r),null);assert.equal(selectionChanges(r,{...low,selection:{...low.selection,origin:'2011-10-01'}}),null);
 });
