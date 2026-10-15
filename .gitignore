@@ -81,3 +81,6 @@ apps/web/uci-reliability-results/
 
 # Audited UCI paired recommendation evidence
 apps/web/uci-adoption-results/
+
+# E6 service constraint experiment
+apps/web/decision-service-results/

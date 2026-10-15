@@ -87,6 +87,9 @@
     "audit:uci-conditions": "uv run python -m services.reliability.uci_conditions_audit",
     "report:uci-conditions": "node scripts/report-uci-conditions.mjs",
     "audit:uci-adoption": "uv run python -m services.adoption.uci",
-    "export:uci-adoption": "uv run python -m services.adoption.export"
+    "export:uci-adoption": "uv run python -m services.adoption.export",
+    "audit:decision-service": "uv run python -m services.decision_study.audit",
+    "run:decision-service": "uv run python -m services.decision_study.run run",
+    "verify:decision-service": "uv run python -m services.decision_study.run verify"
   }
 }
