@@ -27,3 +27,11 @@ test('one evidence correction uses existing evidence and retains the rejected ch
 test('case evidence includes actual upgrade status and does not promise unavailable numeric queries',async()=>{
  const c=await executeTool('read_case',{key:'recommend:uci'});assert.match(c.status,/没有逐样本/);const sasrec=c.modelPaths.find(p=>p.name.includes('SASRec'));assert.match(sasrec.status,/暂不直接套用/);assert.match(sasrec.data,/短购物篮/);
 });
+
+test('aggregate demand and gain screening cannot be turned into unsupported causal/statistical claims',()=>{
+ const caseTrace=[{ok:true,result:{case:{}}}];
+ assert.throws(()=>validateEvidence({summary:'这意味着没有达到统计意义上的显著提升门槛。'},caseTrace),e=>e.code==='unsupported_significance');
+ validateEvidence({summary:'未通过增益筛选不等于统计显著性检验结论。'},caseTrace);
+ assert.throws(()=>validateEvidence({summary:'实际需求比场景均值低，因此所有策略缺货成本下降。'},trace),e=>e.code==='unsupported_cause');
+ validateEvidence({summary:'不能仅用需求均值解释成本变化。'},trace);
+});

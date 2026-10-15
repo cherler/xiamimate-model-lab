@@ -22,6 +22,7 @@ function evidenceError(code,message){return Object.assign(new Error(message),{co
 export function validateEvidence(answer,trace){
  const results=trace.filter(t=>t.ok).map(t=>t.result),retail=results.filter(r=>r.display),text=answer.summary+'\n'+(answer.brief||'');
  if(retail.length){
+  if(answer.summary.length>900)throw evidenceError('overlong_report','回答重复了完整数据表。请压缩到 900 字内的 3–5 句，直接引用 display.comparison 说明主要取舍，补充两种需求来源和限制，不抄写表格或自行解释商品层面的原因。');
   const money=[...JSON.stringify(retail.map(r=>r.display)).matchAll(/£(-?[\d,]+\.\d{2})/g)].map(m=>Number(m[1].replaceAll(',','')));
   for(const m of text.matchAll(/£\s*(-?[\d,]+(?:\.\d+)?)/g)){
    const value=Number(m[1].replaceAll(',',''));if(!money.some(v=>Math.abs(v-value)<.011))throw evidenceError('unsupported_money','回答金额未匹配已复算的英镑证据。请直接引用 display 中的 £ 金额；新差值没有工具证据时不报数。');
@@ -33,6 +34,12 @@ export function validateEvidence(answer,trace){
   for(const m of text.matchAll(/(?:总成本|采购金额|持有成本|缺货成本|预算余量|预算总额|成本减少|成本增加)\s*[：:=为]?\s*(-?\d[\d,.]*)/g)){
    if(!/^\s*(英镑便士|便士|GBp|英镑|GBP)/.test(text.slice(m.index+m[0].length)))throw evidenceError('money_unit','回答具体金额缺少单位。请按 display 使用 £ 前缀，不能省略单位。');
   }
+ }
+ if(results.some(r=>r.case))for(const sentence of text.split(/[。！？\n]/)){
+  if(/(?:统计意义|统计显著|显著性)/.test(sentence)&&!/(?:不能|不等于|并不|未提供|没有.*检验)/.test(sentence))throw evidenceError('unsupported_significance','当前案例资料未提供统计显著性检验，不能把预设增益筛选说成统计显著性门槛。请只复述未通过预设增益筛选，不引申统计结论。');
+ }
+ if(retail.length)for(const sentence of text.split(/[。！？\n]/)){
+  if(/(?:需求|销量)[^。]{0,60}(?:均值|平均)[^。]{0,40}(?:因此|所以|导致|主因)/.test(sentence)&&!/(?:不能|不等于|未验证|不能单独)/.test(sentence))throw evidenceError('unsupported_cause','不能仅用总需求均值变化断言成本变化的原因。只说明历史场景与记录销量两种计算口径、已复算差值及无法从总量判定成因。');
  }
  const hasCalendar=results.some(r=>r.windows||r.display);
  if(hasCalendar){
