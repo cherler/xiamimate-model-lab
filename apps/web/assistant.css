@@ -5,3 +5,24 @@
 .agent-actions [hidden]{display:none}
 
 .agent-reading td,.agent-reading th{white-space:normal;min-width:150px;line-height:1.8}.agent-reading p{margin:16px 0;line-height:1.8}.agent-reading table{margin-top:18px}
+
+/* Retail reports: conclusions and comparable outcomes first; audit details on demand. */
+.agent-client-report .agent-report-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.agent-client-report .agent-report-heading h2{margin:0}
+.agent-report-heading>span,.agent-report-scope{font-size:12px;color:var(--muted)}
+.agent-report-boundary{font-size:13px;margin:10px 0 20px;max-width:78ch}
+.agent-strategy-group,.agent-change-summary{padding:20px 0;border-top:1px solid var(--line)}
+.agent-client-report h3{font-size:17px;margin:0 0 8px}
+.agent-client-report h4{margin:18px 0 8px}
+.agent-conclusions{margin:16px 0;border-left:3px solid var(--blue);padding-left:16px;max-width:80ch}
+.agent-conclusions p{margin:10px 0;line-height:1.8}
+.agent-conclusions strong{display:block;font-size:12px;color:var(--blue)}
+.agent-order-difference{font-size:13px;margin:14px 0}
+.agent-report-detail{border-top:1px solid var(--line);padding-top:12px;margin-top:16px}
+.agent-report-detail>summary{cursor:pointer;color:var(--blue);font-size:13px;padding:6px 0}
+.agent-report-detail>summary:focus-visible{outline:2px solid var(--blue);outline-offset:4px}
+.agent-report-detail[open]>summary{margin-bottom:12px}
+.agent-report-detail details{margin:14px 0}.agent-report-detail details>summary{cursor:pointer}
+.agent-client-report td:not(:first-child),.agent-client-report th:not(:first-child){white-space:nowrap;font-variant-numeric:tabular-nums}
+.agent-client-report .assistant-prose{max-width:80ch}
+@media(max-width:760px){.agent-strategy-group,.agent-change-summary{padding:16px 0}.agent-report-heading>span{width:100%}.agent-conclusions{padding-left:12px}.agent-client-report{min-width:0}.agent-client-report td:first-child{min-width:108px}}
