@@ -49,3 +49,5 @@ Live multi-turn tests showed M3 may return text even when `submit_answer` is req
 A final regression check keeps expected/observed policy rankings separate and rejects claims that a strategy changes the shared per-item shortage penalty. Unsupported aggregate-demand causality is still rejected when a disclaimer appears later in the sentence. These are local explanation-contract checks; the original numeric results are preserved.
 
 Context-free Ask AI receives the public catalogue and compact upgrade-status index as server-owned seed evidence; retail Agent receives the public decision-case scope. Both are tagged as server-provided trace phases, not autonomous model tool selection. This prevents an otherwise tool-free response from claiming it cannot consult the site's public materials. No customer data/log upload is requested.
+
+Repair instructions explicitly permit/require `submit_answer` while forbidding business tools. The previous broad instruction “do not call tools” conflicted with the formatter request and has been removed. Normal and formatter output contracts now agree.

@@ -40,7 +40,7 @@ test('one format repair keeps failed check, uses final-only mode and accumulates
  let n=0;const result=await runAssistant(body,{complete:async(messages,defs,signal,options)=>{
   if(++n===1)return {message:{role:'assistant',content:'这不是 JSON',reasoning_content:'private test reasoning'},usage:{prompt_tokens:5,completion_tokens:3}};
   assert.equal(options.finalOnly,true);assert.equal(messages.at(-2).reasoning_content,'private test reasoning');
-  assert.match(messages.at(-1).content,/forecast:uci/);return final();
+  assert.match(messages.at(-1).content,/forecast:uci/);assert.match(messages.at(-1).content,/必须只调用它/);assert.doesNotMatch(messages.at(-1).content,/不调用工具/);return final();
  }});
  assert.equal(n,2);assert.deepEqual(result.validation.map(c=>c.ok),[false,true]);assert.equal(result.validation[0].code,'invalid_json');
  assert.equal(result.usage.prompt_tokens,15);assert.equal(result.usage.completion_tokens,13);assert.doesNotMatch(JSON.stringify(result),/private test reasoning|这不是 JSON/);
