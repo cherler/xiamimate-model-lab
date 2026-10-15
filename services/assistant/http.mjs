@@ -8,7 +8,7 @@ export function createAssistantHandler({config=providerConfig(),complete=config&
   // This optional server is local-only. Do not expose it as an unauthenticated public proxy.
   if(!/^(localhost|127\.0\.0\.1)(:\d+)?$/.test(req.headers.host||'')){send(403,{error:'仅供本机预览'});return true;}
   if(req.headers.origin&&req.headers.origin!==`http://${req.headers.host}`){send(403,{error:'不允许跨站调用'});return true;}
-  if(path==='/api/assistant/status'&&req.method==='GET'){send(200,{configured:!!complete,model:config?.model||null,workflow:true,scope:'本机预览；真实模型任务成功率待评估'});return true;}
+  if(path==='/api/assistant/status'&&req.method==='GET'){send(200,{configured:!!complete,model:config?.model||null,protocol:config?.protocol||null,maxTokens:config?.maxTokens||null,workflow:true,scope:'本机预览；真实模型任务成功率待评估'});return true;}
   if(path==='/api/assistant/options'&&req.method==='GET'){try{send(200,await execute('retail_options',{}));}catch{send(503,{error:'已保存补货数据不可用或校验失败'});}return true;}
   if(!['/api/assistant/run','/api/assistant/workflow'].includes(path)){send(404,{error:'接口不存在'});return true;}
   if(req.method!=='POST'){send(405,{error:'需要 POST'});return true;}
