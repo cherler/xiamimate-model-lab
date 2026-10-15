@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {moneyGBP,weekday,validateEvidence,normalizeCalendar,selectionChanges} from '../services/assistant/evidence.mjs';
+import {moneyGBP,weekday,validateEvidence,normalizeCalendar,selectionChanges,orderRankings,retailAnswer} from '../services/assistant/evidence.mjs';
 import {loadRetail,compareRetail,retailOptions,executeTool} from '../services/assistant/tools.mjs';
 import {runAssistant} from '../services/assistant/runtime.mjs';
 const p=await loadRetail(),s={origin:'2011-09-01',model:'lightgbm',budget:1,capacity:1.25,shortage:1.5},r=compareRetail(p,s),trace=[{ok:true,result:r}];
@@ -18,11 +18,11 @@ test('money and calendar regressions are rejected, valid amounts and dates survi
  for(const summary of ['总成本 624714.70','总成本 £624,714.70','总成本 6247.15 便士','总成本 624714.70 英镑','2011-10-01（周四）','支持若干周四'])assert.throws(()=>validateEvidence({summary},trace),e=>e.kind==='evidence');
  for(const summary of ['总成本 £6,247.15，减少 £228.41；缺货增加 364.37 件。','2011-10-01（星期六）','记录销量不等于潜在需求。','总成本 624714.70 便士 = 6247.15 英镑','并非都是周四，2011-10-01（星期六）。'])validateEvidence({summary},trace);
 });
-test('one evidence correction uses existing evidence and retains the rejected check',async()=>{
+test('retail numeric prose is compiled from evidence instead of accepting the model draft',async()=>{
  let n=0;const result=await runAssistant({mode:'agent',question:'成本多少',selection:s},{complete:async()=>{
   if(++n===1)return {message:{tool_calls:[{id:'c',function:{name:'retail_compare',arguments:JSON.stringify(s)}}]}};
   return {message:{content:JSON.stringify({summary:n===2?'总成本 £624,714.70':'按点预测补货总成本 £6,247.15，仅为假设成本。',citations:[r.sources[0].id],brief:''})}};
- }});assert.equal(n,3);assert.equal(result.validation[0].code,'unsupported_money');assert.equal(result.validation.at(-1).ok,true);
+ }});assert.equal(n,2);assert.equal(result.answerOrigin,'tool_report');assert.doesNotMatch(result.summary,/£624,714/);assert.match(result.summary,/£6,247.15/);assert.equal(result.validation.at(-1).kind,'computed_report');
 });
 test('case evidence includes actual upgrade status and does not promise unavailable numeric queries',async()=>{
  const c=await executeTool('read_case',{key:'recommend:uci'});assert.match(c.status,/没有逐样本/);const sasrec=c.modelPaths.find(p=>p.name.includes('SASRec'));assert.match(sasrec.status,/暂不直接套用/);assert.match(sasrec.data,/短购物篮/);
@@ -64,4 +64,29 @@ test('cross-budget item deltas are computed by the tool in the explicit directio
 
 test('presentation length alone does not reject a valid evidenced explanation',()=>{
  validateEvidence({summary:('请结合工具表格核对。'.repeat(100))+'总成本 £6,247.15。'},trace);
+});
+
+
+test('rankings cover every item, preserve frozen orders, and retain all ties at the cutoff',()=>{
+ const fixture={packSize:6,items:['d','b','a','c','e'].map(id=>({id,name:id})),policies:{point:{label:'test',packs:[2,4,6,4,4]}}};
+ const original=JSON.stringify(fixture),rank=orderRankings(fixture).point.rows;
+ assert.deepEqual(rank.map(r=>r.id),['a','b','c','e','d']);assert.deepEqual(rank.map(r=>r.rank),[1,2,2,2,5]);assert.equal(rank.filter(r=>r.rank<=3).length,4);assert.equal(JSON.stringify(fixture),original);
+ for(const window of p.windows)for(const plan of window.plans){const data=compareRetail(p,{origin:window.origin,model:plan.model,budget:plan.budget_ratio,capacity:plan.capacity_ratio,shortage:plan.shortage_ratio});for(const [key,value] of Object.entries(data.display.rankings)){
+  assert.equal(new Set(value.rows.map(i=>i.id)).size,data.items.length);
+  for(const [index,item] of value.rows.entries()){const j=data.items.findIndex(i=>i.id===item.id);assert.equal(item.packs,data.policies[key].packs[j]);assert.equal(item.units,item.packs*data.packSize);assert.equal(item.rank,1+value.rows.filter(i=>i.packs>item.packs).length);if(index)assert.ok(value.rows[index-1].packs>=item.packs);}
+ }}
+});
+test('report fixes comparison direction to form baseline regardless of call order',()=>{
+ const low=compareRetail(p,{...s,budget:.6}),t=r=>({ok:true,name:'retail_compare',result:r});
+ const a=retailAnswer([t(low),t(r)],s),b=retailAnswer([t(r),t(low)],s);
+ assert.deepEqual(a.orderChanges,b.orderChanges);assert.equal(a.orderChanges[0].from.budget,1);assert.equal(a.orderChanges[0].to.budget,.6);
+ assert.equal(a.orderChanges[0].policies.milp.decreased.length,10);assert.equal(a.orderChanges[0].policies.milp.unchanged.length,2);
+ const reverse=retailAnswer([t(low),t(r)],low.selection).orderChanges[0];assert.equal(reverse.policies.milp.increased.length,10);
+ assert.equal(retailAnswer([t(r),t(r)],s).orderChanges.length,0);
+ const other=compareRetail(p,{...s,origin:'2011-10-01'});assert.equal(retailAnswer([t(r),t(other)],s).orderChanges.length,0);
+});
+test('invented ordering and universal budget claims in model prose never enter retail answer',async()=>{
+ let calls=0;const output=await runAssistant({mode:'agent',question:'预算改0.6，哪些商品增加？',selection:s},{complete:async()=>++calls===1?{message:{tool_calls:[{id:'low',function:{name:'retail_compare',arguments:JSON.stringify({...s,budget:.6})}}]}}:{message:{content:JSON.stringify({summary:'预算降低所有商品不可能增加。最高订单：虚构商品 99999 包。',brief:'虚构商品增加99999包',citations:[r.sources[0].id]})}}});
+ assert.equal(output.answerOrigin,'tool_report');assert.equal(output.brief,'');assert.doesNotMatch(output.summary,/虚构商品|99999|不可能增加/);assert.equal(output.orderChanges[0].from.budget,1);assert.equal(output.orderChanges[0].to.budget,.6);
+ assert.equal(output.trace.filter(t=>t.phase==='服务端读取明确表单基准').length,1);assert.equal(output.orderChanges[0].policies.point.increased.length,0);
 });

@@ -12,6 +12,7 @@ export function retailDisplay(r){
   statement:`${p.label}：总成本 ${moneyGBP(p.metrics.total_cost)}，采购 ${moneyGBP(p.metrics.purchase)}，持有 ${moneyGBP(p.metrics.holding)}，缺货成本 ${moneyGBP(p.metrics.shortage_cost)}；缺货 ${n(p.metrics.shortage_units)} 件，需求满足率 ${n(p.metrics.fill_rate*100)}%。预算余量 ${moneyGBP(p.metrics.budget_slack)}，库容余量 ${n(p.metrics.capacity_slack)} 件。`,
  }]));
  return {currency:'GBP',moneyRule:'原始金额为便士；此处已除以 100 换成英镑。回答引用这里的 £ 金额，勿再次换算、改币种或省略单位。',
+  rankings:orderRankings(r),
   window:{origin:r.selection.origin,originWeekday:weekday(r.selection.origin),end:r.end,endWeekday:weekday(r.end)},
   budget:moneyGBP(r.budget),policies,items:r.items.map(i=>({id:i.id,name:i.name,cost:moneyGBP(i.cost),penalty:moneyGBP(i.penalty)})),
   comparison:`${r.kind}，仅当前窗口和所选参数：场景成本优化相对按点预测补货，总成本${r.policies.milp.metrics.total_cost<reference.total_cost?'减少':'增加'} ${moneyGBP(Math.abs(r.policies.milp.metrics.total_cost-reference.total_cost))}，缺货量${r.policies.milp.metrics.shortage_units<reference.shortage_units?'减少':'增加'} ${n(Math.abs(r.policies.milp.metrics.shortage_units-reference.shortage_units))} 件。`,
@@ -71,4 +72,42 @@ export function selectionChanges(before,after){
    capacityRule:'库容按初始库存＋订货到货量计算，不能只用采购到货量相减。'}];
  }));
  return {sourceIds:[before.sources[0].id,after.sources[0].id],from:before.selection,to:after.selection,changed,packSize:after.packSize,policies,scope:'服务端逐商品逐策略计算的前后差值；增加/减少方向为 from → to。其他条件仅在未列入 changed 时相同，不推断收益或可行域大小。'};
+}
+
+// Competition ranks (1, 2, 2, 4); equal quantities never imply a preference.
+export function orderRankings(r){
+ return Object.fromEntries(Object.entries(r.policies).map(([key,p])=>{
+  const rows=r.items.map((item,i)=>({id:item.id,name:item.name,packs:p.packs[i],units:p.packs[i]*r.packSize})).sort((a,b)=>b.packs-a.packs||(a.id<b.id?-1:a.id>b.id?1:0));
+  let rank=0;rows.forEach((row,i)=>{if(i===0||row.packs!==rows[i-1].packs)rank=i+1;row.rank=rank;});
+  return [key,{label:p.label,metric:'订货包数',direction:'降序',tieRule:'同包数并列；同名次按商品编号排列，不代表优先级。',rows}];
+ }));
+}
+const selectionLabel=s=>`${s.origin} / ${s.model} / 预算 ${s.budget} 倍 / 库容 ${s.capacity} 倍 / 缺货 ${s.shortage} 倍`;
+export const sameSelection=(a,b)=>!!a&&!!b&&['origin','model','budget','capacity','shortage'].every(k=>a[k]===b[k]);
+// Quantitative retail prose is compiled, never copied from the language model draft.
+// All rows remain available in the report; the preview includes every tie at rank 3.
+export function retailAnswer(trace,selection){
+ const results=[...new Map(trace.filter(t=>t.ok&&['retail_compare','retail_review'].includes(t.name)).map(t=>[t.result.sources[0].id,t.result])).values()];
+ if(!results.length)return null;
+ const compares=results.filter(r=>r.kind==='保存订单与历史需求场景复算');
+ const reference=compares.find(r=>sameSelection(r.selection,selection));
+ const changes=reference?compares.filter(r=>r!==reference).map(r=>selectionChanges(reference,r)).filter(Boolean):[];
+ const paragraphs=[];
+ for(const c of changes){
+  paragraphs.push(`商品增减对照：${selectionLabel(c.from)} → ${selectionLabel(c.to)}。变化条件：${c.changed.map(k=>({budget:'预算',capacity:'库容',shortage:'缺货惩罚'}[k])).join('、')}。`);
+  for(const p of Object.values(c.policies)){
+   paragraphs.push(p.statement+(p.increased.length?' 增加的商品：'+p.increased.map(i=>`${i.name}（${i.id}）${i.fromPacks} → ${i.toPacks} 包，增加 ${i.deltaPacks} 包 / ${i.deltaUnits} 件`).join('；')+'。':' 本组比较没有补货增加的商品。')+(p.unchanged.length?' 不变商品：'+p.unchanged.map(i=>`${i.name}（${i.id}）${i.toPacks} 包`).join('；')+'。':''));
+  }
+  paragraphs.push('以上增减只适用于这两组保存订单，不能推导其他预算条件下每件商品必然增减。');
+ }
+ for(const r of results){
+  paragraphs.push(`${r.kind}：${selectionLabel(r.selection)}，窗口截至 ${r.end}。预算 ${r.display.budget}。原始金额为便士，下列金额已换算为英镑。`);
+  paragraphs.push(r.display.comparison);
+  for(const p of Object.values(r.display.policies))paragraphs.push(p.statement);
+  // Review shares frozen orders; avoid displaying the same ranking twice.
+  if(r.kind==='保存订单与历史需求场景复算')for(const p of Object.values(r.display.rankings))paragraphs.push(`${p.label} · 按订货包数降序的前 3 名（含并列）：`+p.rows.filter(i=>i.rank<=3).map(i=>`第 ${i.rank} 名 ${i.name}（${i.id}）${i.packs} 包 / ${i.units} 件`).join('；')+'。');
+ }
+ if(!changes.length&&compares.some(r=>!sameSelection(r.selection,selection)))paragraphs.push('未取得同窗口、同模型的表单基准对照，不形成跨条件商品增减结论。');
+ paragraphs.push('订货数量排名不是商品价值、收益或采购优先级。预期成本使用起点前八个需求场景，事后模拟使用记录销量；库存、成本等为假设，结果不保证真实经营收益。超出这些计算的原因判断未验证。');
+ return {summary:paragraphs.join('\n\n'),brief:'',sources:results.flatMap(r=>r.sources),answerOrigin:'tool_report',orderChanges:changes};
 }
