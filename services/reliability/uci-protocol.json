@@ -1,0 +1,55 @@
+{
+  "schema": "uci-reliability-protocol-v1",
+  "parent_run": "retail-20261012T001149Z",
+  "sources": {
+    "report.json": "5b7f55030fd626541f44a883cb2269bd3d1e294a20f96be0497a30465a3395b1",
+    "weekly-series.json": "62963729f513ecb711e0ac9aaffabc78e9dc7623b998aa392e9fd8d67abb7bc3",
+    "forecast-series.json": "c5129985f7bd831f7c01f15142298380d644d5b2e88798efd9212ffe0b7170fe"
+  },
+  "task": "weekly_sales",
+  "models": [
+    "zero",
+    "last_week",
+    "four_week_mean",
+    "four_week_median",
+    "autoets",
+    "lightgbm"
+  ],
+  "primary_pair": [
+    "lightgbm",
+    "four_week_median"
+  ],
+  "target_coverage": 0.9,
+  "minimum_complete_windows": 4,
+  "minimum_rows": 48,
+  "scale": "max(1, sum(previous 56 daily units)/8)",
+  "score": "abs(actual - frozen point prediction) / scale at that origin",
+  "calibration": "all published product-windows with target end strictly before forecast origin; expanding pool across same 12 items",
+  "quantile": "ascending score at one-based ceil((n+1)*0.9); no interpolation; unavailable if rank exceeds n",
+  "bounds": "[max(0, prediction - q*scale), prediction + q*scale]",
+  "metrics": [
+    "covered/rows",
+    "below/rows",
+    "above/rows",
+    "mean width",
+    "mean(width/scale)",
+    "mean interval score: width + 2/0.1 * outside distance",
+    "WAPE",
+    "MAE",
+    "signed bias: sum(prediction-actual)/sum(actual)"
+  ],
+  "stability": "all 12 weekly origins for point errors; only same 8 eligible origins for interval metrics; worst window, win/tie/loss counts, all items retained",
+  "daily": "point stability over 3 origins only; interval unavailable under four-window minimum; do not pool 28 correlated horizons as 28 independent origins",
+  "evidence_level": "known_development_diagnostic",
+  "restrictions": [
+    "No retraining, parameter selection, threshold search or edits to parent forecasts.",
+    "Temporal and cross-item dependence; model refits each origin; no exchangeability guarantee.",
+    "Original model selection used these same 12 windows; residual time filtering does not undo selection feedback.",
+    "90% is a nominal target, not single-SKU, simultaneous, future or business guarantee.",
+    "Later origins can use earlier evaluated labels only after their seven-day targets finish; report remains development replay."
+  ],
+  "references": [
+    "https://statgrades.berkeley.edu/~ryantibs/statlearn-s24/lectures/conformal.pdf",
+    "https://arxiv.org/abs/2202.13415"
+  ]
+}
