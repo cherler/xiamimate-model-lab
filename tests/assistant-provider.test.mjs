@@ -23,7 +23,7 @@ test('real adapter roundtrip preserves native state without leaking it to final 
 });
 test('OpenAI adapter preserves separate reasoning in subsequent tool rounds',async()=>{
  let n=0,history;const r=await runAssistant({mode:'ask',question:'列案例'},{complete:async messages=>{history=messages;return ++n===1?{message:{role:'assistant',content:null,reasoning_content:'synthetic separate field',tool_calls:[{id:'c',type:'function',function:{name:'list_cases',arguments:'{}'}}]}}:{message:{content:JSON.stringify({summary:'案例清单',citations:['catalog']})}};}});
- assert.equal(history[2].reasoning_content,'synthetic separate field');assert.doesNotMatch(JSON.stringify(r),/synthetic separate field/);
+ assert.equal(history.find(m=>m.role==='assistant').reasoning_content,'synthetic separate field');assert.doesNotMatch(JSON.stringify(r),/synthetic separate field/);
 });
 
 test('a single complete JSON code fence is accepted without accepting surrounding prose',()=>{assert.equal(parseAnswer('```json\n{"summary":"ok"}\n```').summary,'ok');for(const s of ['prefix ```json\n{}\n```','null','[]','```json\n{}\n``` suffix'])assert.throws(()=>parseAnswer(s));});
@@ -57,7 +57,7 @@ test('repair exposes no business tools and M3 OpenAI must use structured submit_
 
 test('plain text returned despite forced submit is still schema-checked, never silently trusted',async()=>{
  const c={...config,protocol:'openai'};let n=0;
- const complete=completionClient(c,{fetcher:async()=>new Response(JSON.stringify({choices:[{message:{content:++n===1?'bad':'{"summary":"无法保证收益。","citations":[],"brief":""}'}}]}))});
+ const complete=completionClient(c,{fetcher:async()=>new Response(JSON.stringify({choices:[{message:{content:++n===1?'bad':'{"summary":"无法保证收益。","citations":["catalog"],"brief":""}'}}]}))});
  const r=await runAssistant({mode:'ask',question:'保证收益吗'},{complete});assert.equal(r.validation.at(-1).formatMode,'validated_text_required');
  await assert.rejects(runAssistant({mode:'ask',question:'q'},{complete:completionClient(c,{fetcher:async()=>new Response(JSON.stringify({choices:[{message:{content:'bad'}}]}))})}),/结构化/);
 });

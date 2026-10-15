@@ -54,3 +54,9 @@ test('format repair respects abort and strict object fields',async()=>{
  const {validateAnswer}=await import('../services/assistant/runtime.mjs');
  for(const answer of [{summary:'x',citations:[],extra:'x'},{summary:'x',citations:[],brief:{}},{summary:'x',citations:[{}]}])assert.throws(()=>validateAnswer(JSON.stringify(answer),new Map()),/格式/);
 });
+
+test('context-free Ask AI and retail Agent always receive server-owned evidence first',async()=>{
+ const r=await runAssistant({mode:'ask',question:'SASRec 在 UCI 跑了吗？'},{complete:async(messages)=>{assert.match(messages[2].content,/SASRec/);return final(['expand:recommend']);}});
+ assert.equal(r.trace[0].name,'list_cases');assert.equal(r.trace[0].phase,'公开案例导航资料');
+ const a=await runAssistant({mode:'agent',context:'agent:retail',question:'保证收益吗',selection:{origin:'2011-09-01',model:'lightgbm',budget:1,capacity:1.25,shortage:1.5}},{complete:async()=>final(['decision:retail'])});assert.equal(a.trace[0].args.key,'decision:retail');
+});
