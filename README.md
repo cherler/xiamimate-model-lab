@@ -245,3 +245,8 @@ npm run run:decision
 ```
 
 数据和求解产物忽略 Git。缺失或指标不一致时页面／构建报错，不用演示数字替代。UCI CC BY 4.0 署名随页面和结果保留；旧 M5／Dressipi 构建限制不变。
+
+
+### 分类逐样本解释（E2）
+
+已保存 Spambase 模型和父结果就绪后，执行 `npm run explain:classification`，从已发布的 1,076 条验证／留出样本导出 LightGBM TreeSHAP 与逻辑回归逐项贡献。该命令只重新推理及核验，不拟合模型或重新打开测试分区。`apps/web/classification-explanations/` 不提交 Git；公开构建需要这份解释包及 `docs/evaluation/classification-explanations-v1.json` 一致。原始分数、校准映射和完整贡献在体验页可追溯；默认展示关键贡献，贡献不等于因果。

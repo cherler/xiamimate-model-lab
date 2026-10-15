@@ -1,0 +1,19 @@
+{
+  "schema": "spambase-explanation-v1",
+  "run_id": "spambase-20261013T233632651140Z",
+  "parent_sha256": "3779b4894605907a3a4631c64e1b1d2cb177f1728c73e00378cb6abca3946d04",
+  "path": "3e34a380ac1de8f0/case.json",
+  "sha256": "3e34a380ac1de8f08ad7bd6e83513f144a126ed6d94e55a52e934c9ec32cc1e1",
+  "model_sha256": "efb1a6f26f7bcee45c5b9c6f0d7932d14e7b496bf4ba1e95a004aa3dac2cdd57",
+  "exporter_sha256": "310ab22bc653a3e740980b7229d7f05e083d460230e277f56e623a4cd2861605",
+  "rows": {
+    "validation": 429,
+    "test": 647
+  },
+  "max_additivity_error": 1.4210854715202004e-14,
+  "scope": "Explanation of already published validation/test rows; no retraining, new labels or new test evaluation.",
+  "methods": {
+    "lightgbm": "native TreeSHAP pred_contrib, raw margin, tree-path-dependent",
+    "logistic": "standardized log1p input multiplied by coefficient; intercept baseline, not SHAP"
+  }
+}

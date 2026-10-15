@@ -20,7 +20,7 @@ test('paired migration partitions all rows and reconciles both confusion matrice
 test('default comparison preserves new errors and uses exact rather than displayed thresholds',{skip:!p},()=>{
  const state={split:'test',model:'lightgbm',baseline:'rules',mode:'threshold',share:.2,threshold:p.report.thresholds.lightgbm,baseThreshold:p.report.thresholds.rules};
  const c=pairForState(p,state);assert.equal(c.base.fn-c.current.fn,149);assert.equal(c.current.fp-c.base.fp,4);assert.equal(c.counts.new_fp,4);
- assert.equal(c.counts.new_fn,0);assert.match(mailDuel(p.rows.test[0],state,c),/未导出逐样本特征贡献/);
+ assert.equal(c.counts.new_fn,0);assert.match(mailDuel(p.rows.test[0],state,c),/全局特征权重不能代替本条解释/);
  const before=scoreMetrics(p.rows.test,'lightgbm').ap;const original=JSON.stringify(p.rows.test);
  for(const threshold of [0,.5,1.000001])policyPair(p.rows.test,'lightgbm','rules',{threshold},{threshold:1.000001});
  assert.equal(scoreMetrics(p.rows.test,'lightgbm').ap,before);assert.equal(JSON.stringify(p.rows.test),original);

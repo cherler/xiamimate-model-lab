@@ -1,3 +1,4 @@
+import {verifyClassificationExplanations} from '../apps/web/classification-explanations.js';
 import {verifyColbert} from '../apps/web/colbert-metrics.js';
 import {readinessModule} from './export-model-readiness.mjs';
 import {verifyPreference} from '../apps/web/preference-segments.js';
@@ -63,6 +64,14 @@ const classificationBytes=await readFile(resolve(classificationRoot,classificati
 if(createHash('sha256').update(classificationBytes).digest('hex')!==classification.sha256)throw new Error('分类结果哈希不一致');
 const classificationPayload=verifyClassification(JSON.parse(classificationBytes));
 if(classificationPayload.run_id!==classification.run_id)throw new Error('分类结果版本不一致');
+const explanationRoot=resolve(root,'apps/web/classification-explanations');
+const explanation=JSON.parse(await readFile(resolve(explanationRoot,'manifest.json'),'utf8'));
+if(!/^[a-f0-9]{16}\/case\.json$/.test(explanation.path)||explanation.parent_sha256!==classification.sha256||explanation.run_id!==classification.run_id)throw new Error('分类解释清单无效');
+const explanationBytes=await readFile(resolve(explanationRoot,explanation.path));
+if(createHash('sha256').update(explanationBytes).digest('hex')!==explanation.sha256)throw new Error('分类解释哈希不一致');
+const explanationPayload=verifyClassificationExplanations(JSON.parse(explanationBytes),classificationPayload,classification.sha256);
+const explanationAudit=JSON.parse(await readFile(resolve(root,'docs/evaluation/classification-explanations-v1.json'),'utf8'));
+if(explanationAudit.sha256!==explanation.sha256||explanationAudit.exporter_sha256!==explanationPayload.exporter_sha256||explanationPayload.exporter_sha256!==createHash('sha256').update(await readFile(resolve(root,'services/classification/explain.py'))).digest('hex'))throw new Error('分类解释审计版本不一致');
 const retrievalRoot=resolve(root,'apps/web/retrieval-results');
 const retrieval=JSON.parse(await readFile(resolve(retrievalRoot,'manifest.json'),'utf8'));
 if(!/^[a-f0-9]{16}\/case\.json$/.test(retrieval.path)||retrieval.notice!==retrieval.path.replace('case.json','NOTICE.txt'))throw new Error('检索资源路径无效');

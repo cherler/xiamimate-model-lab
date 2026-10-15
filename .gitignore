@@ -73,3 +73,5 @@ artifacts/colbert-latest.json
 apps/web/colbert-results/
 
 artifacts/assistant-runs/
+
+apps/web/classification-explanations/
