@@ -1,0 +1,178 @@
+{
+  "schema": "uci-conditions-audit-v1",
+  "parent_run": "retail-20261012T001149Z",
+  "parent_version": "3fa4577447882c31",
+  "weekly_sha256": "62963729f513ecb711e0ac9aaffabc78e9dc7623b998aa392e9fd8d67abb7bc3",
+  "protocol_sha256": "f2d36d6b24df286e72a303f1cb8c79c2be6370ceab40b966003a871378e7de07",
+  "inventory": {
+    "rows": 144,
+    "items": [
+      "15036",
+      "17003",
+      "21212",
+      "21977",
+      "22178",
+      "22197",
+      "84077",
+      "84755",
+      "84879",
+      "84991",
+      "85099B",
+      "85123A"
+    ],
+    "horizon": 7,
+    "windows": [
+      {
+        "origin": "2011-09-01",
+        "end": "2011-09-07",
+        "items": 12,
+        "past_complete_windows": 0,
+        "past_product_windows": 0,
+        "eligible_at_four_windows": false
+      },
+      {
+        "origin": "2011-09-08",
+        "end": "2011-09-14",
+        "items": 12,
+        "past_complete_windows": 1,
+        "past_product_windows": 12,
+        "eligible_at_four_windows": false
+      },
+      {
+        "origin": "2011-09-15",
+        "end": "2011-09-21",
+        "items": 12,
+        "past_complete_windows": 2,
+        "past_product_windows": 24,
+        "eligible_at_four_windows": false
+      },
+      {
+        "origin": "2011-09-22",
+        "end": "2011-09-28",
+        "items": 12,
+        "past_complete_windows": 3,
+        "past_product_windows": 36,
+        "eligible_at_four_windows": false
+      },
+      {
+        "origin": "2011-10-01",
+        "end": "2011-10-07",
+        "items": 12,
+        "past_complete_windows": 4,
+        "past_product_windows": 48,
+        "eligible_at_four_windows": true
+      },
+      {
+        "origin": "2011-10-08",
+        "end": "2011-10-14",
+        "items": 12,
+        "past_complete_windows": 5,
+        "past_product_windows": 60,
+        "eligible_at_four_windows": true
+      },
+      {
+        "origin": "2011-10-15",
+        "end": "2011-10-21",
+        "items": 12,
+        "past_complete_windows": 6,
+        "past_product_windows": 72,
+        "eligible_at_four_windows": true
+      },
+      {
+        "origin": "2011-10-22",
+        "end": "2011-10-28",
+        "items": 12,
+        "past_complete_windows": 7,
+        "past_product_windows": 84,
+        "eligible_at_four_windows": true
+      },
+      {
+        "origin": "2011-11-01",
+        "end": "2011-11-07",
+        "items": 12,
+        "past_complete_windows": 8,
+        "past_product_windows": 96,
+        "eligible_at_four_windows": true
+      },
+      {
+        "origin": "2011-11-08",
+        "end": "2011-11-14",
+        "items": 12,
+        "past_complete_windows": 9,
+        "past_product_windows": 108,
+        "eligible_at_four_windows": true
+      },
+      {
+        "origin": "2011-11-15",
+        "end": "2011-11-21",
+        "items": 12,
+        "past_complete_windows": 10,
+        "past_product_windows": 120,
+        "eligible_at_four_windows": true
+      },
+      {
+        "origin": "2011-11-22",
+        "end": "2011-11-28",
+        "items": 12,
+        "past_complete_windows": 11,
+        "past_product_windows": 132,
+        "eligible_at_four_windows": true
+      }
+    ],
+    "eligible_windows": 8
+  },
+  "availability": [
+    {
+      "fields": [
+        "history",
+        "history_dates"
+      ],
+      "rows": 144,
+      "days_per_row": 56,
+      "date_rule": "origin - 56 days through origin - 1 day, contiguous",
+      "use": "pre-origin daily sales and eight complete historical weekly totals",
+      "limitation": "Zero-filled recorded sales do not distinguish no demand, closure, missing records or stockout."
+    },
+    {
+      "fields": [
+        "predictions"
+      ],
+      "rows": 144,
+      "models": [
+        "autoets",
+        "four_week_mean",
+        "four_week_median",
+        "last_week",
+        "lightgbm",
+        "zero"
+      ],
+      "use": "Frozen model output compared with history; does not assert model-selection independence."
+    },
+    {
+      "fields": [
+        "actual",
+        "actual_days"
+      ],
+      "use": "Scoring only after target end; prohibited in signals or pre-origin advice."
+    },
+    {
+      "fields": [
+        "name",
+        "item",
+        "origin",
+        "end",
+        "fallback_models"
+      ],
+      "use": "Identity, date, display and original fallback notice; not risk features."
+    }
+  ],
+  "not_available": [
+    "verified promotion schedule",
+    "stock and sale availability",
+    "lead time",
+    "known future prices",
+    "dated customer/order mix"
+  ],
+  "decision": "Use dated sales history plus frozen predictions only. No derived customer/price claims; weekly development diagnostics, not validated pre-failure warning.",
+  "target_outcomes_inspected_by_this_audit": false
+}

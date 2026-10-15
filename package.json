@@ -83,6 +83,7 @@
     "eval:assistant": "node scripts/evaluate-assistant.mjs",
     "explain:classification": "uv run python -m services.classification.explain",
     "audit:uci-reliability": "uv run python -m services.reliability.uci_audit",
-    "export:uci-reliability": "uv run python -m services.reliability.uci"
+    "export:uci-reliability": "uv run python -m services.reliability.uci",
+    "audit:uci-conditions": "uv run python -m services.reliability.uci_conditions_audit"
   }
 }

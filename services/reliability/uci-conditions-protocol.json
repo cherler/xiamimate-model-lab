@@ -1,0 +1,40 @@
+{
+  "schema": "uci-conditions-protocol-v1",
+  "parent_run": "retail-20261012T001149Z",
+  "parent_version": "3fa4577447882c31",
+  "weekly_sha256": "62963729f513ecb711e0ac9aaffabc78e9dc7623b998aa392e9fd8d67abb7bc3",
+  "evidence_level": "known_development_diagnostic",
+  "constants": {
+    "history_days": 56,
+    "recent_days": 14,
+    "trend_up": 2,
+    "trend_down": 0.5,
+    "minimum_weekly_change": 10,
+    "zero_fraction": 0.5,
+    "weekly_cv": 1,
+    "large_error_scale": 1,
+    "wide_interval_scale": 2
+  },
+  "inputs": "Only 56 dated daily sales before origin and frozen point forecast for the selected model. No actual, actual_days, future residual or current interval miss used in signals.",
+  "signals": {
+    "trend": "Last 14-day weekly mean / previous 42-day weekly mean; at least 2 or at most 0.5 AND absolute weekly mean change at least 10 units. If previous mean is zero, recent mean at least 10 is a rise; both zero is not a change.",
+    "sparse": "At least half of the 56 recorded daily sales equal zero; zero does not establish stock availability or store closure.",
+    "volatile": "Population standard deviation of eight consecutive past seven-day totals / their mean at least 1; undefined if mean is zero.",
+    "extrapolation": "Selected frozen point prediction strictly outside min/max of the same eight past weekly totals. This is an output-vs-history check, not a cause or proof of error.",
+    "combined": "Any of the four checks; unweighted OR for manual review only, not a calibrated risk score. All individual checks also retained."
+  },
+  "outcomes": {
+    "large_error": "abs(actual - prediction) > max(1, historical 56-day total / 8); diagnostic unit is one historical average week, not a business acceptance threshold.",
+    "spike": "Actual seven-day total strictly exceeds maximum of eight historical seven-day totals; determined only after target completes.",
+    "interval": "Reuse E3 unchanged. Miss outside inclusive bounds; width / max(1, historical weekly mean) at least 2 marked broad for comparison, not unusable by universal rule. First four origins have no interval."
+  },
+  "scope": "All 144 product-weeks for point diagnostics, same 96 E3 eligible product-weeks for intervals. Every model and all 12 windows and 12 items retained. No significance or independent repeated-trial claim.",
+  "report": "Each signal and combined flag: flagged/unflagged counts, large errors, spikes, interval eligible/misses, false alarms relative to large-error definition, missed large errors, WAPE, bias and mean width. Show complete window and sample replay.",
+  "restrictions": [
+    "Thresholds are transparent diagnostic conventions fixed before this new cross-tab calculation, not selected for best outcome. Existing labels and E3 findings were already known; this is not a new preregistered independent evaluation.",
+    "No retraining, threshold search, forecast or interval change, automatic routing or stock order recommendation.",
+    "Absence of flags is not proof of reliability. Current target outcomes may explain a failure after the event, never change pre-origin advice.",
+    "No verified promotion, stock, availability, lead-time, price schedule, customer-order mix or cause information in the weekly replay. Additional business inputs are hypotheses to audit, not established causes.",
+    "Daily 28-day forecast excluded; do not apply weekly thresholds or pool its horizons as independent windows."
+  ]
+}
