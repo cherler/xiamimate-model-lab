@@ -17,7 +17,7 @@ export const TOOL_DEFINITIONS=[
  tool('read_case','读取一个案例的已完成结论、范围与限制。不是逐样本数据。',obj({key:{type:'string',enum:PUBLIC_CASES.map(([k])=>k)}},['key'])),
  tool('read_expansion','读取业务场景扩展规划，所有内容尚未在对应扩展场景实证。',obj({business:{type:'string',enum:Object.keys(SCENARIO_EXPANSIONS)}},['business'])),
  tool('retail_options','读取零售补货回放支持的精确日期与倍率，不能猜测未提供的参数。',obj()),
- tool('retail_report','完成补货数值报告并直接交付，不再等待模型整理。一次明确列出任务需要的全部条件（最多三组）；预算增减应包含表单原条件和目标条件。review=true 同时计算事后模拟，false 只计算起点前场景。适用于策略比较、订单排名、预算增减、约束及金额查询；原因推断和未支持条件不可由此证明。',obj({selections:{type:'array',items:selection,minItems:1,maxItems:3},review:{type:'boolean'}},['selections','review'])),
+ tool('retail_report','完成补货数值报告并直接交付，不再等待模型整理。每一组 selections 条件都会自动返回全部三种固定策略：按点预测补货、预测＋安全库存、场景成本优化。三策略不是三组参数，也不是三个预测模型。用户问所选条件的三策略时，只传一组 explicitSelection 原值，绝不能改动倍率或索要另外两组条件。只有用户明确要求改变条件才增加 selections（最多三组）；预算增减应包含表单原条件和目标条件。review=true 同时计算事后模拟，false 只计算起点前场景。适用于策略比较、订单排名、预算增减、约束及金额查询；原因推断和未支持条件不可由此证明。',obj({selections:{type:'array',items:selection,minItems:1,maxItems:3},review:{type:'boolean'}},['selections','review'])),
  tool('retail_compare','读取指定历史场景的保存订单，复算三策略预算/库容/预期成本。仅起点前信息，不含未来销量；不是在线求解。',selection),
  tool('retail_review','复算相同历史场景的事后模拟结果。只用于评估已冻结订单，不得拿它选当时最优策略或承诺收益。',selection),
 ];

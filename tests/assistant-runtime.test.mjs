@@ -70,14 +70,18 @@ test('complete retail report returns after tool calculation without a slow secon
  assert.match(r.summary,/事后模拟复算/);assert.match(r.summary,/预算 1.4 倍/);
 });
 test('fast budget report obtains explicit form baseline and fixes the direction',async()=>{
- const r=await runAssistant(reportRequest,{complete:async()=>reportCall({selections:[{...retailSelection,budget:.6}],review:false})});
+ const r=await runAssistant({...reportRequest,question:'预算改为0.6，其他不变'}, {complete:async()=>reportCall({selections:[{...retailSelection,budget:.6}],review:false})});
  assert.equal(r.orderChanges[0].from.budget,1.4);assert.equal(r.orderChanges[0].to.budget,.6);assert.equal(r.trace.filter(t=>t.phase==='服务端读取明确表单基准').length,1);
 });
 test('unsupported report target keeps successful traces but never returns a complete report',async()=>{
- await assert.rejects(runAssistant(reportRequest,{complete:async()=>reportCall({selections:[retailSelection,{...retailSelection,budget:.93}],review:true})}),e=>e.trace.some(t=>t.ok&&t.name==='retail_review')&&e.trace.some(t=>!t.ok)&&/部分条件计算失败/.test(e.message));
+ await assert.rejects(runAssistant({...reportRequest,question:'预算改为0.93，对比事后模拟'}, {complete:async()=>reportCall({selections:[retailSelection,{...retailSelection,budget:.93}],review:true})}),e=>e.trace.some(t=>t.ok&&t.name==='retail_review')&&e.trace.some(t=>!t.ok)&&/部分条件计算失败/.test(e.message));
 });
 test('fast reports reject invalid nested args and honor cancellation after calculation',async()=>{
  await assert.rejects(runAssistant(reportRequest,{complete:async()=>reportCall({selections:[{...retailSelection,secret:'x'}],review:true})}),/参数/);
  const {executeTool}=await import('../services/assistant/tools.mjs'),controller=new AbortController();
  await assert.rejects(runAssistant(reportRequest,{signal:controller.signal,complete:async()=>reportCall({selections:[retailSelection],review:true}),execute:async(name,args)=>{const r=await executeTool(name,args);if(name==='retail_report')controller.abort();return r;}}),/取消/);
+});
+
+test('three policies never authorize three different resource settings',async()=>{
+ await assert.rejects(runAssistant(reportRequest,{complete:async()=>reportCall({selections:[retailSelection,{...retailSelection,shortage:.75}],review:true})}),/超出明确请求/);
 });
