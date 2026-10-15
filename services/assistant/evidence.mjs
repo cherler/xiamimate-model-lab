@@ -17,6 +17,14 @@ export function retailDisplay(r){
   comparison:`${r.kind}，仅当前窗口和所选参数：场景成本优化相对按点预测补货，总成本${r.policies.milp.metrics.total_cost<reference.total_cost?'减少':'增加'} ${moneyGBP(Math.abs(r.policies.milp.metrics.total_cost-reference.total_cost))}，缺货量${r.policies.milp.metrics.shortage_units<reference.shortage_units?'减少':'增加'} ${n(Math.abs(r.policies.milp.metrics.shortage_units-reference.shortage_units))} 件。`,
   interpretation:'预期成本平均了起点前构造的八个需求场景，事后成本使用记录销量；总需求均值的变化不能单独证明成本变化的原因，商品结构和需求波动也影响缺货及持有成本。库存占用=初始库存+到货量；包数与件数按 packSize 区分。'};
 }
+export function normalizeCalendar(answer,trace){
+ const corrections=[];if(!trace.some(t=>t.ok&&(t.result.windows||t.result.display)))return {answer,corrections};
+ const fixed={...answer};for(const field of ['summary','brief'])if(fixed[field])fixed[field]=fixed[field].replace(/(\d{4}-\d{2}-\d{2})([\s（(，,]*)(星期|周)([日天一二三四五六])/g,(all,date,gap,prefix,day)=>{
+  const d=new Date(date+'T00:00:00Z');if(!Number.isFinite(d.getTime())||d.toISOString().slice(0,10)!==date)return all;
+  const expected=weekday(date).slice(-1);if(day.replace('天','日')===expected)return all;
+  corrections.push({kind:'calendar',corrected:true,ok:true,message:`日期校正：${date} ${prefix}${day} → ${prefix}${expected}（服务端日历计算）`});return date+gap+prefix+expected;
+ });return {answer:fixed,corrections};
+}
 function evidenceError(code,message){return Object.assign(new Error(message),{code,kind:'evidence'});}
 // Focused guards catch known monetary/date failures. They do not prove all prose is true.
 export function validateEvidence(answer,trace){

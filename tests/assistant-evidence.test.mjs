@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {moneyGBP,weekday,validateEvidence} from '../services/assistant/evidence.mjs';
+import {moneyGBP,weekday,validateEvidence,normalizeCalendar} from '../services/assistant/evidence.mjs';
 import {loadRetail,compareRetail,retailOptions,executeTool} from '../services/assistant/tools.mjs';
 import {runAssistant} from '../services/assistant/runtime.mjs';
 const p=await loadRetail(),s={origin:'2011-09-01',model:'lightgbm',budget:1,capacity:1.25,shortage:1.5},r=compareRetail(p,s),trace=[{ok:true,result:r}];
@@ -34,4 +34,11 @@ test('aggregate demand and gain screening cannot be turned into unsupported caus
  validateEvidence({summary:'未通过增益筛选不等于统计显著性检验结论。'},caseTrace);
  assert.throws(()=>validateEvidence({summary:'实际需求比场景均值低，因此所有策略缺货成本下降。'},trace),e=>e.code==='unsupported_cause');
  validateEvidence({summary:'不能仅用需求均值解释成本变化。'},trace);
+});
+
+test('explicit date weekday typos are corrected by calendar arithmetic with an audit record',()=>{
+ const input={summary:'2011-10-01（周四），2011-11-01 星期四。'};
+ const {answer,corrections}=normalizeCalendar(input,trace);assert.equal(answer.summary,'2011-10-01（周六），2011-11-01 星期二。');assert.equal(corrections.length,2);assert.ok(corrections.every(c=>c.corrected));assert.match(input.summary,/周四/);
+ assert.equal(normalizeCalendar({summary:'2011-10-01不是周四。'},trace).corrections.length,0);
+ assert.equal(normalizeCalendar({summary:'2011-02-31（周四）'},trace).corrections.length,0);
 });

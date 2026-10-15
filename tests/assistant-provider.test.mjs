@@ -43,6 +43,13 @@ test('response byte guard accommodates large reasoning budgets while remaining b
  await assert.rejects(completionClient(c,{fetcher:async()=>new Response('x'.repeat(2*1024*1024+1))})([],[]),/响应过大/);
 });
 
-test('format-only repair omits tools for both protocols',()=>{
- for(const c of [config,{...config,protocol:'openai'}]){const payload=providerRequest(c,[],[{function:{name:'list_cases',parameters:{}}}],{finalOnly:true});assert.equal(payload.tools,undefined);assert.equal(payload.tool_choice,undefined);}
+test('repair exposes no business tools and M3 OpenAI must use structured submit_answer',async()=>{
+ const open={...config,protocol:'openai'};
+ const payload=providerRequest(open,[],[{function:{name:'list_cases',parameters:{}}}],{finalOnly:true,mode:'agent'});
+ assert.equal(payload.tools.length,1);assert.equal(payload.tools[0].function.name,'submit_answer');assert.equal(payload.tool_choice.function.name,'submit_answer');assert.equal(payload.thinking.type,'disabled');
+ assert.equal(providerRequest(config,[],[],{finalOnly:true}).tools,undefined);
+ const data={choices:[{message:{tool_calls:[{function:{name:'submit_answer',arguments:'{"summary":"x","citations":[],"brief":""}'}}]}}]};
+ assert.equal(JSON.parse(providerResponse(open,data,{finalOnly:true}).message.content).summary,'x');
+ assert.throws(()=>providerResponse(open,{choices:[{message:{content:'{}'}}]},{finalOnly:true}),/结构化回答工具/);
+ const client=completionClient(open,{fetcher:async()=>new Response(JSON.stringify(data))});assert.equal((await client([],[],null,{finalOnly:true})).message.tool_calls,undefined);
 });

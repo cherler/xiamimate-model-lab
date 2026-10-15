@@ -1,3 +1,4 @@
+const ANSWER_TOOL={type:'function',function:{name:'submit_answer',description:'提交最终回答；仅格式化已有证据，不执行任何业务操作。',parameters:{type:'object',properties:{summary:{type:'string'},citations:{type:'array',items:{type:'string'}},brief:{type:'string'}},required:['summary','citations','brief'],additionalProperties:false}}};
 // Protocol adapters preserve native assistant history server-side; only final text reaches UI.
 export function providerConfig(env=process.env){
  const {MODEL_LAB_AI_BASE_URL:base,MODEL_LAB_AI_KEY:key,MODEL_LAB_AI_MODEL:model}=env;
@@ -25,12 +26,12 @@ function anthropicMessages(messages){
  return result;
 }
 export function providerRequest(config,messages,tools,{mode='ask',finalOnly=false}={}){
- const m3=config.model==='MiniMax-M3',thinking=m3?{type:config.thinking==='auto'?(mode==='agent'?'adaptive':'disabled'):config.thinking}:null;
+ const m3=config.model==='MiniMax-M3',structuredRepair=finalOnly&&m3&&config.protocol==='openai',thinking=m3?{type:structuredRepair?'disabled':config.thinking==='auto'?(mode==='agent'?'adaptive':'disabled'):config.thinking}:null;
  if(config.protocol==='anthropic')return {model:config.model,system:messages.filter(m=>m.role==='system').map(m=>m.content).join('\n\n'),messages:anthropicMessages(messages),
   ...(!finalOnly?{tools:tools.map(({function:f})=>({name:f.name,description:f.description,input_schema:f.parameters})),tool_choice:{type:'auto'}}:{}),max_tokens:config.maxTokens,stream:false,...(thinking?{thinking}:{})};
- return {model:config.model,messages:messages.map(({_anthropic_content,...m})=>m),...(!finalOnly?{tools,tool_choice:'auto'}:{}),...(m3?{max_completion_tokens:config.maxTokens}:{max_tokens:config.maxTokens}),stream:false,...(thinking?{thinking,reasoning_split:true}:{})};
+ return {model:config.model,messages:messages.map(({_anthropic_content,...m})=>m),...(structuredRepair?{tools:[ANSWER_TOOL],tool_choice:{type:'function',function:{name:'submit_answer'}}}:!finalOnly?{tools,tool_choice:'auto'}:{}),...(m3?{max_completion_tokens:config.maxTokens}:{max_tokens:config.maxTokens}),stream:false,...(thinking?{thinking,reasoning_split:true}:{})};
 }
-export function providerResponse(config,data){
+export function providerResponse(config,data,{finalOnly=false}={}){
  if(data.error||data.base_resp?.status_code)throw new Error('模型服务返回错误，请检查模型权限或配置');
  if(config.protocol==='anthropic'){
   if(!Array.isArray(data.content))throw new Error('Anthropic 模型响应格式不受支持');
@@ -42,6 +43,11 @@ export function providerResponse(config,data){
  }
  const choice=data.choices?.[0];if(choice?.finish_reason==='length')throw new Error('模型输出达到 token 上限，未形成完整回答；请缩小任务或调整输出预算');
  if(!choice?.message)throw new Error('OpenAI 兼容模型响应格式不受支持');
+ if(finalOnly&&config.model==='MiniMax-M3'){
+  const calls=choice.message.tool_calls;
+  if(calls?.length!==1||calls[0].function?.name!=='submit_answer'||typeof calls[0].function.arguments!=='string')throw new Error('模型未使用约定的结构化回答工具');
+  return {message:{role:'assistant',content:calls[0].function.arguments},usage:data.usage};
+ }
  return {message:choice.message,usage:data.usage};
 }
 export function completionClient(config,{fetcher=fetch}={}){
@@ -51,6 +57,6 @@ export function completionClient(config,{fetcher=fetch}={}){
   const reader=response.body.getReader(),chunks=[];let size=0;
   try{while(true){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>2*1024*1024){await reader.cancel();throw new Error('模型响应过大');}chunks.push(value);}}finally{reader.releaseLock();}
   let data;try{data=JSON.parse(Buffer.concat(chunks).toString('utf8'));}catch{throw new Error('模型服务未返回有效 JSON');}
-  return providerResponse(config,data);
+  return providerResponse(config,data,options);
  };
 }

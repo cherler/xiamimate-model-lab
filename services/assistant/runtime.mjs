@@ -1,4 +1,4 @@
-import {validateEvidence} from './evidence.mjs';
+import {validateEvidence,normalizeCalendar} from './evidence.mjs';
 import {TOOL_DEFINITIONS,executeTool,PUBLIC_CASES,validateArgs} from './tools.mjs';
 export {providerConfig,completionClient} from './provider.mjs';
 export function parseAnswer(text){
@@ -56,7 +56,7 @@ export async function runAssistant(body,{complete,execute=executeTool,signal}={}
    continue;
   }
   let answer;
-  try{answer=validateAnswer(m.content,sources);validateEvidence(answer,trace);}
+  try{answer=validateAnswer(m.content,sources);const normalized=normalizeCalendar(answer,trace);answer=normalized.answer;validation.push(...normalized.corrections.map(c=>({...c,attempt:repairs+1})));validateEvidence(answer,trace);}
   catch(error){
    validation.push({kind:error.kind||'answer_format',attempt:repairs+1,ok:false,code:error.code,message:error.message});
    if(repairs>=1||round===5)throw fail(error.message+'；有限修正后仍未通过，请缩小问题范围后重试');
