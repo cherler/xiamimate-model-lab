@@ -10,7 +10,7 @@ const sourceHashes={};for(const file of files)sourceHashes[file]=createHash('sha
 const folder=new URL('../artifacts/assistant-runs/',import.meta.url);await mkdir(folder,{recursive:true});const name=new Date().toISOString().replace(/[:.]/g,'-')+'.json',results=[];
 const selected=tasks.filter(t=>!ids.length||ids.includes(t.id));
 for(const {review,...task} of selected){
- const {id,...body}=task;if(body.mode==='agent')body.selection={origin:'2011-09-01',model:'lightgbm',budget:1,capacity:1.25,shortage:1.5};
+ const {id,...body}=task;if(body.mode==='agent'&&!body.selection)body.selection={origin:'2011-09-01',model:'lightgbm',budget:1,capacity:1.25,shortage:1.5};
  const start=performance.now();try{const output=await runAssistant(body,{complete:completionClient(config),signal:AbortSignal.timeout(90000)});results.push({id,request:body,output,reviewCriterion:review,humanVerdict:'待复核'});}
  catch(e){results.push({id,request:body,error:e.message,ms:Math.round(performance.now()-start),trace:e.trace||[],validation:e.validation||[],usage:e.usage||null,reviewCriterion:review,humanVerdict:'待复核'});}
  await writeFile(new URL(name,folder),JSON.stringify({version:'assistant-eval-v2',complete:results.length===selected.length,expectedTasks:selected.map(t=>t.id),model:config.model,protocol:config.protocol,maxTokens:config.maxTokens,thinking:config.thinking,sourceHashes,scope:'已知任务开发联调；需要逐任务复核，不是独立测试或稳定成功率。',results},null,2));

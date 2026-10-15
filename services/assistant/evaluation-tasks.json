@@ -67,5 +67,26 @@
   "context": "agent:retail",
   "question": "支持的起点是不是都是周四？请核对2011-10-01、2011-11-01各是什么星期，是否支持。",
   "review": "查询精确 options；不能全部概括为周四。10月1日星期六、11月1日星期二，二者均支持。"
+ },
+ {
+  "id": "budget-ranking",
+  "mode": "agent",
+  "context": "agent:retail",
+  "question": "预算改为0.6倍，其他条件不变。分别列出三策略订货包数前三名，不能漏掉并列商品；哪些商品比原预算补得更多？",
+  "review": "1→0.6方向；排名按工具包数降序含并列；没有增加，优化10减少2不变；区分数量排名和价值。"
+ },
+ {
+  "id": "reverse-budget",
+  "mode": "agent",
+  "context": "agent:retail",
+  "selection": {
+   "origin": "2011-09-01",
+   "model": "lightgbm",
+   "budget": 0.6,
+   "capacity": 1.25,
+   "shortage": 1.5
+  },
+  "question": "把预算从当前0.6提高到1倍，其他条件不变。哪些商品增加、哪些不变？",
+  "review": "必须0.6→1，不受工具调用顺序影响；优化10增加2不变；三策略逐商品与冻结订单一致。"
  }
 ]
