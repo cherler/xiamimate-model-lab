@@ -43,9 +43,11 @@ export function validateEvidence(answer,trace){
    if(!/^\s*(英镑便士|便士|GBp|英镑|GBP)/.test(text.slice(m.index+m[0].length)))throw evidenceError('money_unit','回答具体金额缺少单位。请按 display 使用 £ 前缀，不能省略单位。');
   }
  }
- if(results.some(r=>r.case))for(const sentence of text.split(/[。！？\n]/)){
-  if(/(?:统计意义|统计显著|显著性)/.test(sentence)&&!/(?:不能|不等于|并不|未提供|没有.*检验)/.test(sentence))throw evidenceError('unsupported_significance','当前案例资料未提供统计显著性检验，不能把预设增益筛选说成统计显著性门槛。请只复述未通过预设增益筛选，不引申统计结论。');
+ if(results.some(r=>r.case))for(const clause of text.split(/[，,。！？\n]/)){
+  const at=clause.search(/统计|显著性/);
+  if(at>=0&&!/(?:不能|不等于|并不意味着|未提供|没有提供|未经)/.test(clause.slice(0,at)))throw evidenceError('unsupported_significance','当前案例资料未提供统计显著性检验，不能把预设增益筛选说成统计显著性门槛。请只复述未通过预设增益筛选，不引申统计结论。');
  }
+ if(results.some(r=>r.timeScope)&&/本案例[^。\n]{0,20}(?:单日预算|每日独立预算)/.test(text))throw evidenceError('wrong_time_scope','本站补货案例是七日窗口起点一次补货，不是单日预算系统。请将用户希望每日补货的需求与主案例的时间粒度分开说明。');
  if(retail.length)for(const sentence of text.split(/[。！？\n]/)){
   if(/(?:需求|销量)[^。]{0,60}(?:均值|平均)[^。]{0,40}(?:因此|所以|导致|主因)/.test(sentence)&&!/(?:不能|不等于|未验证|不能单独)/.test(sentence))throw evidenceError('unsupported_cause','不能仅用总需求均值变化断言成本变化的原因。只说明历史场景与记录销量两种计算口径、已复算差值及无法从总量判定成因。');
  }

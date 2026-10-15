@@ -42,3 +42,9 @@ test('explicit date weekday typos are corrected by calendar arithmetic with an a
  assert.equal(normalizeCalendar({summary:'2011-10-01不是周四。'},trace).corrections.length,0);
  assert.equal(normalizeCalendar({summary:'2011-02-31（周四）'},trace).corrections.length,0);
 });
+
+test('upgrade notes do not mix experiment sample sizes and retail time scope is explicit',async()=>{
+ const forecast=await executeTool('read_case',{key:'forecast:uci'});assert.doesNotMatch(JSON.stringify(forecast.modelPaths),/24 商品/);
+ const retail=await executeTool('read_case',{key:'decision:retail'});assert.match(retail.timeScope,/七日窗口/);
+ assert.throws(()=>validateEvidence({summary:'没有达到预设的统计或业务门槛，不能外推。'},[{ok:true,result:forecast}]),/统计显著性/);
+});
