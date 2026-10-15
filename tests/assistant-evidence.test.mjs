@@ -61,3 +61,7 @@ test('cross-budget item deltas are computed by the tool in the explicit directio
  for(const [key,c] of Object.entries(change.policies)){assert.equal(c.increased.length,0);assert.equal(c.decreased.length+c.unchanged.length,12);for(const item of [...c.decreased,...c.unchanged]){const i=low.items.findIndex(x=>x.id===item.id);assert.equal(item.deltaPacks,low.policies[key].packs[i]-r.policies[key].packs[i]);assert.equal(item.deltaUnits,item.deltaPacks*6);}}
  assert.equal(selectionChanges(r,r),null);assert.equal(selectionChanges(r,{...low,selection:{...low.selection,origin:'2011-10-01'}}),null);
 });
+
+test('presentation length alone does not reject a valid evidenced explanation',()=>{
+ validateEvidence({summary:('请结合工具表格核对。'.repeat(100))+'总成本 £6,247.15。'},trace);
+});

@@ -30,7 +30,6 @@ function evidenceError(code,message){return Object.assign(new Error(message),{co
 export function validateEvidence(answer,trace){
  const results=trace.filter(t=>t.ok).map(t=>t.result),retail=results.filter(r=>r.display),text=answer.summary+'\n'+(answer.brief||'');
  if(retail.length){
-  if(answer.summary.length>900)throw evidenceError('overlong_report','回答重复了完整数据表。请压缩到 900 字内的 3–5 句，直接引用 display.comparison 说明主要取舍，补充两种需求来源和限制，不抄写表格或自行解释商品层面的原因。');
   const money=[...JSON.stringify(retail.map(r=>r.display)).matchAll(/£(-?[\d,]+\.\d{2})/g)].map(m=>Number(m[1].replaceAll(',','')));
   for(const m of text.matchAll(/£\s*(-?[\d,]+(?:\.\d+)?)/g)){
    const value=Number(m[1].replaceAll(',',''));if(!money.some(v=>Math.abs(v-value)<.011))throw evidenceError('unsupported_money','回答金额未匹配已复算的英镑证据。请直接引用 display 中的 £ 金额；新差值没有工具证据时不报数。');
