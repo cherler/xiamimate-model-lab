@@ -1,0 +1,20 @@
+{
+  "version": "scifact-end-to-end-v1",
+  "parent_run": "scifact-20261014T000358068631Z",
+  "colbert_run": "colbert-20261014T124255210873Z",
+  "scope": "All 5183 documents and all 300 previously evaluated queries; known benchmark development after prior feedback, not independent testing.",
+  "methods": ["bm25", "hybrid", "colbert50", "colbert100", "colbert_full"],
+  "threads": 4,
+  "seed": 20261016,
+  "batch_size": 16,
+  "score_block": 64,
+  "text": "Reuse E1 title + abstract chunk/query policy and pinned ColBERT checkpoint: 160 WordPiece chunks, stride128, no chunk limit, 64 query slots; full source token coverage. BM25 and dense retain original input policy.",
+  "index": "Re-encode all documents on CPU, including previously cached documents, for a measured full-corpus build. Float32 padded chunk vectors and masks, exact MaxSim and max-chunk document pooling. No ANN, compression, PLAID or trained index. Record actual serialized bytes and tensor bytes separately.",
+  "candidates": "BM25 and dense each return100; original equal-weight RRF60 returns100. ColBERT50 reranks50 and preserves ranks51-100, ColBERT100 reranks100, full scores every document. Preserve deterministic document-ID ties; no qrels enter scoring.",
+  "timing": "One warm serial pass per method over all300 queries. Each pipeline independently executes its query tokenization/encoding, candidate retrieval, scoring and sorting from scratch against loaded indexes. Measure wall-clock total and nested components per query; compute p50/p95 of actual totals, not sum of percentiles. No result cache, no network, no API overhead, no concurrency or SLA claim. Alternate forward/reverse method order by query index to reduce systematic order bias.",
+  "preparation": "Measure model loading, warmup, BM25 build, dense full-corpus encoding, ColBERT chunking/full encoding/serialization separately. Index bytes exclude model weights and source text; report those separately. Process peak RSS includes preparation and all resident models, not per-method memory.",
+  "evaluation": "Freeze all rankings and timing rows before attaching already-known relevance labels from parent. Report every method, all300 queries, paired gains/losses, candidate-outside found/lost targets; unjudged documents are not confirmed negatives. No outcome-driven selection or default replacement.",
+  "comparisons": [["colbert50", "hybrid"], ["colbert100", "colbert50"], ["colbert_full", "colbert100"], ["colbert_full", "colbert50"]],
+  "uncertainty": "Paired query bootstrap of NDCG@10 differences, 2000 repetitions, seed20261016; descriptive range on known data, no multiple-comparison adjustment or new-domain guarantee.",
+  "limits": ["English scientific abstracts only", "public pretrained checkpoints may overlap benchmark", "full scan limited to 5183 documents", "document update and concurrency unmeasured", "no measured human search time or financial ROI"]
+}
