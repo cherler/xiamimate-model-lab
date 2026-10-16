@@ -1,3 +1,4 @@
+import {renderAnomalyCross,isCrossContext} from './anomaly-cross.js';
 import {loadPreference,renderPreference} from './preference-segments.js';
 import {saveSelection} from './navigation-state.js';
 import {customerPair,overlapView,customerEvolution,stabilitySummaryView,migrationExplorer,actionView} from './segment-depth.js';
@@ -60,6 +61,7 @@ function segmentModels(p){return `<section class="m5-section"><h2>规则分群�
 export async function renderMonitoring(host,current,params,kind){
  const view=params.get('view')||'experience',caseId=kind==='anomaly'?'nab':'retail';
  if(params.get('case')!==caseId){host.innerHTML=`<h1>案例不存在</h1><a href="#${kind}">打开已有案例</a>`;return;}
+ if(kind==='anomaly'&&isCrossContext(params))return renderAnomalyCross(host,current,params);
  host.innerHTML='<p class="loading-copy">正在读取并核验保存结果…</p>';
  try{const {p,spec}=await load(kind);if(!current())return;
   let preference,preferenceError;
@@ -68,6 +70,7 @@ export async function renderMonitoring(host,current,params,kind){
   if(kind==='segments')Object.assign(s,{basis:params.has('basis')?(params.get('basis')==='rfm'?'rfm':'preference'):params.has('method')?'rfm':'preference',prefMethod:params.get('prefMethod')||'leiden',prefGroup:params.get('prefGroup')||'all',prefPerson:params.get('prefPerson')||''});
   if(kind==='anomaly'){for(const [key,min,max] of [['multiplier',.25,4],['cooldown',0,1440]]){const v=Number(params.get(key));if(params.has(key)&&Number.isFinite(v)&&v>=min&&v<=max&&(key!=='cooldown'||Number.isInteger(v)))s[key]=v;}const n=p.series.find(x=>x.id===s.series).windows.length;if(!/^\d+$/.test(s.window)||Number(s.window)>=n)s.window='all';}
   host.innerHTML=`<div class="breadcrumb">${kind==='anomaly'?'异常检测 / NAB':'零售分群 / UCI'}</div><header class="page-heading"><div><h1>${kind==='anomaly'?'设备监控与异常告警':'零售顾客分群与行为画像'}</h1><p>${kind==='anomaly'?'回放真实监控序列，对照异常标注、误报和首次告警时间。':'区分客户价值与商品偏好，查看代表商品、归属依据和分群稳定性。'}</p></div></header><nav class="case-views" aria-label="案例内容">${Object.entries(titles).map(([v,t])=>`<a data-monitor-view="${v}" href="#${kind}?case=${caseId}&view=${v}" ${view===v?'aria-current="page"':''}>${t}</a>`).join('')}</nav><div id="monitoring-content"></div><footer class="showcase-source"><h2>来源与使用说明</h2><p>${kind==='anomaly'?'<a href="https://github.com/numenta/NAB">NAB · Numenta</a>，Ahmad 等（2017），仓库 MIT 许可；本站增加固定方法、特征、告警回放及自定义指标，未复现官方全套评分。':'<a href="https://archive.ics.uci.edu/dataset/502/online+retail+ii">UCI Online Retail II</a>，Chen, D. (2012)，<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>；本站增加清洗、特征和分群分析。'}实验 ${esc(p.run_id)}；仅保存结果回放，无客户数据上传或在线操作。</p><a href="./monitoring-results/${spec.path}" download>下载完整结果与来源许可</a><details><summary>完整署名与许可说明</summary><pre class="monitoring-notice">${esc(p.notice)}</pre></details></footer>`;
+  if(kind==='anomaly')host.querySelector('.page-heading').insertAdjacentHTML('afterend','<p><a href="#anomaly?case=nab&scope=cross&view=experience">查看 43 条新序列的同处理额度验证（旧三条不混入）</a></p>');
   const content=host.querySelector('#monitoring-content');
   if(preference)host.querySelector('.showcase-source').insertAdjacentHTML('beforeend',`<p>商品偏好独立实验：${esc(preference.p.run_id)}。</p><a href="./preference-results/${preference.manifest.path}" download>下载商品偏好结果与来源许可</a>`);
   const draw=()=>{const active=host.ownerDocument.activeElement?.id;

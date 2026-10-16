@@ -1,3 +1,4 @@
+import {verifyCrossBuild} from './verify-anomaly-cross.mjs';
 import {verifyServiceBuild} from './verify-decision-service.mjs';
 import {verifyAdoptionBuild} from './verify-uci-adoption.mjs';
 import {conditionsReport} from './report-uci-conditions.mjs';
@@ -130,6 +131,7 @@ if(verifyDecision(JSON.parse(decisionBytes)).run_id!==decision.run_id)throw new 
 await verifyUciStatic(resolve(root,'apps/web/uci-results'),manifest);
 await verifyAdoptionBuild(root);
 await verifyServiceBuild(root);
+await verifyCrossBuild(root);
 if(await readFile(resolve(root,'apps/web/model-readiness.js'),'utf8')!==await readinessModule())throw new Error('模型适配审查展示与来源报告不一致');
 // Build output is disposable; validate all sources before replacing it.
 await rm(`${root}dist`, { recursive: true, force: true });

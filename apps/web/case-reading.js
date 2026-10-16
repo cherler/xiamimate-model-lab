@@ -1,3 +1,4 @@
+import {isCrossContext} from './anomaly-cross-metrics.js';
 import {saveSelection} from './navigation-state.js';
 import {CASE_EXERCISES,exerciseHref} from './case-exercises.js';
 import {PUBLIC_CASE_PATHS,caseMethodHref,publicCasePath} from './case-paths.js';
@@ -118,6 +119,7 @@ export const CASE_READINGS={
 export function isPreferenceContext(page,params){return page==='segments'&&(params.has('basis')?params.get('basis')!=='rfm':!params.has('method'));}
 export function caseReading(page,params){
  const original=CASE_READINGS[`${page}:${params.get('case')}`];
+ if(original&&page==='anomaly'&&isCrossContext(params))return {...original,name:'跨序列异常发现与告警负担',input:'五类单变量信号的当前观测与过去历史',output:'固定阈值、处理额度下的告警与事件记录',verdict:'43 条新序列中，Isolation Forest 减少窗口外告警，但漏检多于固定规则。',evidence:'相同处理上限比较额外发现、丢失事件、重复与窗口外告警；统一额度不等于实际告警次数相同。',scope:'43 条序列、78 个评估事件，旧三条五事件单独保留；已知公开基准，不是独立新系统验证。',limit:'标注窗口不等于确认故障，窗口外告警未经人工确认为误报；没有多变量诊断和真实处置证据。',evidenceTargets:['同等处理额度下的发现能力','阈值校准与实际处理负担']};
  if(original&&page==='retrieve'&&params.get('experiment')==='colbert')return {...original,
   verdict:'全块 ColBERT 在同文本、同候选比较中提高了平均排名质量，仍有退步查询。',
   evidence:'同文本比较模型，同模型比较首块与全块；并列查询质量、离线编码、缓存存储和重排耗时。候选池不变，不代表召回能力提高。',
@@ -135,6 +137,7 @@ export function caseReading(page,params){
 }
 export function caseExercise(page,params){
  const original=CASE_EXERCISES[`${page}:${params.get('case')}`];
+ if(page==='anomaly'&&isCrossContext(params))return {...original,metric:'校准阈值、处理额度与逐事件漏检',recipe:'比较同阈值有无处理上限的告警；展开逐点记录，区分未超阈值、冷却和额度抑制。',failure:'过去校准无法保证未来告警负担；额度满时可能漏掉后续事件。',anchor:null};
  return isPreferenceContext(page,params)?{...original,metric:'顾客偏好、归属依据与群体商品占比',recipe:'核对购买记录到偏好编码、图邻居或中心距离，再查看群内购买人数占比；每种方法使用自己的归属依据。',failure:'近邻图变化、降维信息损失与大量未归群会影响解释；局部连接强度不是正确率。',anchor:null}:original;
 }
 export const READING_STEPS={example:{view:'experience',label:'1 · 看输入与结果'},evidence:{view:'report',label:'2 · 看效果与代价'},fit:{view:'data',label:'3 · 看适用与交付'}};

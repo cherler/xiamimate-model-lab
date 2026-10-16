@@ -22,7 +22,7 @@ export function refreshLearningContext(host,context,params){
  // Preserve honest unavailable states rather than adding a success-looking intro.
  if(/尚未整理/.test(host.querySelector('h1')?.textContent||''))return;
  const heading=host.querySelector('.page-heading,.m5-heading');if(!heading)return;
- const c=CASE_READINGS[`${context.business}:${context.caseId}`];
+ const c=caseReading(context.business,params);
  const title=context.business==='forecast'&&context.caseId==='uci'&&params.get('task')==='daily_sales'?'UCI 28 天逐日销量预测':c?.name;
  if(title){heading.querySelector('h1').textContent=`${title} · ${context.mode==='models'?'模型解读':'教学拆解'}`;const subtitle=heading.querySelector('p');if(subtitle)subtitle.textContent=context.mode==='models'?'从业务输入、模型方法到同范围证据，判断哪些能力可迁移。':'只核对当前案例的保存结果与计算，不重新训练或改变正式评分口径。';}
  heading.insertAdjacentHTML('afterend',learningContextHtml(context.business,params,context.mode));

@@ -266,3 +266,11 @@ npm run run:decision
 原 R6 冻结运行和 UCI 周预测就绪后，`npm run audit:decision-service` 复算既有需求场景、约束代价和全量成本；独立协议在 `services/decision_study/protocol.json`。`npm run run:decision-service` 新建一次受控实验，只加入 70%／80%／90% 的八场景合计需求满足率下限，先冻结订单／状态再附加已知事后销量，不改原预测、原场景或默认订单。结果同时保留相同资源下的最高场景满足率和不可行状态。`npm run verify:decision-service` 只核验并重新导出保存结果，不重训或重新选解。
 
 运行证据位于 `artifacts/decision-service-runs/`，静态结果为 `apps/web/decision-service-results/`，均忽略 Git；构建校验父版本、协议、审计、源码、全部状态与成本。公开页面的实验固定缺货系数 1.5，其他成本设置明确显示未覆盖；同服务条件对照需先检查规则是否也达标。全部仍为已知开发模拟，场景满足率不是未来服务保证。详见 [E6 计划记录](docs/case-depth-plan.md)。
+
+### 异常跨序列验证（E7）
+
+NAB 固定提交全部 47 条真实序列先审计，43 条纳入新实验，原三条和时间跨度过短的一条排除。协议 `services/anomaly_study/protocol.json` 在评分前冻结，三方法、三档处理额度及所有负面结果保留。`npm run audit:anomaly-cross` 校验数据清单；首次准备需先将官方 GitHub Git Trees API 的固定提交响应保存到 `data/raw/e7-nab/tree.json`（请求 `https://api.github.com/repos/numenta/NAB/git/trees/ea702d75cc2258d9d7dd35ca8e5e2539d71f3140?recursive=1`），随后审计命令会下载并核对全部固定 Git blob。源文件、模型和分数均不提交 Git。
+
+已有冻结运行 `anomaly-cross-20261016T004759571872Z` 就绪后，`npm run verify:anomaly-cross` 从保存模型和原始记录复算分数、校准阈值、事件及处理额度，重新导出内容寻址静态包 `apps/web/anomaly-cross-results/`；不会重训。`npm run run:anomaly-cross` 创建新训练运行，不应用于覆盖或冒充旧版本验收，新结果需要保留新的访问记录并明确已见标签反馈。构建会独立复算 43×3×3×2 组结果，缺失或不一致时失败。
+
+默认地址 `#anomaly?case=nab&scope=cross`，旧三条使用 `scope=legacy` 或原 `series` 参数。统一的是滚动 24 小时处理上限，不是实际告警次数；NAB 窗口命中不是故障确认，窗口外告警不是经人工确认的误报。数据许可及全文随下载保留。详见 [E7 计划记录](docs/case-depth-plan.md)。
