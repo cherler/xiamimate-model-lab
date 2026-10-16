@@ -36,7 +36,7 @@ export function resolveRoute(hash,localResearch=LOCAL_RESEARCH){
  }
  if(page==='classify'){
   if(!params.has('case'))params.set('case','spambase');
-  if(!['experience','data','models','report'].includes(params.get('view')))params.set('view','experience');
+  if(!['experience','data','models','report','inputs'].includes(params.get('view')))params.set('view','experience');
  }
  if(CASES[page]){
   if(!params.has('case'))params.set('case',page==='forecast'?(localResearch?'m5':'uci'):'tafeng');
