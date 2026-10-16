@@ -1,0 +1,27 @@
+{
+  "version": "spambase-input-value-v1",
+  "parent_run": "spambase-20261013T233632651140Z",
+  "seed": 20261014,
+  "allowed_partitions": ["train", "calibration", "validation"],
+  "groups": {"words": "word_freq_", "characters": "char_freq_", "capitals": "capital_run_length_"},
+  "variants": {
+    "all": ["words", "characters", "capitals"],
+    "words_only": ["words"],
+    "no_words": ["characters", "capitals"],
+    "no_characters": ["words", "capitals"],
+    "no_capitals": ["words", "characters"]
+  },
+  "models": ["logistic", "lightgbm"],
+  "training": "Use original fixed hyperparameters and seed; one fit per model/variant; train-only preprocessing; no tuning or early stopping; retain original full-input split membership, never rehash reduced inputs.",
+  "calibration": "Sigmoid on logit(raw score), fitted on original 728 calibration rows for every variant; no choice of calibration method by validation results.",
+  "threshold": "Choose max recall under FPR <= 0.02 on the same calibration partition, tie by precision then higher threshold. This partition also fits sigmoid: its performance is not independent. Freeze threshold before validation scoring; do not reuse the old validation-selected threshold.",
+  "capacity_shares": [0.1, 0.2, 0.3],
+  "primary_capacity_share": 0.2,
+  "capacity_ties": "Original full-input group hash then source row ID; floor(N * share).",
+  "comparisons": "All inputs minus each reduced variant within each model, and LightGBM minus logistic within each input variant. Report all, no winner selection or default replacement.",
+  "uncertainty": {"method": "Paired resampling of original full-input validation groups with replacement, keep all rows per group; 95% percentile intervals for AP gain and Brier reduction; descriptive, no multiple-comparison adjustment, not new independent validation.", "repeats": 1000, "seed": 20261016},
+  "scope": "Already-known historical development validation (429 rows). Never read test.npz, test-rows.json, report.json or raw archive; no new mailbox, future period, sender or semantic-text validation.",
+  "interpretation": "Marginal value is conditional on other retained inputs and fixed training budget, not feature causality, acquisition cost, privacy compliance, or proof that a dropped input is useless. Reduced-input collisions are measured without changing membership.",
+  "source": "https://archive.ics.uci.edu/dataset/94/spambase",
+  "license": "CC BY 4.0"
+}
