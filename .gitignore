@@ -92,3 +92,7 @@ artifacts/anomaly-cross-latest.json
 apps/web/anomaly-cross-results/
 # E8 derived segmentation scheme evidence
 apps/web/segment-choice-results/
+# E9 controlled classification input-value experiment
+artifacts/classification-input-runs/
+artifacts/classification-input-latest.json
+apps/web/classification-input-results/

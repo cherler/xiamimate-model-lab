@@ -96,6 +96,9 @@
     "verify:anomaly-cross": "uv run python -m services.anomaly_study.run verify",
     "audit:segment-choice": "node scripts/audit-segment-choice.mjs",
     "export:segment-choice": "node scripts/export-segment-choice.mjs",
-    "verify:segment-choice": "node scripts/export-segment-choice.mjs --verify"
+    "verify:segment-choice": "node scripts/export-segment-choice.mjs --verify",
+    "audit:classification-inputs": "uv run python -m services.classification.input_audit",
+    "run:classification-inputs": "uv run python -m services.classification.input_study run",
+    "verify:classification-inputs": "uv run python -m services.classification.input_study verify"
   }
 }
