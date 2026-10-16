@@ -286,3 +286,11 @@ NAB 固定提交全部 47 条真实序列先审计，43 条纳入新实验，原
 冻结原 Spambase 开发分区后，`npm run audit:classification-inputs` 核验 44 项词频、6 项字符频率和 3 项大写统计；`npm run run:classification-inputs` 首次运行五组输入×逻辑回归／LightGBM 的固定预算实验。已存在 E9 指针时禁止再次训练覆盖；原留出、原始全量归档不用于本轮。运行完成后用 `npm run verify:classification-inputs` 从保存模型复算阈值、预测、指标、配对队列及组重采样范围并导出，不重新拟合。
 
 当前运行 `classification-input-20261016T020813879679Z`。训练／校准／验证 2,797／728／429 条；本轮阈值在校准分区选定，与原留出实验流程区分。入口 `#classify?case=spambase&view=inputs`，仅已知历史开发验证，不能当现代邮箱效果、输入采集收益或因果证明。十组结果与负增益均保留。静态包 `apps/web/classification-input-results/`、模型与逐条预测不入 Git；公开构建核对协议、源码、审计、父分区和全部指标，缺失即失败。详见 [E9 计划记录](docs/case-depth-plan.md)。
+
+### 检索端到端适用成本（E10）
+
+原 SciFact `scifact-20261014T000358068631Z`、ColBERT `colbert-20261014T124255210873Z` 及本地预训练检查点就绪后，`npm run audit:retrieval-cost` 审计全部文献长度、查询截断和候选外目标；`npm run run:retrieval-cost` 首次执行五条固定完整流水线。已有指针时禁止重复覆盖。协议在 `services/retrieval/cost-protocol.json`；原始数据、索引、模型和逐查询分数保存在忽略 Git 的数据／产物目录。
+
+当前运行 `retrieval-cost-20261016T024050430715Z`。`npm run verify:retrieval-cost` 从保存的全库分数复算全部排名与指标，并用六个固定位置的保存查询向量复算全库评分；不重新训练或编码模型。冻结源码、模型、索引与排名哈希随运行保留。静态包 `apps/web/retrieval-cost-results/` 由复核导出且不入 Git；公开构建需要此包，并核对协议、审计、来源指纹、父结果及逐查询统计。
+
+访问 `http://127.0.0.1:5328/#retrieve?case=scifact&view=costs` 查看质量、候选外找回／丢失、文本覆盖、索引与查询计算代价。该页只读取静态结果，不需要模型 API。单机 CPU 预热串行计时不含网络／并发／加载，不是线上响应承诺；全库未压缩精确扫描不能代表生产近似索引。全部为已知英文公开基准，保留负增益，不承诺中文迁移、经营收益或全库必然更好。详见 [E10 计划记录](docs/case-depth-plan.md)。

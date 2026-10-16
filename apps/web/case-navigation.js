@@ -32,7 +32,7 @@ export function resolveRoute(hash,localResearch=LOCAL_RESEARCH){
  }
  if(page==='retrieve'){
   if(!params.has('case'))params.set('case','scifact');
-  if(!['experience','data','models','report'].includes(params.get('view')))params.set('view','experience');
+  if(!['experience','data','models','report','costs'].includes(params.get('view')))params.set('view','experience');
  }
  if(page==='classify'){
   if(!params.has('case'))params.set('case','spambase');

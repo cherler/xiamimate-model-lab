@@ -119,6 +119,7 @@ export const CASE_READINGS={
 export function isPreferenceContext(page,params){return page==='segments'&&(params.has('basis')?params.get('basis')!=='rfm':!params.has('method'));}
 export function caseReading(page,params){
  const original=CASE_READINGS[`${page}:${params.get('case')}`];
+ if(original&&page==='retrieve'&&params.get('view')==='costs')return {...original,name:'检索效果与端到端成本',verdict:'前 50 重排提高了整体排序；全库扫描相对前 50 重排更慢，整体排名质量反而下降。',evidence:'同机比较关键词、混合召回、前 50／100 多向量重排与全库精确扫描；保留池外找回、丢失目标和退步查询。',scope:'全部 300 条已知英文基准查询、5,183 文献；预热 CPU 完整串行流水线，不含网络和并发，不是服务 SLA。',delivery:'候选遗漏审计、文本覆盖对照、索引准备及查询成本评估。',limit:'没有压缩 ANN、并发、更新或百万文库验证；检索质量不是用户节省时间或实际财务收益。',evidenceTargets:['完整检索效果与成本','增益是否值得增加搜索范围']};
  if(original&&page==='classify'&&params.get('view')==='inputs')return {...original,name:'分类输入价值与采用条件',verdict:'词频有较明确的历史排序增量；完整输入并不在所有复核队列上更好。',evidence:'五组输入分别训练逻辑回归与 LightGBM，固定预算；比较同名额得失、排序和概率误差，全部实验臂保留。',scope:'429 条已知开发验证记录，不读取原留出；阈值在校准分区冻结，不能与旧留出成绩混合。',delivery:'特征组消融、强基线对照、输入质量审计及采用条件分析。',limit:'没有输入采集成本、原始正文、时间和发件人，尚未验证现代邮箱迁移；不是因果分析。',evidenceTargets:['同一复核名额下的输入与模型增量','排序增量与概率可靠性']};
  if(original&&page==='anomaly'&&isCrossContext(params))return {...original,name:'跨序列异常发现与告警负担',input:'五类单变量信号的当前观测与过去历史',output:'固定阈值、处理额度下的告警与事件记录',verdict:'43 条新序列中，Isolation Forest 减少窗口外告警，但漏检多于固定规则。',evidence:'相同处理上限比较额外发现、丢失事件、重复与窗口外告警；统一额度不等于实际告警次数相同。',scope:'43 条序列、78 个评估事件，旧三条五事件单独保留；已知公开基准，不是独立新系统验证。',limit:'标注窗口不等于确认故障，窗口外告警未经人工确认为误报；没有多变量诊断和真实处置证据。',evidenceTargets:['同等处理额度下的发现能力','阈值校准与实际处理负担']};
  if(original&&page==='retrieve'&&params.get('experiment')==='colbert')return {...original,
@@ -138,13 +139,14 @@ export function caseReading(page,params){
 }
 export function caseExercise(page,params){
  const original=CASE_EXERCISES[`${page}:${params.get('case')}`];
+ if(page==='retrieve'&&params.get('view')==='costs')return {...original,metric:'候选外找回与完整流水线成本',recipe:'核对同一查询的相关文献在原候选、两侧前十／前百中的去向；完整耗时先逐查询测量，再求分位数，不相加组件 P95。',failure:'扩大搜索空间会引入新的竞争文献；全库打分不保证前十找回，离线完整流水线也不包含网络和排队。',anchor:null};
  if(page==='classify'&&params.get('view')==='inputs')return {...original,metric:'特征组消融与同名额得失',recipe:'同一批记录分别删除输入组、重新训练，比较新找回与丢失的垃圾邮件；其差等于净找回增量。AP 评价整个排序，不等于前若干名的发现量。',failure:'相关输入可能互相替代；已知开发样本、删减输入重合和名额上限限制结论，不能推断实际采集成本收益。',anchor:null};
  if(page==='anomaly'&&isCrossContext(params))return {...original,metric:'校准阈值、处理额度与逐事件漏检',recipe:'比较同阈值有无处理上限的告警；展开逐点记录，区分未超阈值、冷却和额度抑制。',failure:'过去校准无法保证未来告警负担；额度满时可能漏掉后续事件。',anchor:null};
  return isPreferenceContext(page,params)?{...original,metric:'顾客偏好、归属依据与群体商品占比',recipe:'核对购买记录到偏好编码、图邻居或中心距离，再查看群内购买人数占比；每种方法使用自己的归属依据。',failure:'近邻图变化、降维信息损失与大量未归群会影响解释；局部连接强度不是正确率。',anchor:null}:original;
 }
 export const READING_STEPS={example:{view:'experience',label:'1 · 看输入与结果'},evidence:{view:'report',label:'2 · 看效果与代价'},fit:{view:'data',label:'3 · 看适用与交付'}};
 export function readingHref(page,params,step){
- const q=new URLSearchParams(params);q.set('view',page==='classify'&&params.get('view')==='inputs'?'inputs':READING_STEPS[step].view);q.set('walk',step);q.delete('item');
+ const q=new URLSearchParams(params);q.set('view',page==='retrieve'&&params.get('view')==='costs'?'costs':page==='classify'&&params.get('view')==='inputs'?'inputs':READING_STEPS[step].view);q.set('walk',step);q.delete('item');
  return `#${page}?${q}`;
 }
 export function readingHtml(page,params){

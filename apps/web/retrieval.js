@@ -1,3 +1,5 @@
+import {loadRetrievalCost,costEntry,costHtml} from './retrieval-cost.js';
+import {selectCost} from './retrieval-cost-metrics.js';
 import {colbertSelection,colbertExperienceHtml,retrievalExperiment} from './colbert-experience.js';
 import {loadColbert,studyPlaceholder,bindColbertStudy} from './colbert-study.js';
 import {saveSelection} from './navigation-state.js';
@@ -7,7 +9,7 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const num=v=>Number(v).toLocaleString('zh-CN',{maximumFractionDigits:4});
 const pct=v=>`${(v*100).toFixed(2)}%`;
 const mb=v=>`${(v/1024/1024).toFixed(2)} MiB`;
-const titles={experience:'案例体验',data:'案例与数据',models:'方法与索引',report:'效果报告'};
+const titles={experience:'案例体验',data:'案例与数据',models:'方法与索引',report:'效果报告',costs:'检索成本'};
 const table=(headers,rows,label)=>`<div class="table-scroll retrieval-table" role="region" tabindex="0" aria-label="${label}"><table><thead><tr>${headers.map(h=>`<th scope="col">${h}</th>`).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${row.map(v=>`<td>${v}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 const select=(id,label,choices,value)=>`<label for="${id}">${label}<select id="${id}">${choices.map(([v,t])=>`<option value="${esc(v)}" ${String(v)===String(value)?'selected':''}>${esc(t)}</option>`).join('')}</select></label>`;
 const rankLabel=(list,id)=>{const n=list.indexOf(id);return n<0?'未进入前 100':`第 ${n+1} 名`;};
@@ -63,23 +65,30 @@ function models(r){
 export async function renderRetrieval(host,current,params){
  const view=params.get('view')||'experience';
  const controlled=retrievalExperiment(params,view);
- params.set('experiment',controlled?'colbert':'baseline');
+ params.set('experiment',view==='costs'?'cost':controlled?'colbert':'baseline');
  if(params.get('case')!=='scifact'){host.innerHTML='<h1>检索案例不存在</h1><a href="#retrieve">打开 SciFact</a>';return;}
  host.innerHTML='<p class="loading-copy">正在读取并核验文献检索结果…</p>';
  try{
   const {p,m}=await load();if(!current())return;
-  let study=null,studyError='';
+  let study=null,studyError='',costStudy=null;
+  if(view==='costs'){costStudy=await loadRetrievalCost(p);if(!current())return;}
   if(controlled&&view==='experience'){try{study=(await loadColbert(p)).p;}catch(e){studyError=e.message;}if(!current())return;}
   const s={model:Object.hasOwn(METHODS,params.get('model'))?params.get('model'):'rerank',base:Object.hasOwn(METHODS,params.get('baseline'))?params.get('baseline'):'bm25',k:params.get('k')==='5'?5:10,query:p.queries.some(q=>q.id===params.get('query'))?params.get('query'):p.queries[0].id,filter:'',outcome:'all',document:params.get('document'),groupBy:Object.hasOwn(GROUPS,params.get('groupBy'))?params.get('groupBy'):'length',group:params.get('group')||'all'};
   if(s.group!=='all'&&!Object.hasOwn(GROUPS[s.groupBy].groups,s.group))s.group='all';
-  host.innerHTML=`<div class="breadcrumb">智能检索<span>/</span>SciFact</div><header class="page-heading"><div><h1>科学文献检索与相关性排序</h1><p>比较候选召回、模型与文本覆盖的影响，查看同一查询的排名变化及计算代价。</p></div></header><nav class="case-views" aria-label="案例内容">${Object.entries(titles).map(([key,t])=>`<a data-ret-view="${key}" href="#retrieve?case=scifact&view=${key}" ${view===key?'aria-current="page"':''}>${t}</a>`).join('')}</nav><div id="retrieval-content"></div><footer class="showcase-source"><h2>来源与使用说明</h2><p>Wadden 等（2020），<a href="https://github.com/allenai/scifact">SciFact</a>；查询与证据标注 <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>。文献摘要来自 Lo 等（2020）的 S2ORC，<a href="https://opendatacommons.org/licenses/by/1-0/">ODC-By 1.0</a>。采用 Thakur 等（2021）的 <a href="https://huggingface.co/datasets/BeIR/scifact">BEIR 分发</a>；本站增加排名、耗时与评估，改编数据包按 <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> 提供，保留上游署名。</p><p>实验 ${esc(p.run_id)}。仅展示本站运行结果；公开基准可能存在预训练重叠，不是客户部署效果。</p><div class="download-actions"><a href="./retrieval-results/${m.path}" download>下载结果与文献数据包</a><a href="./retrieval-results/${m.notice}" download>下载完整来源与许可说明</a></div></footer>`;
+  const displayedRun=costStudy?.data.run_id||p.run_id;
+  host.innerHTML=`<div class="breadcrumb">智能检索<span>/</span>SciFact</div><header class="page-heading"><div><h1>${view==='costs'?'检索效果与端到端成本':'科学文献检索与相关性排序'}</h1><p>比较候选召回、模型与文本覆盖的影响，查看同一查询的排名变化及计算代价。</p></div></header><nav class="case-views" aria-label="案例内容">${Object.entries(titles).map(([key,t])=>`<a data-ret-view="${key}" href="#retrieve?case=scifact&view=${key}" ${view===key?'aria-current="page"':''}>${t}</a>`).join('')}</nav><div id="retrieval-content"></div><footer class="showcase-source"><h2>来源与使用说明</h2><p>Wadden 等（2020），<a href="https://github.com/allenai/scifact">SciFact</a>；查询与证据标注 <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>。文献摘要来自 Lo 等（2020）的 S2ORC，<a href="https://opendatacommons.org/licenses/by/1-0/">ODC-By 1.0</a>。采用 Thakur 等（2021）的 <a href="https://huggingface.co/datasets/BeIR/scifact">BEIR 分发</a>；本站增加排名、耗时与评估，改编数据包按 <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> 提供，保留上游署名。</p><p>实验 ${esc(displayedRun)}。仅展示本站运行结果；公开基准可能存在预训练重叠，不是客户部署效果。</p><div class="download-actions"><a href="./${costStudy?`retrieval-cost-results/${costStudy.manifest.path}`:`retrieval-results/${m.path}`}" download>下载当前实验结果包</a><a href="./retrieval-results/${m.notice}" download>下载完整来源与许可说明</a></div></footer>`;
   const content=host.querySelector('#retrieval-content');
   const draw=()=>{
    const active=host.ownerDocument.activeElement?.id;
-   content.innerHTML=view==='data'?data(p):view==='models'?models(p.report):view==='report'?(controlled?studyPlaceholder():report(p,s)):view==='learn'?lesson(p,s):controlled?(study?colbertExperienceHtml(study,p,colbertSelection(study,params)):`<section role="status"><h2>受控重排结果暂不可用</h2><p>${esc(studyError)}。可切换查看基础召回结果，不以其他实验代替。</p></section>`):experience(p,s);
+   content.innerHTML=view==='costs'?costHtml(costStudy,p,params):view==='data'?data(p):view==='models'?models(p.report):view==='report'?(controlled?studyPlaceholder():report(p,s)):view==='learn'?lesson(p,s):controlled?(study?colbertExperienceHtml(study,p,colbertSelection(study,params)):`<section role="status"><h2>受控重排结果暂不可用</h2><p>${esc(studyError)}。可切换查看基础召回结果，不以其他实验代替。</p></section>`):experience(p,s);
+   if(['experience','models','learn','report'].includes(view))content.insertAdjacentHTML(view==='experience'?'beforeend':'afterbegin',costEntry(['models','learn'].includes(view)));
+   if(view==='costs'){
+    const selected=selectCost(costStudy.data,params);params.set('costPair',selected.pair);params.set('costFilter',selected.filter);if(selected.row){params.set('costQuery',selected.row.id);s.query=selected.row.id;}
+    for(const [id,key] of [['cost-pair','costPair'],['cost-filter','costFilter'],['cost-query','costQuery']]){const control=content.querySelector('#'+id);if(control)control.onchange=e=>{params.set(key,e.target.value);draw();content.querySelector('#'+id)?.focus({preventScroll:true});};}
+   }
    if(view==='experience'){
-    content.insertAdjacentHTML('afterbegin',`<div class="lesson-controls">${select('ret-experiment','选择检索实验',[['colbert','长摘要受控重排 · ColBERT'],['baseline','基础召回与融合 · 四方法']],controlled?'colbert':'baseline')}</div>`);
-    content.querySelector('#ret-experiment').onchange=e=>{location.hash='#retrieve?'+new URLSearchParams({case:'scifact',view:'experience',experiment:e.target.value,query:s.query});};
+    content.insertAdjacentHTML('afterbegin',`<div class="lesson-controls">${select('ret-experiment','选择检索实验',[['colbert','长摘要受控重排 · ColBERT'],['baseline','基础召回与融合 · 四方法'],['cost','完整检索效果与成本']],controlled?'colbert':'baseline')}</div>`);
+    content.querySelector('#ret-experiment').onchange=e=>{location.hash='#retrieve?'+new URLSearchParams({case:'scifact',view:e.target.value==='cost'?'costs':'experience',experiment:e.target.value,query:s.query});};
     if(controlled&&study){
      const selected=colbertSelection(study,params);
      params.set('colbertPair',selected.pair);params.set('colbertOutcome',selected.outcome);
@@ -95,7 +104,8 @@ export async function renderRetrieval(host,current,params){
    const form=content.querySelector('#ret-filter-form');if(form)form.onsubmit=e=>{e.preventDefault();s.filter=content.querySelector('#ret-filter').value.trim();draw();};
    const clear=content.querySelector('#ret-clear');if(clear)clear.onclick=()=>{s.filter='';s.group='all';draw();};
    const query=new URLSearchParams({case:'scifact',view,query:s.query,model:s.model,baseline:s.base,k:s.k,groupBy:s.groupBy,group:s.group});if(s.document)query.set('document',s.document);
-   query.set('experiment',controlled?'colbert':'baseline');
+   query.set('experiment',view==='costs'?'cost':controlled?'colbert':'baseline');
+   if(view==='costs')for(const key of ['costPair','costFilter','costQuery'])if(params.has(key))query.set(key,params.get(key));
    if(controlled){for(const key of ['colbertPair','colbertOutcome'])if(params.has(key))query.set(key,params.get(key));}
    saveSelection('retrieve',Object.fromEntries(query));
    host.querySelectorAll('[data-ret-view]').forEach(a=>{const v=new URLSearchParams(query);v.set('view',a.dataset.retView);a.href=`#retrieve?${v}`;});
