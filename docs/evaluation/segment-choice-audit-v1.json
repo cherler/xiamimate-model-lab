@@ -1,0 +1,105 @@
+{
+  "schema": "segment-choice-audit-v1",
+  "parent_run": "preferences-20261014T104453501853Z",
+  "parent_sha256": "24543c08bb72b0803860b24a8fb791ea6a0998601a74ea3170895fcb8a3da3e9",
+  "rfm_parent_run": "segments-20261014T003409031698Z",
+  "rfm_parent_sha256": "5e1283584704851ae66eaadbba73c58beb49da949712b247b34535d311c3a904",
+  "source_sha256": "161e0fff40773161a69a0a4f5934a75527a441141e979fb9674db91132b9fb7a",
+  "windows": [
+    {
+      "origin": "2011-09-01",
+      "all_customers": 2768,
+      "eligible": 2768,
+      "excluded": 0,
+      "methods": {
+        "rfm": {
+          "groups": 4,
+          "assigned": 2768,
+          "unassigned": 0,
+          "returning": 903,
+          "evaluated": 903
+        },
+        "leiden": {
+          "groups": 22,
+          "assigned": 2768,
+          "unassigned": 0,
+          "returning": 903,
+          "evaluated": 903
+        },
+        "kmeans": {
+          "groups": 4,
+          "assigned": 2768,
+          "unassigned": 0,
+          "returning": 903,
+          "evaluated": 903
+        },
+        "matched": {
+          "groups": 22,
+          "assigned": 2768,
+          "unassigned": 0,
+          "returning": 903,
+          "evaluated": 903
+        },
+        "hdbscan": {
+          "groups": 7,
+          "assigned": 514,
+          "unassigned": 2254,
+          "returning": 903,
+          "evaluated": 157
+        }
+      }
+    },
+    {
+      "origin": "2011-10-01",
+      "all_customers": 2919,
+      "eligible": 2919,
+      "excluded": 0,
+      "methods": {
+        "rfm": {
+          "groups": 4,
+          "assigned": 2919,
+          "unassigned": 0,
+          "returning": 900,
+          "evaluated": 900
+        },
+        "leiden": {
+          "groups": 21,
+          "assigned": 2919,
+          "unassigned": 0,
+          "returning": 900,
+          "evaluated": 900
+        },
+        "kmeans": {
+          "groups": 4,
+          "assigned": 2919,
+          "unassigned": 0,
+          "returning": 900,
+          "evaluated": 900
+        },
+        "matched": {
+          "groups": 21,
+          "assigned": 2919,
+          "unassigned": 0,
+          "returning": 900,
+          "evaluated": 900
+        },
+        "hdbscan": {
+          "groups": 8,
+          "assigned": 486,
+          "unassigned": 2433,
+          "returning": 900,
+          "evaluated": 137
+        }
+      }
+    }
+  ],
+  "availability": {
+    "paired_future": "Per-person targets, group/global hits exist for assigned returning customers; full-returner reference is the RFM list. Nonreturners must not be assigned zero preference accuracy.",
+    "value_preference": "Same customer RFM labels and preference labels, representatives and historical peer example exist.",
+    "stability": "Three 80% subsamples at first origin for kmeans/leiden/hdbscan. Matched KMeans and RFM have no matching subsample evidence in this experiment. Do not fill with another method.",
+    "new_customers": "Second-origin newcomers were clustered in a full refit, not assigned by a frozen first-origin model. No zero-history customer validation or deployed online assignment.",
+    "boundaries": "KMeans two nearest distances only for K=4; Leiden internal edge share and HDBSCAN strength have different semantics, not interchangeable confidence."
+  },
+  "decision": "No new training. Derive matched-population, same-value-tier, coverage and pre-observable condition comparisons from all saved records. Add a fixed HDBSCAN/global fallback replay on all eligible returners; no personalized recommendation, no causal uplift, no future-based routing.",
+  "evidence": "Known public development outcomes; neither new holdout nor marketing experiment."
+}

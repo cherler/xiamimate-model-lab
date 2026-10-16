@@ -1,0 +1,50 @@
+{
+  "schema": "segment-choice-protocol-v1",
+  "parent_run": "preferences-20261014T104453501853Z",
+  "parent_sha256": "24543c08bb72b0803860b24a8fb791ea6a0998601a74ea3170895fcb8a3da3e9",
+  "audit_sha256": "d17e2debcc5d78b33c0f66c6c28349b11b2b21744544f97504a67b7577a599e0",
+  "origins": [
+    "2011-09-01",
+    "2011-10-01"
+  ],
+  "methods": [
+    "rfm",
+    "kmeans",
+    "leiden",
+    "matched",
+    "hdbscan"
+  ],
+  "comparisons": [
+    {
+      "id": "features",
+      "model": "kmeans",
+      "baseline": "rfm",
+      "scope": "all_returners",
+      "meaning": "same population and K=4; different feature representations and RFM fitting history, not a pure feature-only causal ablation"
+    },
+    {
+      "id": "algorithm",
+      "model": "leiden",
+      "baseline": "matched",
+      "scope": "all_returners",
+      "meaning": "same preference features and group count, all returning customers"
+    },
+    {
+      "id": "core",
+      "model": "hdbscan",
+      "baseline": "kmeans",
+      "scope": "joint_assigned_returners",
+      "meaning": "conditional core-only comparison; group counts differ; no full population superiority claim"
+    }
+  ],
+  "fallback": "For HDBSCAN-assigned returners use frozen group Top10; otherwise use the same frozen global Top10. Never assign a cluster to noise. Compare with global-only and KMeans4 on identical full-returner IDs. No customer outcome used to choose fallback.",
+  "conditions": {
+    "single_invoice_max": 1,
+    "low_catalog_share_below": 0.5,
+    "near_kmeans_relative_margin_max": 0.1
+  },
+  "condition_policy": "Pre-observable descriptive conditions, fixed before this reaggregation, overlap permitted. Never interpret as validated automatic routing thresholds. Same value tiers are original RFM labels.",
+  "temporal_policy": "New to October snapshot means absent in September eligible IDs, not newly acquired customer. October assignments refit all clusterers; no frozen-model newcomer test.",
+  "statistics": "Equal person mean of group_hits / all future distinct items among returners. Paired win/loss/tie uses integer hit counts for identical targets. Full customer coverage and future-returner evaluation coverage separated. No confidence intervals treating correlated customer windows as independent.",
+  "future_access": "Existing known results only. No new source labels, no retraining, no parameter selection."
+}
