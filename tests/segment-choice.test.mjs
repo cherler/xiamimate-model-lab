@@ -26,3 +26,12 @@ test('complete frozen source replays with matched populations and honest missing
  for(const w of p.result.windows){assert.equal(w.comparisons.features.n,w.returning);assert.equal(w.comparisons.algorithm.n,w.returning);assert.equal(w.fallback.group_used+w.fallback.global_used,w.returning);assert.equal(w.cohorts.low_catalog.paired.n,0);assert.equal(w.cohorts.low_catalog.paired.model,null);for(const c of Object.values(w.comparisons))assert.equal(c.wins+c.losses+c.ties,c.n);}
  const bad=structuredClone(p);bad.result.windows[0].fallback.vs_global.model+=.01;assert.throws(()=>verifyChoice(bad,parent,pm));
 });
+
+test('customer view connects scheme choice, historical conditions and unavailable evidence without defaulting to zero',async()=>{
+ const {renderPreference}=await import('../apps/web/preference-segments.js');const {choicePerson}=await import('../apps/web/segment-choice.js');
+ const pm=JSON.parse(fs.readFileSync('apps/web/preference-results/manifest.json')),parent=JSON.parse(fs.readFileSync('apps/web/preference-results/'+pm.path)),manifest=JSON.parse(fs.readFileSync('apps/web/segment-choice-results/manifest.json')),choice={manifest,data:JSON.parse(fs.readFileSync('apps/web/segment-choice-results/'+manifest.path))};
+ for(const w of parent.windows){
+  const report=renderPreference(parent,{origin:w.origin,prefMethod:'hdbscan',prefGroup:'all'},'report',choice);assert.match(report,/同一价值层内/);assert.match(report,/一期一升一降|两期一升一降/);assert.match(report,/本协议未评估/);assert.match(report,/低目录覆盖组两期都没有回访样本/);assert.equal((report.match(/<h2>未归群顾客与回退代价<\/h2>/g)||[]).length,1);
+  const returning=new Set(w.future.rfm.rows.map(r=>r.id));assert.match(choicePerson(choice,w,w.rows.find(r=>!returning.has(r.id))),/个人重合差值未评估/);assert.match(choicePerson(choice,w,w.rows.find(r=>returning.has(r.id))),/没有用于分群或选择对照顾客/);
+ }
+});

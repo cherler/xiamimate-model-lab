@@ -274,3 +274,9 @@ NAB 固定提交全部 47 条真实序列先审计，43 条纳入新实验，原
 已有冻结运行 `anomaly-cross-20261016T004759571872Z` 就绪后，`npm run verify:anomaly-cross` 从保存模型和原始记录复算分数、校准阈值、事件及处理额度，重新导出内容寻址静态包 `apps/web/anomaly-cross-results/`；不会重训。`npm run run:anomaly-cross` 创建新训练运行，不应用于覆盖或冒充旧版本验收，新结果需要保留新的访问记录并明确已见标签反馈。构建会独立复算 43×3×3×2 组结果，缺失或不一致时失败。
 
 默认地址 `#anomaly?case=nab&scope=cross`，旧三条使用 `scope=legacy` 或原 `series` 参数。统一的是滚动 24 小时处理上限，不是实际告警次数；NAB 窗口命中不是故障确认，窗口外告警不是经人工确认的误报。数据许可及全文随下载保留。详见 [E7 计划记录](docs/case-depth-plan.md)。
+
+### 分群方案选择（E8）
+
+复用冻结偏好实验 `preferences-20261014T104453501853Z`，不重新训练。审计与分析口径分别在 `docs/evaluation/segment-choice-audit-v1.json`、`services/segment_choice/protocol.json`。`npm run audit:segment-choice` 重新核对相同父版本的证据条件；`npm run export:segment-choice` 从逐人记录导出同人群、同价值层增量、覆盖与固定核心／热门回退；`npm run verify:segment-choice` 复算并核对来源、协议、源码和发布记录。更换父模型或口径应建立新版本，不能覆盖后称独立新测试。
+
+静态包 `apps/web/segment-choice-results/` 忽略 Git，公开构建与偏好主体验需要此包。原模型复核仍用 `npm run verify:preferences`，不会重训。本轮仅说明群体代表商品的延续和方案取舍，不是推荐成绩或营销效果；未回访不填零，HDBSCAN 未归群不强行分配，同群数 K-means 未有的抽样稳定性不借用其他方法，新客参加重拟合不称在线新客分配。详见 [E8 计划记录](docs/case-depth-plan.md)。

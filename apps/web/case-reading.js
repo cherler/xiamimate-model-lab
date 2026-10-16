@@ -129,11 +129,11 @@ export function caseReading(page,params){
  };
  if(!original||!isPreferenceContext(page,params))return original;
  return {...original,input:'前 180 天的顾客商品购买记录',output:'商品偏好社群、代表商品、价值层交叉画像与稳定性诊断',
- verdict:'商品偏好能细化价值层；Leiden 未超过同群数 K-means，HDBSCAN 的核心群覆盖有限。',
- evidence:'在相同偏好向量上对照方法，另保留 RFM 价值层。共同评价特征空间、后续购买重合、群数与未归群比例；指标与当前报告对应；轮廓分数不是准确率。',
+ verdict:'偏好四群补充商品区分，仍有价值层退步；核心群加热门回退对四群方案一升一降。',
+ evidence:'按同一回访人群、原价值层比较商品重合增量；再看核心群覆盖与全量热门回退、抽样稳定性和新客分配缺口。后续重合不是营销效果，轮廓分数不是准确率。',
  scope:'两期已知公开数据上的开发实验；后续 30 天购买只作偏好延续诊断，不是独立测试或营销收益。',
  delivery:'购买偏好编码、Leiden 社群、HDBSCAN 密度群、同特征方法对照、逐顾客关系解释与稳定性诊断。',
- evidenceTargets:['特征与算法的分开对照','群体代表商品与后续购买的重合']};
+ evidenceTargets:['分群方案的增量与覆盖','同一价值层内，偏好信息增加了什么']};
 }
 export function caseExercise(page,params){
  const original=CASE_EXERCISES[`${page}:${params.get('case')}`];
