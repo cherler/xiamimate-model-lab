@@ -19,7 +19,7 @@ export const CASE_READINGS={
   name:'Dressipi 会话商品推荐',input:'购买前的浏览顺序与匿名商品属性',output:'本次会话的商品候选与排序列表',
   verdict:'加入属性改善了固定候选内的前十命中；候选外目标仍无法靠排序找回。',
   evidence:'比较行为规则与学习排序，再看固定候选下的属性消融。区分未召回、未进前 100 和前 10 外，保留没有改善的特征组合。',
-  scope:'已知公开数据的开发验证；展示样本不代表全体验证会话。仅限本地研究预览，不是官方成绩。',
+  scope:'已知公开数据的开发验证；展示样本不代表全体验证会话。研究实验展示，不是官方成绩。',
   needs:'完整浏览会话、购买标签、跨商品一致的属性编码，并确认这些字段在推荐时可得。',
   delivery:'多路候选、属性匹配、学习排序、固定候选消融与冷商品分组诊断。',
   limit:'排序无法补回候选外的目标；属性对每个失败组的独立增益尚未验证，新目录效果需要另测。',
@@ -29,7 +29,7 @@ export const CASE_READINGS={
   name:'M5 商品销量预测',input:'商品历史销量、商品结构、提前已知的日历与价格',output:'未来 28 天商品日预测及门店、品类汇总',
   verdict:'复杂模型并非每项指标都胜出；中位数基线领先的结果仍保留。',
   evidence:'同时比较层级误差、商品日误差和总量偏差。检查各窗口与困难商品；中位数基线占优的指标仍保留。',
-  scope:'CA_1 单门店缩减实现；保留窗口已使用，区间证据只覆盖已评估的开发范围。仅限本地研究预览。',
+  scope:'CA_1 单门店缩减实现；保留窗口已使用，区间证据只覆盖已评估的开发范围。研究实验展示。',
   needs:'连续商品日销量、稳定编码，以及预测时已经确定的未来价格与活动计划。',
   delivery:'特征时点审计、滚动预测、分层与分组评价，以及有对应证据范围的区间评估。',
   limit:'不是完整冠军模型或排行榜复现；没有受控特征消融，不能将总增益归给价格或日历。历史销量可能受缺货影响。',
@@ -154,7 +154,7 @@ export function readingHtml(page,params){
  const exercise=caseExercise(page,params),publicPath=publicCasePath(key);
  const lessonHref=exerciseHref(page,params);const focusedLesson=lessonHref?.startsWith('#learn?')?`${lessonHref}&focus=calculation`:lessonHref;
  const step=Object.hasOwn(READING_STEPS,params.get('walk'))?params.get('walk'):null;
- return `<section class="case-reading" aria-label="${esc(c.name)}案例结论"><div class="reading-summary"><div class="reading-intro"><strong>${esc(c.name)}</strong><p>${esc(c.input)} → ${esc(c.output)}。</p></div><div class="reading-conclusion"><span>${c.research?'本地研究结论':'固定评估结论'}</span><strong>${esc(c.verdict)}</strong><p>${esc(c.scope)}${c.research?' 对外使用许可尚未确认；公开构建不包含本案例结果。':''}</p></div></div><ol class="reading-steps">${Object.entries(READING_STEPS).map(([key,v])=>`<li><a data-reading-step="${key}" href="${esc(readingHref(page,params,key))}" ${step===key?'aria-current="step"':''}>${v.label}</a></li>`).join('')}</ol>${publicPath?`<nav class="reading-study-links" aria-label="本案例方法与计算"><span>继续了解本例</span><a data-reading-method href="${esc(caseMethodHref(page,params))}">查看建模方法</a><a data-reading-study href="${esc(focusedLesson)}">查看逐项计算</a></nav>`:''}<details class="reading-context"><summary>对照方法与证据范围</summary><p>${esc(c.evidence)}</p><p>上方是固定报告的结论摘要；切换下方样本、模型或规则时，以对应的页面结果和完整报告为准。</p></details><details class="reading-fit" ${step==='fit'?'open':''}><summary>适用条件与可委托范围</summary><dl><div><dt>所需条件</dt><dd>${esc(c.needs)}</dd></div><div><dt>已展示的能力</dt><dd>${esc(c.delivery)}</dd></div><div><dt>尚未证明</dt><dd>${esc(c.limit)}</dd></div></dl><p>以上能力可用于讨论定制范围；新业务的效果、接口与验收要求需另行约定。本站目前仅展示公开案例，没有接入客户数据。</p><a href="#delivery">查看定制服务与交付范围</a></details>${exercise?`<details class="reading-exercise"><summary>计算与实验阅读 · ${esc(exercise.metric)}</summary><p>${esc(exercise.recipe)}</p><p>失效条件：${esc(exercise.failure)}</p><a data-reading-calculation href="${esc(exerciseHref(page,params))}">打开真实记录与计算明细</a><p class="reading-scope">使用已有结果，不重新训练或选择最优样本；实验范围、输入版本及参数见原页面与报告记录。</p></details>`:''}</section>`;
+ return `<section class="case-reading" aria-label="${esc(c.name)}案例结论"><div class="reading-summary"><div class="reading-intro"><strong>${esc(c.name)}</strong><p>${esc(c.input)} → ${esc(c.output)}。</p></div><div class="reading-conclusion"><span>${c.research?'本地研究结论':'固定评估结论'}</span><strong>${esc(c.verdict)}</strong><p>${esc(c.scope)}${c.research?' 研究实验展示；原始数据使用范围以数据提供方条款为准，本站不授予数据再分发或商业使用许可。':''}</p></div></div><ol class="reading-steps">${Object.entries(READING_STEPS).map(([key,v])=>`<li><a data-reading-step="${key}" href="${esc(readingHref(page,params,key))}" ${step===key?'aria-current="step"':''}>${v.label}</a></li>`).join('')}</ol>${publicPath?`<nav class="reading-study-links" aria-label="本案例方法与计算"><span>继续了解本例</span><a data-reading-method href="${esc(caseMethodHref(page,params))}">查看建模方法</a><a data-reading-study href="${esc(focusedLesson)}">查看逐项计算</a></nav>`:''}<details class="reading-context"><summary>对照方法与证据范围</summary><p>${esc(c.evidence)}</p><p>上方是固定报告的结论摘要；切换下方样本、模型或规则时，以对应的页面结果和完整报告为准。</p></details><details class="reading-fit" ${step==='fit'?'open':''}><summary>适用条件与可委托范围</summary><dl><div><dt>所需条件</dt><dd>${esc(c.needs)}</dd></div><div><dt>已展示的能力</dt><dd>${esc(c.delivery)}</dd></div><div><dt>尚未证明</dt><dd>${esc(c.limit)}</dd></div></dl><p>以上能力可用于讨论定制范围；新业务的效果、接口与验收要求需另行约定。本站目前仅展示公开案例，没有接入客户数据。</p><a href="#delivery">查看定制服务与交付范围</a></details>${exercise?`<details class="reading-exercise"><summary>计算与实验阅读 · ${esc(exercise.metric)}</summary><p>${esc(exercise.recipe)}</p><p>失效条件：${esc(exercise.failure)}</p><a data-reading-calculation href="${esc(exerciseHref(page,params))}">打开真实记录与计算明细</a><p class="reading-scope">使用已有结果，不重新训练或选择最优样本；实验范围、输入版本及参数见原页面与报告记录。</p></details>`:''}</section>`;
 }
 export function canShowReading(host){
  return !/暂不可用|暂未就绪|案例不存在|正在读取|当前构建未包含/.test([...host.querySelectorAll('h1,h2,.loading-copy,.report-panel>p')].map(e=>e.textContent).join(' '));

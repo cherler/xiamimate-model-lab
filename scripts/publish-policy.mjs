@@ -1,5 +1,7 @@
 import {relative, sep} from 'node:path';
-// Local research preview is not authorization to redistribute competition data.
-export function publishableWebPath(root, source) {
-  return !['m5-results','dressipi-results'].includes(relative(root, source).split(sep)[0]);
+// Default builds exclude research bundles. Explicit showcases allow verified display files only.
+export function publishableWebPath(root, source, competitionPaths = new Set()) {
+  const path=relative(root,source).split(sep).join('/');
+  if(path==='..'||path.startsWith('../'))return false;
+  return !['m5-results','dressipi-results'].includes(path.split('/')[0]) || competitionPaths.has(path);
 }

@@ -20,7 +20,7 @@ test('D8 cannot present the reading contract as loaded results during missing, s
  assert.equal(readingHtml('forecast',new URLSearchParams({case:'nonexistent'})),'');
 });
 test('D8 research scope and public fallback contracts cannot be silently interchanged',()=>{
- for(const key of ['forecast:m5','recommend:dressipi']){const [page,id]=key.split(':'),html=readingHtml(page,new URLSearchParams({case:id}));assert.match(html,/仅限本地研究预览/);assert.match(html,/公开构建不包含本案例结果/);}
+ for(const key of ['forecast:m5','recommend:dressipi']){const [page,id]=key.split(':'),html=readingHtml(page,new URLSearchParams({case:id}));assert.match(html,/研究实验展示/);assert.match(html,/本站不授予数据再分发或商业使用许可/);}
  assert.match(readingHtml('decision',new URLSearchParams({case:'retail'})),/事后模拟成本却退步/);
  assert.match(readingHtml('segments',new URLSearchParams({case:'retail'})),/轮廓分数不是准确率/);
  assert.match(readingHtml('retrieve',new URLSearchParams({case:'scifact'})),/没有本地微调/);
