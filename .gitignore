@@ -86,3 +86,7 @@ apps/web/uci-adoption-results/
 apps/web/decision-service-results/
 artifacts/decision-service-runs/
 artifacts/decision-service-latest.json
+# E7 cross-series anomaly evidence
+artifacts/anomaly-cross-runs/
+artifacts/anomaly-cross-latest.json
+apps/web/anomaly-cross-results/
