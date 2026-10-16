@@ -90,3 +90,5 @@ artifacts/decision-service-latest.json
 artifacts/anomaly-cross-runs/
 artifacts/anomaly-cross-latest.json
 apps/web/anomaly-cross-results/
+# E8 derived segmentation scheme evidence
+apps/web/segment-choice-results/
