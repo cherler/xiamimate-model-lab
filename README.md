@@ -4,7 +4,7 @@
 
 独立的公开数据案例项目，服务于定制开发展示与教学。前端、Python 服务、数据和训练产物保持独立；公开静态版挂载在虾米伙伴主站 `/model-lab/`，复用主站 `/chrome/` 页眉与页脚。
 
-源码仓库：`cherler/xiamimate-model-lab`（私有）。原始数据、模型与展示结果包不入 Git；新 clone 必须恢复经过许可与校验的本地导出包才能构建，缺失会明确失败。公开部署仅上传 `npm run build` 生成的 `dist/`，不上传 `.env`、训练目录和 M5／Dressipi 研究结果。公开版暂不提供实时 AI；七案例与固定流程均为静态结果。接入与发布见 [部署说明](deploy/README.md)。
+源码仓库：`cherler/xiamimate-model-lab`（私有）。原始数据、模型与展示结果包不入 Git；新 clone 必须恢复经过许可与校验的本地导出包才能构建，缺失会明确失败。静态部署只上传 `dist/`，不包含 `.env` 或训练目录。M5／Dressipi 使用显式 `build:showcase` 发布已核验展示包；在线 AI 使用独立后端和私密配置，可选 `--online-ai` 构建开关，案例结果仍为静态回放。接入与发布见 [部署说明](deploy/README.md)。
 
 当前后续范围已明确为**模型能力与量化统计展示站**，暂不开发客户数据接入。上线缺口、展示架构、增值项和后续轮次见 [展示站上线规划](docs/launch-roadmap.md)。
 

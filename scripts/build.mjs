@@ -147,6 +147,6 @@ await rm(`${root}dist`, { recursive: true, force: true });
 await mkdir(`${root}dist`, { recursive: true });
 await cp(`${root}apps/web`, `${root}dist`, { recursive: true, filter: source => publishableWebPath(resolve(root,'apps/web'),source,competitionPaths) });
 await writeFile(resolve(root,'dist/preview-mode.js'),`export const LOCAL_RESEARCH = ${includeCompetitions};\n`);
-await writeFile(resolve(root,'dist/public-build.js'),'export const PUBLIC_STATIC = true;\n');
+await writeFile(resolve(root,'dist/public-build.js'),`export const PUBLIC_STATIC = ${!process.argv.includes('--online-ai')};\n`);
 console.log(includeCompetitions?'M5 and Dressipi: verified display bundles included by explicit publishing choice; original rights metadata retained.':'M5 and Dressipi excluded from standard public build.');
 console.log(`Built showcase ${manifest.version}. Ta Feng and UCI use verified static results; no model API is required.`);

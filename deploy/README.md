@@ -6,7 +6,7 @@
 
 先恢复已核验的本地展示导出包；它们按 `.gitignore` 不随 Git 推送。干净 clone 不包含训练数据和展示结果，不能直接构建；缺包时构建明确失败，不临时重训或填造结果。
 
-执行 `npm run check`、`npm test`、`npm run test:ml`、`npm run build`。默认 `npm run build` 校验七案例证据并排除 M5／Dressipi。用户已明确选择发布两项研究案例时，运行 `npm run build:showcase`：额外逐文件核验两案例清单，只复制清单内展示资源，开启案例入口。两种构建均写入公开静态模式并禁用在线 AI 请求。只上传 `dist/`，不能上传项目根目录、`.env`、artifacts 或 apps/web 原目录。
+执行 `npm run check`、`npm test`、`npm run test:ml`、`npm run build`。默认 `npm run build` 校验七案例证据并排除 M5／Dressipi。用户已明确选择发布两项研究案例时，运行 `npm run build:showcase`：额外逐文件核验两案例清单，只复制清单内展示资源，开启案例入口。两种构建默认禁用在线 AI；部署独立服务后，追加 `-- --online-ai` 显式启用页面请求。只上传 `dist/`，不能上传项目根目录、`.env`、artifacts 或 apps/web 原目录。
 
 ## 主站框架
 
@@ -16,7 +16,7 @@
 
 ## 云端
 
-现有主机别名为 `xiamimate-app-01`。按 commit 将 `dist/` 上传到 `/srv/xiamimate/model-lab/releases/<commit>/`，核验文件校验和后将 `current` 软链指向该版本。Caddy 使用本目录片段，保留 hash 深链接，资源缺失返回真实 404，无 SPA 的错误资源兜底。不代理或部署本机 AI 服务。
+现有主机别名为 `xiamimate-app-01`。按 commit 将 `dist/` 上传到 `/srv/xiamimate/model-lab/releases/<commit>/`，核验文件校验和后将 `current` 软链指向该版本。Caddy 使用本目录片段，保留 hash 深链接，资源缺失返回真实 404，无 SPA 的错误资源兜底。AI 使用下文的独立生产入口，不直接代理本机开发服务。
 
 先准备模块文件和路由，校验 Caddy 后 reload，再发布包含第五模块入口的主站构建及共享框架。后端只同步模块白名单并重启使其生效，运营台同步第五模块清单；不迁移数据库，不改其他模块显隐。
 
@@ -32,4 +32,17 @@
 
 用户明确要求将 M5 和 Dressipi 案例放到线上作为展示。本次使用 `build:showcase`，仅发布当前清单内经过哈希校验的保存结果，不上传原始数据归档、模型权重、旧导出版本或密钥。该发布选择不代表获得数据提供方的额外授权，来源／条款与评估限制继续显示。原冻结清单中的 `public_export_allowed=false` 记录的是当时导出状态，保留原样；不篡改实验文件以制造授权记录。默认构建仍排除两案例，部署时须明确选择展示构建。
 
-服务器 `/srv/xiamimate/model-lab/current` 是网站静态目录，不是源码目录，不能放 `.env`。当前没有部署独立模型工坊源码或 AI 服务；日后新增服务时，其源码和私密配置须位于静态目录以外。
+服务器 `/srv/xiamimate/model-lab/current` 是网站静态目录，不是源码目录，不能放 `.env`。AI 运行文件和配置使用下列独立目录。
+
+
+## 在线 AI 部署（2026-10-16）
+
+用户明确授权使用项目根 `.env` 上线。只传输 `MODEL_LAB_AI_*` 六项配置，不传其他项目变量或整个源码目录；绝不输出密钥。配置文件 `/etc/xiamimate/model-lab.env`，所有者 root:model-lab、权限 0640，父目录 0750。修改配置后执行 `systemctl restart model-lab-assistant`。
+
+- 运行目录：`/srv/xiamimate/model-lab-api/releases/<commit>`，`current` 指向该版本；包含 `services/assistant/`、生产启动脚本、仅声明 ES Modules 的 package.json。`apps/web` 链接到同版本静态结果包，复用核验后的案例资料。
+- 运行环境：独立 Node 22 `/opt/xiamimate-node22/bin/node`，不替换主站 Node。安装官方 tar 包并核验官方 SHA-256。
+- 使用本目录 `model-lab-assistant.service`，低权限 `model-lab` 用户，仅监听 `127.0.0.1:8340`，不提供静态文件或目录浏览。配置通过 `MODEL_LAB_ENV_FILE` 读取。
+- Caddy 在静态路由之前代理 `/model-lab/api/assistant/*`，去掉 `/model-lab` 前缀；Host 固定为主站，POST 必须包含精确同源 Origin。Origin 校验不是身份认证；服务是公开、有限额度的案例演示，不接通主站积分。
+- 默认全站每小时 20 次分析、最多 2 个同时执行、90 秒任务超时、48KB 请求体、固定工具白名单；不能指定外部网址、模型或密钥。小时额度是进程内限制，重启重置，并非按账号计费或抗滥用身份验证。
+- `npm run build:showcase -- --online-ai` 生成本次展示版；仅前端开关变化，密钥不会进入构建。默认构建仍可独立静态运行。
+- 上线检查：status/options、跨站拒绝、密钥 URL 不可访问、真实问答与 Agent 工具计算、需求草稿；回退时关闭前端开关或恢复先前静态版本并停止该服务，不影响其他应用。

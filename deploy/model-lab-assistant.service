@@ -1,0 +1,27 @@
+[Unit]
+Description=Xiami model lab AI case assistant
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=model-lab
+Group=model-lab
+WorkingDirectory=/srv/xiamimate/model-lab-api/current
+Environment=MODEL_LAB_ENV_FILE=/etc/xiamimate/model-lab.env
+Environment=MODEL_LAB_PUBLIC_ORIGIN=https://xiamimate.com
+Environment=MODEL_LAB_PORT=8340
+Environment=MODEL_LAB_HOURLY_LIMIT=20
+ExecStart=/opt/xiamimate-node22/bin/node scripts/assistant-production.mjs
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+UMask=0077
+MemoryMax=512M
+TasksMax=64
+
+[Install]
+WantedBy=multi-user.target
