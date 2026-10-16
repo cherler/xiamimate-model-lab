@@ -2,3 +2,11 @@
 
 /* D7: paired evidence retains the existing case hierarchy and scrolling tables. */
 .decision-pair-controls{grid-template-columns:repeat(3,minmax(0,1fr))}.decision-pair-controls p{margin:0;font-size:13px;color:#536f82}.decision-pair .depth-verdict{margin:20px 0}.decision-pair h3{margin-top:26px}.decision-pair th[scope=row],.decision-diagnostics th[scope=row]{min-width:180px;max-width:280px;white-space:normal;font-weight:500;line-height:1.7}.decision-pair th small,.decision-diagnostics th small{display:block;font-size:11px;color:#536f82}.decision-pair-controls select{font-size:14px}@media(max-width:760px){.decision-pair-controls{grid-template-columns:1fr}}
+
+/* Service study shares the main controls; detailed evidence stays collapsible. */
+.decision-service>p{margin:12px 0;line-height:1.85}
+.decision-service>h3{margin-top:22px;margin-bottom:10px}
+.decision-service>details{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.decision-service>details>p{margin:12px 0;line-height:1.85}
+.decision-service .section-heading{gap:18px;flex-wrap:wrap}
+.decision-service .section-heading label{min-width:210px}

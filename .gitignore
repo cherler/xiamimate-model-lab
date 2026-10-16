@@ -84,3 +84,5 @@ apps/web/uci-adoption-results/
 
 # E6 service constraint experiment
 apps/web/decision-service-results/
+artifacts/decision-service-runs/
+artifacts/decision-service-latest.json

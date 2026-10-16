@@ -259,3 +259,10 @@ npm run run:decision
 ### UCI 推荐采用证据（E5）
 
 原 UCI 静态包及冻结运行 `retail-20261012T001149Z` 的源码／十一月模型就绪后，执行 `npm run audit:uci-adoption`，再执行 `npm run export:uci-adoption`。前者复算九方法全部 4,280 顾客窗口并核对推荐前历史分组，后者校验审计与 `services/adoption/uci-protocol.json` 后导出静态配对证据；均不重训或读取新的测试标签。结果目录 `apps/web/uci-adoption-results/` 不入 Git，公开构建会校验其内容、来源和源码哈希。体验和报告展示人群增益／退步、热门回退、复购与其余目标及候选上限；已有三窗口均属开发证据，不执行按事后胜负选择模型的路由。复现与验收记录见 [E5 计划记录](docs/case-depth-plan.md)。
+
+
+### 决策服务约束实验（E6）
+
+原 R6 冻结运行和 UCI 周预测就绪后，`npm run audit:decision-service` 复算既有需求场景、约束代价和全量成本；独立协议在 `services/decision_study/protocol.json`。`npm run run:decision-service` 新建一次受控实验，只加入 70%／80%／90% 的八场景合计需求满足率下限，先冻结订单／状态再附加已知事后销量，不改原预测、原场景或默认订单。结果同时保留相同资源下的最高场景满足率和不可行状态。`npm run verify:decision-service` 只核验并重新导出保存结果，不重训或重新选解。
+
+运行证据位于 `artifacts/decision-service-runs/`，静态结果为 `apps/web/decision-service-results/`，均忽略 Git；构建校验父版本、协议、审计、源码、全部状态与成本。公开页面的实验固定缺货系数 1.5，其他成本设置明确显示未覆盖；同服务条件对照需先检查规则是否也达标。全部仍为已知开发模拟，场景满足率不是未来服务保证。详见 [E6 计划记录](docs/case-depth-plan.md)。
