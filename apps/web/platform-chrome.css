@@ -1,0 +1,16 @@
+/* Host components retain their own scoped CSS; case navigation is a second level. */
+#platform-header[hidden],#platform-footer[hidden]{display:none}
+#platform-header{position:sticky;top:0;z-index:30;background:white;min-height:52px}
+.platform-fallback{display:flex;align-items:center;gap:16px;min-height:52px;padding:12px 20px;background:#fff;border-bottom:1px solid var(--line);font-size:14px}
+.platform-fallback a{text-decoration:underline;text-underline-offset:3px}
+#platform-footer .platform-fallback{border-top:1px solid var(--line);flex-wrap:wrap}
+.on-platform .lab-topbar>.brand{display:none}
+.on-platform .lab-topbar{top:var(--platform-header-height,52px);height:58px;min-height:58px;gap:24px;padding:0 20px}
+.on-platform .lab-topbar .topnav{order:0;width:auto;flex:1;height:58px;gap:28px;overflow-x:auto;white-space:nowrap}
+.on-platform .lab-topbar .topnav a{flex-shrink:0}
+.on-platform .sidebar{top:calc(var(--platform-header-height,52px) + var(--lab-nav-height,58px));height:calc(100vh - var(--platform-header-height,52px) - var(--lab-nav-height,58px))}
+.on-platform .shell{min-height:calc(100vh - var(--platform-header-height,52px) - var(--lab-nav-height,58px))}
+.on-platform .skip{z-index:100}
+.on-platform #main [id]{scroll-margin-top:calc(var(--platform-header-height,52px) + var(--lab-nav-height,58px) + 16px)}
+@media(max-width:900px){.on-platform .sidebar{position:static;height:auto}.on-platform .lab-topbar .topnav{gap:18px}}
+@media(max-width:620px){.on-platform .lab-topbar{position:sticky;flex-wrap:nowrap;gap:12px;padding:0 12px}.on-platform .lab-topbar .topnav{height:52px;gap:16px;justify-content:flex-start}.on-platform .lab-topbar .outline{flex-shrink:0;padding:6px 9px;font-size:12px;min-height:32px}}

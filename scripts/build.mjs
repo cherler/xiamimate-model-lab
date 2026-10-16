@@ -144,5 +144,6 @@ await rm(`${root}dist`, { recursive: true, force: true });
 await mkdir(`${root}dist`, { recursive: true });
 await cp(`${root}apps/web`, `${root}dist`, { recursive: true, filter: source => publishableWebPath(resolve(root,'apps/web'),source) });
 await writeFile(resolve(root,'dist/preview-mode.js'),'export const LOCAL_RESEARCH = false;\n');
+await writeFile(resolve(root,'dist/public-build.js'),'export const PUBLIC_STATIC = true;\n');
 console.log('M5 and Dressipi local research data excluded from public build; usage clearance is pending.');
 console.log(`Built showcase ${manifest.version}. Ta Feng and UCI use verified static results; no model API is required.`);
