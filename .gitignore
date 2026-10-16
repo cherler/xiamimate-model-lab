@@ -96,3 +96,7 @@ apps/web/segment-choice-results/
 artifacts/classification-input-runs/
 artifacts/classification-input-latest.json
 apps/web/classification-input-results/
+# E10 measured full-corpus retrieval
+artifacts/retrieval-cost-runs/
+artifacts/retrieval-cost-latest.json
+apps/web/retrieval-cost-results/

@@ -99,6 +99,9 @@
     "verify:segment-choice": "node scripts/export-segment-choice.mjs --verify",
     "audit:classification-inputs": "uv run python -m services.classification.input_audit",
     "run:classification-inputs": "uv run python -m services.classification.input_study run",
-    "verify:classification-inputs": "uv run python -m services.classification.input_study verify"
+    "verify:classification-inputs": "uv run python -m services.classification.input_study verify",
+    "audit:retrieval-cost": "uv run --project services/retrieval python -m services.retrieval.cost_audit",
+    "run:retrieval-cost": "uv run --project services/retrieval python -m services.retrieval.cost_study run",
+    "verify:retrieval-cost": "uv run --project services/retrieval python -m services.retrieval.cost_study verify"
   }
 }

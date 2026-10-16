@@ -1,0 +1,206 @@
+{
+  "path": "910b6634fd92bd994634f65c2a3302ccca89f260602baeecea3edced7b18cdef.json",
+  "sha256": "910b6634fd92bd994634f65c2a3302ccca89f260602baeecea3edced7b18cdef",
+  "run_id": "retrieval-cost-20261016T024050430715Z",
+  "parent_run": "scifact-20261014T000358068631Z",
+  "summary": {
+    "metrics": {
+      "bm25": {
+        "ndcg_at_10": 0.6604641499925745,
+        "recall_at_10": 0.7876111111111112,
+        "mrr_at_10": 0.6269695767195766,
+        "recall_at_50": 0.8703888888888889,
+        "recall_at_100": 0.8858888888888888
+      },
+      "hybrid": {
+        "ndcg_at_10": 0.6826104962391715,
+        "recall_at_10": 0.8105555555555556,
+        "mrr_at_10": 0.6459841269841271,
+        "recall_at_50": 0.937,
+        "recall_at_100": 0.9543333333333334
+      },
+      "colbert50": {
+        "ndcg_at_10": 0.718254033407504,
+        "recall_at_10": 0.8482222222222222,
+        "mrr_at_10": 0.6847830687830687,
+        "recall_at_50": 0.937,
+        "recall_at_100": 0.9543333333333334
+      },
+      "colbert100": {
+        "ndcg_at_10": 0.7142686255598815,
+        "recall_at_10": 0.8398888888888889,
+        "mrr_at_10": 0.682404761904762,
+        "recall_at_50": 0.9385555555555556,
+        "recall_at_100": 0.9543333333333334
+      },
+      "colbert_full": {
+        "ndcg_at_10": 0.7084337845915699,
+        "recall_at_10": 0.8365555555555556,
+        "mrr_at_10": 0.6761521164021164,
+        "recall_at_50": 0.9005555555555554,
+        "recall_at_100": 0.9252222222222222
+      }
+    },
+    "timing": {
+      "bm25": {
+        "p50_ms": 2.275854581966996,
+        "p95_ms": 2.9340983601287007,
+        "components_mean_ms": {
+          "bm25": 2.334243441000581
+        }
+      },
+      "hybrid": {
+        "p50_ms": 10.826979530975223,
+        "p95_ms": 13.004902796819806,
+        "components_mean_ms": {
+          "bm25": 2.3717615303273,
+          "dense_query_encode": 6.8023682199418545,
+          "dense_scan_sort": 1.7315595271065831,
+          "fusion": 0.0581481276700894
+        }
+      },
+      "colbert50": {
+        "p50_ms": 42.60152066126466,
+        "p95_ms": 49.119408428668976,
+        "components_mean_ms": {
+          "bm25": 2.6049872394651175,
+          "colbert_query_encode": 29.20346754292647,
+          "colbert_scan": 2.971591353416443,
+          "colbert_sort": 0.04268973134458065,
+          "dense_query_encode": 6.691657206974924,
+          "dense_scan_sort": 1.7118255405997236,
+          "fusion": 0.05644416902214289
+        }
+      },
+      "colbert100": {
+        "p50_ms": 45.19756184890866,
+        "p95_ms": 51.850113831460476,
+        "components_mean_ms": {
+          "bm25": 2.6115316757932305,
+          "colbert_query_encode": 29.210154013708234,
+          "colbert_scan": 5.549357505515218,
+          "colbert_sort": 0.0651053028802077,
+          "dense_query_encode": 6.735628445943196,
+          "dense_scan_sort": 1.7126127673933904,
+          "fusion": 0.05803264522304138
+        }
+      },
+      "colbert_full": {
+        "p50_ms": 214.76637478917837,
+        "p95_ms": 241.86671457719058,
+        "components_mean_ms": {
+          "colbert_query_encode": 29.189201580981415,
+          "colbert_scan": 182.37020711724958,
+          "colbert_sort": 1.6644205556561549
+        }
+      }
+    },
+    "comparisons": [
+      {
+        "a": "colbert50",
+        "b": "hybrid",
+        "delta": 0.03564353716833265,
+        "wins": 63,
+        "losses": 47,
+        "ties": 190,
+        "ci95": [
+          0.007470805550227289,
+          0.06360361991016995
+        ],
+        "gained_targets10": 22,
+        "lost_targets10": 11
+      },
+      {
+        "a": "colbert100",
+        "b": "colbert50",
+        "delta": -0.0039854078476226655,
+        "wins": 1,
+        "losses": 13,
+        "ties": 286,
+        "ci95": [
+          -0.009003183421781689,
+          0.0003900650635253426
+        ],
+        "gained_targets10": 1,
+        "lost_targets10": 4
+      },
+      {
+        "a": "colbert_full",
+        "b": "colbert100",
+        "delta": -0.0058348409683115976,
+        "wins": 1,
+        "losses": 21,
+        "ties": 278,
+        "ci95": [
+          -0.012178634134803227,
+          0.0005816163754751046
+        ],
+        "gained_targets10": 1,
+        "lost_targets10": 2
+      },
+      {
+        "a": "colbert_full",
+        "b": "colbert50",
+        "delta": -0.009820248815934265,
+        "wins": 2,
+        "losses": 24,
+        "ties": 274,
+        "ci95": [
+          -0.01784912674525854,
+          -0.0017443700402388707
+        ],
+        "gained_targets10": 2,
+        "lost_targets10": 6
+      }
+    ],
+    "outside50": {
+      "bm25": {
+        "found10": 0,
+        "found100": 4
+      },
+      "hybrid": {
+        "found10": 0,
+        "found100": 6
+      },
+      "colbert50": {
+        "found10": 0,
+        "found100": 6
+      },
+      "colbert100": {
+        "found10": 1,
+        "found100": 6
+      },
+      "colbert_full": {
+        "found10": 2,
+        "found100": 7
+      }
+    }
+  },
+  "costs": {
+    "model_load_seconds": 1.6526848752982914,
+    "warmup_seconds": 0.16251995833590627,
+    "bm25_build_seconds": 0.4950311668217182,
+    "dense_encode_seconds": 42.46652691671625,
+    "colbert_chunk_seconds": 5.144722583703697,
+    "colbert_encode_seconds": 431.08852099999785,
+    "colbert_serialize_seconds": 1.3669627499766648,
+    "bytes": {
+      "bm25.npz": 5660388,
+      "vocabulary.json": 728666,
+      "dense.npy": 7961216,
+      "index.pt": 1238467029,
+      "chunks.json": 10224644
+    },
+    "source_text_bytes": 8046757,
+    "colbert_tensor_bytes": 1238313771,
+    "colbert_unpadded_vector_bytes": 932246528,
+    "model_weight_bytes": {
+      "dense": 90868376,
+      "colbert": 438349816
+    },
+    "documents": 5183,
+    "chunks": 14809,
+    "peak_process_rss_bytes": 2665365504
+  },
+  "verification": "All rankings/metrics from saved full scores, frozen artifact hashes; six fixed query vectors recomputed against all5183 documents. No retraining or new selection."
+}
