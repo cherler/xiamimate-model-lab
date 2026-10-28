@@ -105,3 +105,8 @@ artifacts/uplift-runs/
 artifacts/uplift-latest.json
 apps/web/uplift-results/
 data/uplift/
+
+# Game anti-cheat raw telemetry, fitted models and local result bundles
+data/anticheat/
+artifacts/anticheat-runs/
+apps/web/anticheat-results/
