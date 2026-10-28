@@ -25,3 +25,20 @@ class AntiCheatTest(unittest.TestCase):
         self.assertEqual(counts([0,1],[.8,.7],.75)['fn'],1)
 
 if __name__=='__main__':unittest.main()
+
+class FrozenAntiCheatEvidenceTest(unittest.TestCase):
+    def test_saved_report_uses_same_thresholds_and_cohorts(self):
+        import json
+        from pathlib import Path
+        root=Path(__file__).resolve().parents[1]
+        folder=root/'artifacts/anticheat-runs/vizdoom-aim-v1'
+        if not (folder/'report.json').exists():self.skipTest('Local research artifacts absent')
+        report=json.loads((folder/'report.json').read_text());frozen=json.loads((folder/'frozen.json').read_text());split=json.loads((folder/'split.json').read_text())
+        d=np.load(root/'data/anticheat/prepared.npz');scores=np.load(folder/'scores.npz');ids=np.array(split['test']);kinds=d['kinds'][ids];y=kinds!='none'
+        known=np.isin(kinds,['none','ease_light','ease_strong'])
+        for model in report['protocol']['models']:
+            self.assertLessEqual(frozen['calibration'][model]['fpr'],.01)
+            for field,mask in [('all',np.ones(len(y),dtype=bool)),('known',known)]:
+                actual=counts(y[mask],scores[model][mask],frozen['thresholds'][model])
+                for k,v in actual.items():self.assertEqual(v,report['models'][model][field][k])
+        self.assertEqual(len(np.unique(d['groups'][ids][kinds=='gan_group1'])),1)

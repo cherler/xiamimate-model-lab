@@ -1,3 +1,4 @@
+import {ANTICHEAT_RESEARCH} from './anticheat-mode.js';
 import {UPLIFT_RESEARCH} from './uplift-mode.js';
 // One business identity across experience, methods and teaching.
 export const BUSINESSES=[
@@ -10,8 +11,8 @@ export const BUSINESSES=[
  {id:'decision',icon:'▧',label:'决策优化',caseId:'retail'},
 ];
 const UPLIFT_ENTRY={id:'uplift',icon:'↗',label:'营销增量',caseId:'hillstrom'};
-const ROUTE_WORKSPACES=[...BUSINESSES,UPLIFT_ENTRY,{id:'agent',icon:'◎',label:'AI Agent',caseId:'retail'}];
-export const WORKSPACES=ROUTE_WORKSPACES.filter(c=>c.id!=='uplift'||UPLIFT_RESEARCH);
+const ROUTE_WORKSPACES=[...BUSINESSES,UPLIFT_ENTRY,{id:'anticheat',icon:'⛨',label:'游戏反外挂',caseId:'vizdoom'},{id:'agent',icon:'◎',label:'AI Agent',caseId:'retail'}];
+export const WORKSPACES=ROUTE_WORKSPACES.filter(c=>(c.id!=='uplift'||UPLIFT_RESEARCH)&&(c.id!=='anticheat'||ANTICHEAT_RESEARCH));
 export function navigationContext(page,params=new URLSearchParams()){
  const topic=params.get('topic')?.split(':');
  const requested=topic?.[0]||params.get('business')||(['models','learn','expand','delivery'].includes(page)?(['weekly_sales','daily_sales'].includes(params.get('task'))||params.get('lesson')==='forecast'?'forecast':'recommend'):page);
