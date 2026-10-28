@@ -65,7 +65,7 @@ export async function renderAntiCheat(host,current,params,mode='case'){
  const p=await load();if(!current())return;
  const model=Object.hasOwn(p.models,params.get('model'))?params.get('model'):p.protocol.default_model,scope=Object.hasOwn(SCOPES,params.get('scope'))?params.get('scope'):'known',view=params.get('view')||'experience',m=p.models[model],r=metric(m,scope),base=metric(p.models.rule,scope);
  const title={case:'瞄准行为检测',models:'模型解读',learn:'教学拆解',expand:'场景扩展'}[mode];
- const heading=`<header class="page-heading"><div><h1>游戏反外挂 · ${title}</h1><p>从射击前轨迹筛选复核线索，比较检测能力、正常误报与计算成本。</p></div><span class="ac-tag">ViZDoom · 本地实训</span></header>`;
+ const heading=`<div class="breadcrumb">游戏反外挂<span>/</span>ViZDoom 瞄准行为实验</div><header class="page-heading"><div><h1>游戏反外挂 · ${title}</h1><p>从射击前轨迹筛选复核线索，比较检测能力、正常误报与计算成本。</p></div><span class="ac-tag">本地实训</span></header>`;
  const link=v=>`#anticheat?${new URLSearchParams({case:'vizdoom',view:v,model,scope,...(params.has('sample')?{sample:params.get('sample')}:{})})}`;
  const tabs=`<nav class="case-views" aria-label="反外挂案例内容">${[['experience','案例体验'],['data','案例与数据'],['report','效果报告']].map(([v,n])=>`<a href="${link(v)}" ${view===v?'aria-current="page"':''}>${n}</a>`).join('')}</nav>`;
  const controls=`<section class="report-panel ac-control-panel"><div class="ac-controls">${select('model','检测方法',Object.entries(p.models).map(([k,v])=>[k,v.name]),model)}${select('scope','辅助类型',Object.entries(SCOPES),scope)}</div></section>`;
