@@ -1,3 +1,4 @@
+import {agentProcessHtml,initAgentProcess} from './agent-process.js';
 import {assistantRequest,answerHtml,traceHtml,validationHtml,esc,sourcesHtml} from './assistant.js';
 import {downloadText} from './cooperation.js';
 import {saveSelection} from './navigation-state.js';
@@ -49,7 +50,8 @@ export function cancelAgent(){running?.abort();running=null;}
 export async function renderAgent(host,current,params,mode='case'){
  cancelAgent();if(params.get('case')&&params.get('case')!=='retail'){host.innerHTML='<h1>案例不存在</h1><a href="#agent?case=retail">打开零售分析助手</a>';return;}host.innerHTML=`<div class="breadcrumb">AI Agent<span>/</span>UCI 零售补货案例</div><header class="page-heading"><div><h1>${headings[mode]||'零售分析与补货助手'}</h1><p>查阅保存预测、对照补货策略并核对约束，形成带来源的分析报告。</p></div><span class="agent-case-tag">历史回放</span></header><nav class="scenario-context" aria-label="Agent 关联案例"><a href="#forecast?case=uci&view=experience">查看原销量预测</a><a href="#decision?case=retail&view=experience">查看原补货案例</a><a href="#delivery?section=start">讨论方案与合作</a></nav>`;
  if(mode!=='case'){host.insertAdjacentHTML('beforeend',`<div class="agent-reading">${explanation(mode)}</div>`);return;}
- host.insertAdjacentHTML('beforeend',`<p class="agent-result-note">本例使用 UCI 已保存的历史预测与模拟订单。固定流程可直接复算；AI Agent 需要接通语言模型，由模型选择工具并解释证据。两者都不产生真实采购订单。</p><section class="agent-workbench"><h2>任务与分析条件</h2><p class="agent-status" id="agent-availability" role="status">正在读取可用场景…</p><div id="agent-form"></div></section><div class="agent-results" id="agent-results" aria-live="polite"></div>`);
+ host.insertAdjacentHTML('beforeend',`${agentProcessHtml()}<p class="agent-result-note">本例使用 UCI 已保存的历史预测与模拟订单。固定流程可直接复算；AI Agent 需要接通语言模型，由模型选择工具并解释证据。两者都不产生真实采购订单。</p><section class="agent-workbench"><h2>任务与分析条件</h2><p class="agent-status" id="agent-availability" role="status">正在读取可用场景…</p><div id="agent-form"></div></section><div class="agent-results" id="agent-results" aria-live="polite"></div>`);
+ initAgentProcess(host);
  const availability=host.querySelector('#agent-availability'),formHost=host.querySelector('#agent-form'),resultHost=host.querySelector('#agent-results');running=new AbortController();
  try{
   const [options,status]=await Promise.all([assistantRequest('options',null,running.signal),assistantRequest('status',null,running.signal)]);if(!current())return;

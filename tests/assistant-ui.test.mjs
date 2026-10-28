@@ -4,6 +4,24 @@ import {answerHtml} from '../apps/web/assistant.js';
 import {retailReportHtml,agentResultHtml,reportGroups} from '../apps/web/agent-case.js';
 import {retailAnswer} from '../services/assistant/evidence.mjs';
 import {executeTool,runWorkflow} from '../services/assistant/tools.mjs';
+import {agentFlowHtml,agentProcessHtml} from '../apps/web/agent-process.js';
+
+test('process explanation distinguishes model selection from fixed replay and direct tool reports',()=>{
+ const fixed=agentFlowHtml('workflow',0),fixedInput=agentFlowHtml('workflow',1),agent=agentFlowHtml('agent',3);
+ assert.match(fixed,/不解析任务描述，也不调用语言模型/);
+ assert.match(fixed,/任务框中的预算变更或额外问题不会/);
+ assert.match(fixedInput,/没有模型自主选择或在线重新优化/);
+ assert.match(agent,/直接编排数值报告/);assert.match(agent,/不再等待模型收尾/);
+ const diagram=agentProcessHtml();assert.match(diagram,/不是本次运行进度/);assert.match(diagram,/不会运行任务或改变下方条件/);
+ assert.match(diagram,/不在线训练、重新求解或自动采购/);
+ assert.doesNotMatch(diagram,/<details[^>]*\sopen/);
+});
+test('process navigation normalizes invalid selections and exposes one active step',()=>{
+ const html=agentFlowHtml('invalid',99);
+ assert.equal(html,agentFlowHtml('agent',0));
+ assert.equal((html.match(/aria-pressed="true"/g)||[]).length,1);
+ assert.match(html,/aria-live="polite"/);
+});
 test('assistant renders model text and trace as plain escaped content and rejects external source links',()=>{
  const html=answerHtml({mode:'ask',summary:'<img src=x onerror=alert(1)>',model:'test',sources:[{href:'javascript:alert(1)',title:'bad'},{href:'#forecast?case=uci',title:'UCI'}],trace:[{name:'<script>',args:{unsafe:'<svg onload=evil()>'},result:{error:'<script>'},ok:false,ms:1}],ms:1});
  assert.doesNotMatch(html,/<img|<script|<svg|javascript:/);assert.match(html,/&lt;img/);assert.match(html,/href="#forecast\?case=uci"/);

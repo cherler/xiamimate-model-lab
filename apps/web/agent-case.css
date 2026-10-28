@@ -44,19 +44,84 @@ main[data-business="agent"] .agent-reading p{margin:10px 0;max-width:78ch}
 main[data-business="agent"] .agent-reading td,main[data-business="agent"] .agent-reading th{line-height:1.6}
 main[data-business="agent"] .agent-steps{margin:8px 0;line-height:1.6}
 main[data-business="agent"] .agent-steps li{padding:6px 0}
+/* Process diagrams are explanatory; no animated or inferred execution status. */
+.agent-system{margin:12px 0;border:1px solid var(--agent-line);border-radius:7px;background:white}
+.agent-system>summary{display:flex;align-items:center;gap:12px 20px;padding:12px 16px;list-style:none;font-size:14px;min-height:48px}
+.agent-system>summary::-webkit-details-marker{display:none}
+.agent-system-label{font-weight:600;color:var(--ink);white-space:nowrap}
+.agent-mini-flow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;color:var(--agent-muted);font-size:13px}
+.agent-mini-flow>span{color:var(--agent-accent)}
+.agent-system-toggle{margin-left:auto;color:var(--agent-accent);white-space:nowrap;font-size:13px}
+.agent-system-open,.agent-system[open] .agent-system-closed{display:none}
+.agent-system[open] .agent-system-open{display:inline}
+.agent-system-body{padding:16px;border-top:1px solid var(--agent-line)}
+.agent-flow-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+main[data-business="agent"] .agent-flow-heading h2{margin:0}
+.agent-path-switch{display:flex;gap:4px;padding:3px;background:#f1f6f9;border-radius:5px}
+.agent-path-switch button{font:inherit;font-size:14px;padding:6px 12px;min-height:36px;border:1px solid transparent;background:transparent;color:var(--agent-muted);border-radius:4px;cursor:pointer}
+.agent-path-switch button[aria-pressed="true"]{background:white;color:var(--agent-accent);border-color:#b4d2de;font-weight:600}
+main[data-business="agent"] .agent-diagram-note{font-size:13px;color:var(--agent-muted);margin:8px 0 12px;max-width:80ch}
+main[data-business="agent"] .agent-flow-intro{font-size:14px;margin:10px 0}
+.agent-flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:22px;list-style:none;padding:0;margin:12px 0}
+.agent-flow li{position:relative;min-width:0}
+.agent-flow li:not(:last-child)::after{content:'→';position:absolute;right:-18px;top:22px;font-size:16px;color:var(--agent-muted)}
+.agent-flow button{display:flex;align-items:flex-start;gap:8px;width:100%;height:100%;min-height:72px;border:1px solid var(--agent-line);border-radius:5px;padding:12px 10px;background:#f8fbfd;text-align:left;color:var(--ink);font:inherit;cursor:pointer}
+.agent-flow button[aria-pressed="true"]{border-color:var(--agent-accent);box-shadow:inset 0 3px var(--agent-accent);background:#eff8fb}
+.agent-step-number{font-size:13px;line-height:22px;color:var(--agent-accent);font-weight:600}
+.agent-flow strong{display:block;font-size:14px;line-height:1.5}
+.agent-flow small{display:block;font-size:12px;color:var(--agent-muted);line-height:1.5;margin-top:3px}
+.agent-step-detail{border-left:3px solid #bddce5;background:#f5f9fc;padding:12px 14px;min-height:130px}
+main[data-business="agent"] .agent-step-detail h3{margin:0 0 6px}
+main[data-business="agent"] .agent-step-detail p{font-size:14px;max-width:82ch;margin:5px 0}
+main[data-business="agent"] .agent-step-detail .agent-step-boundary{font-size:13px;color:var(--agent-muted)}
+main[data-business="agent"] .agent-architecture-heading{margin:22px 0 12px}
+.agent-architecture{margin:0}
+.agent-architecture-grid{display:grid;grid-template-columns:minmax(0,1fr) 24px minmax(0,1.2fr) 24px minmax(0,1fr);gap:10px 4px;align-items:stretch}
+.agent-arch-node{border:1px solid var(--agent-line);border-radius:5px;padding:12px;background:#f8fbfd;min-width:0}
+.agent-arch-node>span{font-size:12px;color:var(--agent-muted)}
+main[data-business="agent"] .agent-arch-node h3{font-size:15px;margin:3px 0 6px}
+main[data-business="agent"] .agent-arch-node p{font-size:13px;line-height:1.6;margin:0}
+.agent-arch-server,.agent-arch-tools{background:#eff8fb;border-color:#b4d2de}
+.agent-arch-edge{align-self:center;text-align:center;color:var(--agent-accent);font-size:21px}
+.agent-arch-client{grid-column:1;grid-row:1}.agent-arch-request{grid-column:2;grid-row:1}
+.agent-arch-server{grid-column:3;grid-row:1}.agent-arch-model-link{grid-column:4;grid-row:1}
+.agent-arch-model{grid-column:5;grid-row:1;border-style:dashed}
+.agent-arch-return{grid-column:1;grid-row:2;font-size:12px;color:var(--agent-muted);text-align:center;align-self:center}
+.agent-arch-execute{grid-column:3/6;grid-row:2;font-size:12px;color:var(--agent-muted);padding-left:12px}
+.agent-arch-report{grid-column:1;grid-row:3}.agent-arch-output{grid-column:2;grid-row:3}
+.agent-arch-tools{grid-column:3;grid-row:3}.agent-arch-data-link{grid-column:4;grid-row:3}
+.agent-arch-data{grid-column:5;grid-row:3}
+.agent-architecture[data-path="workflow"] .agent-arch-model{background:#f6f7f8;border-color:#cad5dc}
+.agent-architecture[data-path="workflow"] .agent-arch-model-link{visibility:hidden}
+.agent-architecture[data-path="workflow"] .agent-arch-execute span{display:none}
+.agent-architecture figcaption{font-size:13px;color:var(--agent-muted);line-height:1.6;margin-top:12px;max-width:86ch}
+.agent-system button:focus-visible,.agent-system>summary:focus-visible{outline:2px solid var(--agent-accent);outline-offset:3px}
 @media(max-width:1100px){main[data-business="agent"] .agent-selectors{grid-template-columns:repeat(6,minmax(0,1fr))}main[data-business="agent"] .agent-selectors label{grid-column:span 2}main[data-business="agent"] .agent-selectors label:nth-child(-n+2){grid-column:span 3}}
+@media(max-width:950px){.agent-flow{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 22px}.agent-flow li:nth-child(2)::after{content:none}.agent-system>summary{gap:8px 14px;flex-wrap:wrap}.agent-mini-flow{order:3;width:100%;gap:8px}}
 @media(max-width:620px){
  main[data-business="agent"]{padding:16px 14px}
  main[data-business="agent"] h1{font-size:23px}
  main[data-business="agent"] h2{font-size:18px}
  main[data-business="agent"] .report-panel,main[data-business="agent"] .agent-workbench{padding:14px}
- main[data-business="agent"] .agent-selectors{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
- main[data-business="agent"] .agent-selectors label,main[data-business="agent"] .agent-selectors label:nth-child(-n+2){grid-column:auto}
- main[data-business="agent"] .agent-selectors label:nth-child(2){grid-column:1/-1;grid-row:2}
+ main[data-business="agent"] .agent-selectors{grid-template-columns:1fr;gap:10px}
+ main[data-business="agent"] .agent-selectors label,main[data-business="agent"] .agent-selectors label:nth-child(-n+2){grid-column:auto;display:grid;grid-template-columns:92px minmax(0,1fr);align-items:center;gap:8px}
+ main[data-business="agent"] .agent-selectors select{margin-top:0}
  main[data-business="agent"] .agent-workbench textarea,main[data-business="agent"] select{font-size:16px;min-height:42px}
  main[data-business="agent"] .agent-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
  main[data-business="agent"] .agent-actions button{min-height:44px;padding:8px}
  main[data-business="agent"] .agent-actions #agent-cancel{grid-column:1/-1}
  main[data-business="agent"] .agent-conclusions{grid-template-columns:1fr;gap:10px}
  main[data-business="agent"] .agent-client-report td,main[data-business="agent"] .agent-client-report th{padding:8px}
+ .agent-system-body{padding:12px}
+ .agent-system>summary{padding:12px}
+ .agent-mini-flow{gap:5px;font-size:12px}
+ .agent-path-switch button{min-height:44px;padding:8px 12px}
+ .agent-flow{grid-template-columns:1fr;gap:18px}
+ .agent-flow button{min-height:58px;padding:9px 12px}
+ .agent-flow small{font-size:13px}
+ .agent-flow li:not(:last-child)::after{content:'↓';top:auto;bottom:-19px;right:50%}
+ .agent-architecture-grid{display:flex;flex-direction:column;gap:10px;border-left:2px solid #c7dbe6;padding-left:12px}
+ .agent-arch-edge,.agent-arch-return,.agent-arch-execute{display:none}
+ .agent-arch-model,.agent-arch-data{margin-left:18px}
+ .agent-arch-client{order:1}.agent-arch-server{order:2}.agent-arch-model{order:3}.agent-arch-data{order:4}.agent-arch-tools{order:5}.agent-arch-report{order:6}
 }
