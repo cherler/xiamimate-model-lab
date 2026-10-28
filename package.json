@@ -108,7 +108,7 @@
     "train:uplift": "uv run python -m services.uplift.run run",
     "verify:uplift": "uv run python -m services.uplift.run verify",
     "prepare:anticheat": "uv run python -m services.anticheat.prepare",
-    "train:anticheat": "uv run --project services/advanced python -m services.anticheat.run train",
-    "verify:anticheat": "uv run --project services/advanced python -m services.anticheat.run verify"
+    "train:anticheat": "uv run --project services/advanced python -m services.anticheat.run train && uv run --project services/advanced python -m services.anticheat.recalibrate correct",
+    "verify:anticheat": "uv run --project services/advanced python -m services.anticheat.recalibrate verify"
   }
 }

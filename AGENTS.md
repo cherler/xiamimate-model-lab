@@ -54,3 +54,5 @@
 - 2026-10-28 用户新增营销增量 Uplift 业务，允许本地 `uplift` 导航。运行 `hillstrom-multiarm-v1` 固定于 `services/uplift/protocol.json`，Hillstrom 64,000 行随机邮件实验、两周窗口；训练／验证／测试为 38,400／12,800／12,800。默认模型在验证集选择后冻结，留出已评分；不得重开调参并声称新独立测试。`verify:uplift` 从保存模型核验预测与统计，不重训。S/T/X/R/线性 DML 已运行；TARNet、Dragonnet、DESCN 仅规划，用户确认 DeepCausal Network 按方向理解。不得将条件平均效应当作个体真实因果类型，不将历史购买渠道当作触达随机动作，不将销售额当利润。原数据未核实标准再分发许可，本轮仅本地研究，公开构建排除 `uplift-results/` 并隐藏入口；此新增范围未继承 M5/Dressipi 的专项发布授权。后续按 `docs/uplift-plan.md` 实施。
 
 - 2026-10-28 新增游戏反外挂本地研究案例 `anticheat:vizdoom`。协议 `services/anticheat/protocol.json`，运行 `vizdoom-aim-v1`；作者 GAN-Aimbots v2 CC BY 4.0 数据，41 设备／256 局，按硬件隔离 24／8／9 设备。规则、逻辑回归、LightGBM、轨迹 CNN 与 GAN A 样本增广 LightGBM 已训练；GAN B 未用于训练，但留出只有 1 个设备／61 窗口。正常校准约 1% 目标不等于留出误报保证，保留全部失败。留出已评分，不得覆盖后重开称新盲测。首次 OpenMP 中止发生于测试评分前，记录保留；最终单线程。`verify:anticheat` 不重训。当前只有瞄准轨迹，透视、多模态、账号信誉、线上监控、百万并发均未验证，风险分数不是定罪概率，不自动封号。原始／模型／结果包不入 Git；默认构建排除 `anticheat-results/` 并隐藏入口，不继承其他案例发布授权。计划见 `docs/anticheat-plan.md`。
+
+- 反外挂数值更正：float32 阈值边界原先可能多计一条校准告警，原 v1 保留不覆盖。`services/anticheat/recalibrate.py` 使用原校准集生成 `vizdoom-aim-v1-threshold-fix`，模型／分数不变；属于已知留出更正回放，不是新独立测试。页面强制检查 `threshold-fix-v1` 修订；`verify:anticheat` 以修正版为准。

@@ -33,7 +33,8 @@ class FrozenAntiCheatEvidenceTest(unittest.TestCase):
         root=Path(__file__).resolve().parents[1]
         folder=root/'artifacts/anticheat-runs/vizdoom-aim-v1'
         if not (folder/'report.json').exists():self.skipTest('Local research artifacts absent')
-        report=json.loads((folder/'report.json').read_text());frozen=json.loads((folder/'frozen.json').read_text());split=json.loads((folder/'split.json').read_text())
+        corrected=folder.with_name(folder.name+'-threshold-fix')
+        report=json.loads((corrected/'report.json').read_text());frozen=json.loads((corrected/'frozen.json').read_text());split=json.loads((folder/'split.json').read_text())
         d=np.load(root/'data/anticheat/prepared.npz');scores=np.load(folder/'scores.npz');ids=np.array(split['test']);kinds=d['kinds'][ids];y=kinds!='none'
         known=np.isin(kinds,['none','ease_light','ease_strong'])
         for model in report['protocol']['models']:
@@ -42,3 +43,13 @@ class FrozenAntiCheatEvidenceTest(unittest.TestCase):
                 actual=counts(y[mask],scores[model][mask],frozen['thresholds'][model])
                 for k,v in actual.items():self.assertEqual(v,report['models'][model][field][k])
         self.assertEqual(len(np.unique(d['groups'][ids][kinds=='gan_group1'])),1)
+
+class ThresholdPrecisionTest(unittest.TestCase):
+    def test_float32_threshold_is_strict_in_score_dtype(self):
+        from services.anticheat.recalibrate import strict_cut
+        for dtype in [np.float32,np.float64]:
+            values=np.linspace(0,1,2135,dtype=dtype)
+            cut=strict_cut(values)
+            self.assertEqual(int((values>=cut).sum()),21)
+            tied=np.ones(2135,dtype=dtype)
+            self.assertEqual(int((tied>=strict_cut(tied)).sum()),0)
