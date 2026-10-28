@@ -104,3 +104,4 @@ apps/web/retrieval-cost-results/
 artifacts/uplift-runs/
 artifacts/uplift-latest.json
 apps/web/uplift-results/
+data/uplift/
