@@ -6,7 +6,7 @@
 
 先恢复已核验的本地展示导出包；它们按 `.gitignore` 不随 Git 推送。干净 clone 不包含训练数据和展示结果，不能直接构建；缺包时构建明确失败，不临时重训或填造结果。
 
-执行 `npm run check`、`npm test`、`npm run test:ml`、`npm run build`。默认 `npm run build` 校验七案例证据并排除 M5／Dressipi。用户已明确选择发布两项研究案例时，运行 `npm run build:showcase`：额外逐文件核验两案例清单，只复制清单内展示资源，开启案例入口。两种构建默认禁用在线 AI；部署独立服务后，追加 `-- --online-ai` 显式启用页面请求。只上传 `dist/`，不能上传项目根目录、`.env`、artifacts 或 apps/web 原目录。
+执行 `npm run check`、`npm test`、`npm run test:ml`、`npm run build`。默认 `npm run build` 校验基础案例证据并排除 M5／Dressipi、营销增量与游戏反外挂。正式展示发布使用 `npm run build:showcase`：启用 `--competition-showcase --business-showcase`，逐文件核验四项研究案例的当前清单与结果，只复制清单内展示资源并开启入口。两种构建默认禁用在线 AI；部署独立服务后，追加 `-- --online-ai` 显式启用页面请求。只上传 `dist/`，不能上传项目根目录、`.env`、artifacts 或 apps/web 原目录。
 
 ## 主站框架
 
@@ -54,3 +54,9 @@
 本次上线 Agent 紧凑布局、工作流说明和架构可视化；保留原有七案例、M5／Dressipi 与在线 AI。营销增量和反外挂的源码已同步，结果包仍按现行构建规则排除，未开放线上入口。
 
 公网验收：页面、Agent 样式与流程脚本、AI 开关及两竞赛案例清单均与本地构建哈希一致；status/options 正常。固定流程返回 200，两个工具均成功；真实 MiniMax-M3 Agent 返回 200，耗时 3.733 秒，五条工具记录成功，计算报告校验通过。本轮浏览器自动验收连接连续超时，未取得新的线上截图；发布前同版代码的本地桌面、手机与交互验收见 `docs/agent-cooperation-plan.md`。
+
+## 2026-10-28 营销增量与反外挂发布范围补齐
+
+用户确认线上应包含这两项已完成的新案例。正式展示构建不再沿用仅本地的入口开关，包含九类数据建模业务及 AI Agent；四个阅读模块共用同一导航，保留选择和深链接。`business-showcase.mjs` 检查清单路径、文件哈希、运行版本与统计完整性，仅允许当前清单和结果进入发布包；反外挂必须通过已有阈值修正版校验。旧导出、原始数据、模型权重继续排除。
+
+默认构建排除与正式展示构建包含均已验证；`npm run check`、292 项前端／服务测试、132 项 Python 测试通过。两案例的“本地研究”页签调整为“研究实验展示”，来源与评估限制保留，未改变模型或重新评估留出数据。

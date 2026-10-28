@@ -103,7 +103,7 @@
     "audit:retrieval-cost": "uv run --project services/retrieval python -m services.retrieval.cost_audit",
     "run:retrieval-cost": "uv run --project services/retrieval python -m services.retrieval.cost_study run",
     "verify:retrieval-cost": "uv run --project services/retrieval python -m services.retrieval.cost_study verify",
-    "build:showcase": "node scripts/build.mjs --competition-showcase",
+    "build:showcase": "node scripts/build.mjs --competition-showcase --business-showcase",
     "start:assistant": "node scripts/assistant-production.mjs",
     "train:uplift": "uv run python -m services.uplift.run run",
     "verify:uplift": "uv run python -m services.uplift.run verify",

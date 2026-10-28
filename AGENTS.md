@@ -56,3 +56,5 @@
 - 2026-10-28 新增游戏反外挂本地研究案例 `anticheat:vizdoom`。协议 `services/anticheat/protocol.json`，运行 `vizdoom-aim-v1`；作者 GAN-Aimbots v2 CC BY 4.0 数据，41 设备／256 局，按硬件隔离 24／8／9 设备。规则、逻辑回归、LightGBM、轨迹 CNN 与 GAN A 样本增广 LightGBM 已训练；GAN B 未用于训练，但留出只有 1 个设备／61 窗口。正常校准约 1% 目标不等于留出误报保证，保留全部失败。留出已评分，不得覆盖后重开称新盲测。首次 OpenMP 中止发生于测试评分前，记录保留；最终单线程。`verify:anticheat` 不重训。当前只有瞄准轨迹，透视、多模态、账号信誉、线上监控、百万并发均未验证，风险分数不是定罪概率，不自动封号。原始／模型／结果包不入 Git；默认构建排除 `anticheat-results/` 并隐藏入口，不继承其他案例发布授权。计划见 `docs/anticheat-plan.md`。
 
 - 反外挂数值更正：float32 阈值边界原先可能多计一条校准告警，原 v1 保留不覆盖。`services/anticheat/recalibrate.py` 使用原校准集生成 `vizdoom-aim-v1-threshold-fix`，模型／分数不变；属于已知留出更正回放，不是新独立测试。页面强制检查 `threshold-fix-v1` 修订；`verify:anticheat` 以修正版为准。
+
+- 2026-10-28 用户明确要求补上线上缺失的营销增量与游戏反外挂，覆盖此前两案例仅本地的展示范围。`build:showcase` 同时启用 `--competition-showcase --business-showcase`，两新案例只复制当前清单及哈希、范围校验通过的 case.json；不复制旧导出、原始归档或模型权重。默认 `build` 仍排除研究结果。保留来源、许可状态与失败边界，不修改冻结产物或将发布选择解释为额外许可。

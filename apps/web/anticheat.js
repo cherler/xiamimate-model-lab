@@ -32,7 +32,7 @@ export function projectedAlerts(recall,fpr,prevalence,n=10000){
 }
 let cache;
 async function load(){if(!cache)cache=(async()=>{
- const req=await fetch('./anticheat-results/manifest.json');if(!req.ok)throw new Error('请先生成本地反外挂训练结果');const m=await req.json();
+ const req=await fetch('./anticheat-results/manifest.json');if(!req.ok)throw new Error('反外挂展示结果暂不可用');const m=await req.json();
  if(!/^[a-f0-9]{16}\/case\.json$/.test(m.path))throw new Error('结果路径无效');const res=await fetch('./anticheat-results/'+m.path);if(!res.ok)throw new Error('结果文件缺失');const bytes=await res.arrayBuffer();const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(x=>x.toString(16).padStart(2,'0')).join('');if(hash!==m.sha256)throw new Error('结果校验失败');const p=verifyAntiCheat(JSON.parse(new TextDecoder().decode(bytes)));if(p.run_id!==m.run_id)throw new Error('运行版本不一致');return p;
  })().catch(e=>{cache=null;throw e;});return cache;}
 function trajectory(w){
@@ -65,7 +65,7 @@ export async function renderAntiCheat(host,current,params,mode='case'){
  const p=await load();if(!current())return;
  const model=Object.hasOwn(p.models,params.get('model'))?params.get('model'):p.protocol.default_model,scope=Object.hasOwn(SCOPES,params.get('scope'))?params.get('scope'):'known',view=params.get('view')||'experience',m=p.models[model],r=metric(m,scope),base=metric(p.models.rule,scope);
  const title={case:'瞄准行为检测',models:'模型解读',learn:'教学拆解',expand:'场景扩展'}[mode];
- const heading=`<div class="breadcrumb">游戏反外挂<span>/</span>ViZDoom 瞄准行为实验</div><header class="page-heading"><div><h1>游戏反外挂 · ${title}</h1><p>从射击前轨迹筛选复核线索，比较检测能力、正常误报与计算成本。</p></div><span class="ac-tag">本地实训</span></header>`;
+ const heading=`<div class="breadcrumb">游戏反外挂<span>/</span>ViZDoom 瞄准行为实验</div><header class="page-heading"><div><h1>游戏反外挂 · ${title}</h1><p>从射击前轨迹筛选复核线索，比较检测能力、正常误报与计算成本。</p></div><span class="ac-tag">研究实验展示</span></header>`;
  const link=v=>`#anticheat?${new URLSearchParams({case:'vizdoom',view:v,model,scope,...(params.has('sample')?{sample:params.get('sample')}:{})})}`;
  const tabs=`<nav class="case-views" aria-label="反外挂案例内容">${[['experience','案例体验'],['data','案例与数据'],['report','效果报告']].map(([v,n])=>`<a href="${link(v)}" ${view===v?'aria-current="page"':''}>${n}</a>`).join('')}</nav>`;
  const controls=`<section class="report-panel ac-control-panel"><div class="ac-controls">${select('model','检测方法',Object.entries(p.models).map(([k,v])=>[k,v.name]),model)}${select('scope','辅助类型',Object.entries(SCOPES),scope)}</div></section>`;
