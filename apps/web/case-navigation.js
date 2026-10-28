@@ -24,7 +24,8 @@ export function resolveRoute(hash,localResearch=LOCAL_RESEARCH){
   params.set('view',previous==='advanced'?'advanced':params.get('view')==='tuning'?'tuning':'selection');
  }
  if(page==='evidence'){page='recommend';params.set('view','report');}
- if(!['recommend','forecast','classify','retrieve','anomaly','segments','decision','agent','models','learn','expand','delivery'].includes(page))page='recommend';
+ if(!['recommend','forecast','classify','retrieve','anomaly','segments','decision','agent','uplift','models','learn','expand','delivery'].includes(page))page='recommend';
+ if(page==='uplift'){if(!params.has('case'))params.set('case','hillstrom');if(!['experience','data','report'].includes(params.get('view')))params.set('view','experience');}
  if(page==='agent'&&!params.has('case'))params.set('case','retail');
  if(['anomaly','segments','decision'].includes(page)){
   if(!params.has('case'))params.set('case',page==='anomaly'?'nab':'retail');

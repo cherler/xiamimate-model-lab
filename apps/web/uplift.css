@@ -1,0 +1,11 @@
+/* Keep short causal comparisons readable without horizontally scrolling a two-column table. */
+.uplift-table table{min-width:0;table-layout:auto}
+.uplift-table th{white-space:normal;line-height:1.6}
+.uplift-table.uplift-wide table{min-width:720px}
+main[data-business="uplift"] .report-panel p{line-height:1.8;overflow-wrap:anywhere}
+main[data-business="uplift"] summary{cursor:pointer;padding:12px 0;font-weight:600}
+main[data-business="uplift"] details+details{border-top:1px solid #dce7ee}
+main[data-business="uplift"] input,main[data-business="uplift"] select{max-width:100%;box-sizing:border-box}
+main[data-business="uplift"] section>label{display:block}
+main[data-business="uplift"] section>label select{display:block;padding:10px;margin-top:8px;border:1px solid #b9cddd;border-radius:5px;background:white;color:#17324d}
+@media(max-width:600px){.uplift-table th,.uplift-table td{padding:10px;min-width:0}.uplift-table:not(.uplift-wide) td:first-child{width:38%}}

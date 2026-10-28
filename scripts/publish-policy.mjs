@@ -3,5 +3,6 @@ import {relative, sep} from 'node:path';
 export function publishableWebPath(root, source, competitionPaths = new Set()) {
   const path=relative(root,source).split(sep).join('/');
   if(path==='..'||path.startsWith('../'))return false;
+  if(path.split('/')[0]==='uplift-results')return false;
   return !['m5-results','dressipi-results'].includes(path.split('/')[0]) || competitionPaths.has(path);
 }

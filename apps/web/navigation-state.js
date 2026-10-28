@@ -1,3 +1,4 @@
+import {UPLIFT_RESEARCH} from './uplift-mode.js';
 // One business identity across experience, methods and teaching.
 export const BUSINESSES=[
  {id:'recommend',icon:'◇',label:'商品推荐',caseId:'tafeng'},
@@ -8,17 +9,19 @@ export const BUSINESSES=[
  {id:'segments',icon:'▦',label:'零售分群',caseId:'retail'},
  {id:'decision',icon:'▧',label:'决策优化',caseId:'retail'},
 ];
-export const WORKSPACES=[...BUSINESSES,{id:'agent',icon:'◎',label:'AI Agent',caseId:'retail'}];
+const UPLIFT_ENTRY={id:'uplift',icon:'↗',label:'营销增量',caseId:'hillstrom'};
+const ROUTE_WORKSPACES=[...BUSINESSES,UPLIFT_ENTRY,{id:'agent',icon:'◎',label:'AI Agent',caseId:'retail'}];
+export const WORKSPACES=ROUTE_WORKSPACES.filter(c=>c.id!=='uplift'||UPLIFT_RESEARCH);
 export function navigationContext(page,params=new URLSearchParams()){
  const topic=params.get('topic')?.split(':');
  const requested=topic?.[0]||params.get('business')||(['models','learn','expand','delivery'].includes(page)?(['weekly_sales','daily_sales'].includes(params.get('task'))||params.get('lesson')==='forecast'?'forecast':'recommend'):page);
- const business=WORKSPACES.find(c=>c.id===requested)||BUSINESSES[0];
+ const business=ROUTE_WORKSPACES.find(c=>c.id===requested)||BUSINESSES[0];
  const mode=['models','learn','expand','delivery'].includes(page)?page:params.get('view')==='models'?'models':params.get('walk')==='calculation'?'learn':'case';
  return {mode,business:business.id,caseId:topic?.[1]||params.get('case')||(params.has('lesson')?'tafeng':business.caseId)};
 }
 export function sectionHref(mode,business,params=new URLSearchParams()){
  if(mode==='delivery')return '#delivery';
- const entry=WORKSPACES.find(c=>c.id===business)||BUSINESSES[0],q=new URLSearchParams(params);
+ const entry=ROUTE_WORKSPACES.find(c=>c.id===business)||BUSINESSES[0],q=new URLSearchParams(params);
  if(!q.has('case'))q.set('case',entry.caseId);
  if(mode!=='case'&&q.has('view')&&!['models','learn'].includes(q.get('view')))q.set('experienceView',q.get('view'));
  for(const key of ['topic','focus','lesson','walk','business','view'])q.delete(key);
