@@ -8,20 +8,44 @@
   "scope": "Collections 1, 2, 3; 35 Hz recorded action deltas; no live cheat software is executed",
   "window": "35 past action frames before ammo-decrement shot proxy; same weapon, pistol/shotgun/minigun; consecutive selected anchors at least 35 frames apart; no post-shot features",
   "split": "Unique hardware IDs hashed, sorted, shuffled once with fixed seed; floor 60% training, next to floor 80% calibration, remainder test. Device is not guaranteed person identity.",
-  "train_conditions": ["none", "ease_light", "ease_strong"],
+  "train_conditions": [
+    "none",
+    "ease_light",
+    "ease_strong"
+  ],
   "exposure_extra_condition": "gan_group0",
   "withheld_condition": "gan_group1",
   "weighting": "Equal total weight per training device; no test-driven tuning",
   "calibration_fpr": 0.01,
   "threshold": "Normal calibration windows only; smallest strict threshold with at most floor(n*0.01) alerts. No population false-positive guarantee.",
-  "models": ["rule", "linear", "lightgbm", "temporal_cnn", "lightgbm_exposure"],
+  "models": [
+    "rule",
+    "linear",
+    "lightgbm",
+    "temporal_cnn",
+    "lightgbm_exposure"
+  ],
   "default_model": "lightgbm",
-  "lightgbm": {"n_estimators": 180, "learning_rate": 0.04, "num_leaves": 15, "max_depth": 5, "min_child_samples": 50, "reg_lambda": 2, "n_jobs": 2, "verbosity": -1, "deterministic": true, "force_col_wise": true},
+  "lightgbm": {
+    "n_estimators": 180,
+    "learning_rate": 0.04,
+    "num_leaves": 15,
+    "max_depth": 5,
+    "min_child_samples": 50,
+    "reg_lambda": 2,
+    "n_jobs": 1,
+    "verbosity": -1,
+    "deterministic": true,
+    "force_col_wise": true
+  },
   "cnn_epochs": 12,
   "interval": "300 fixed-model device cluster bootstrap replicates; descriptive 95% percentile interval, not retraining variability. Zero observed errors do not certify zero population error.",
-  "quality_stress": ["half_rate_hold", "last_five_missing"],
+  "quality_stress": [
+    "half_rate_hold",
+    "last_five_missing"
+  ],
   "stress_scope": "Predeclared sampling/missing-input sensitivity; not an adaptive attacker, no claim of adversarial robustness certification",
   "sample_selection": "First record in each true/false positive/negative bin per model, plus first of each auxiliary condition; diagnostic examples, not a representative sample",
-  "performance": "Loaded CPU model, 2 library threads, 20 warmups, 200 single-window calls, 50 batch-64 calls. Feature/normalization included; no network, stream parsing, queuing or concurrent users",
+  "performance": "Loaded CPU model, 1 library thread, 20 warmups, 200 single-window calls, 50 batch-64 calls. Feature/normalization included; no network, stream parsing, queuing or concurrent users",
   "test_use": "Public benchmark metadata and label distribution audited before training. Predictions and thresholds frozen before first test scoring. No tuning from held-out scores."
 }
