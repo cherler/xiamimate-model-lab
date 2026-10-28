@@ -100,3 +100,7 @@ apps/web/classification-input-results/
 artifacts/retrieval-cost-runs/
 artifacts/retrieval-cost-latest.json
 apps/web/retrieval-cost-results/
+# Marketing incrementality: raw randomized records, fitted models and display exports
+artifacts/uplift-runs/
+artifacts/uplift-latest.json
+apps/web/uplift-results/
