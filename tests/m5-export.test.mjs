@@ -11,9 +11,7 @@ const resource=k=>read(`${root}/${manifest.resources[k].path}`);
 const overview=manifest?resource('overview'):null,catalog=manifest?resource('catalog'):null;
 const near=(a,b,tolerance=1e-7)=>assert.ok(Math.abs(a-b)<=tolerance,`${a} != ${b}`);
 
-test('M5 export binds all resources to verified source and stays local-only',{skip:!manifest},()=>{
- const pointer=read('artifacts/competition-m5.json');
- assert.equal(manifest.run_id,pointer.run_id);assert.equal(manifest.source_report_sha256,pointer.report_sha256);
+test('M5 display checks every resource hash and retains original export scope',{skip:!manifest},()=>{
  assert.equal(manifest.public_export_allowed,false);assert.equal(overview.public_export_allowed,false);
  for(const spec of Object.values(manifest.resources)){
   assert.match(spec.path,new RegExp(`^${manifest.version}/[a-z0-9-]+\\.json$`));
@@ -21,9 +19,18 @@ test('M5 export binds all resources to verified source and stays local-only',{sk
  }
  assert.equal(catalog.length,3049);assert.equal(new Set(catalog.map(v=>v.id)).size,3049);
  assert.deepEqual(overview.windows.map(w=>w.origin),[1857,1885,1913]);
- const report=read(`artifacts/competition-runs/${pointer.run_id}/report.json`);
- overview.windows.forEach((w,i)=>assert.deepEqual(w.models,[...report.folds,report.final][i].models));
  assert.ok(!/official_score|leaderboard_score|official_rank/.test(JSON.stringify(overview)));
+});
+test('M5 source audit matches the local training report and feature gains',{
+ skip:!manifest||!existsSync('artifacts/competition-m5.json')?'Requires local training artifacts, not included in the display release':false
+},()=>{
+ const pointer=read('artifacts/competition-m5.json');
+ assert.equal(manifest.run_id,pointer.run_id);assert.equal(manifest.source_report_sha256,pointer.report_sha256);
+ const report=read(`artifacts/competition-runs/${pointer.run_id}/report.json`);
+ overview.windows.forEach((w,i)=>{
+  const original=[...report.folds,report.final][i];
+  assert.deepEqual(w.models,original.models);assert.deepEqual(w.cost,original.cost);
+ });
 });
 test('all 3049 item predictions reproduce category/store series and item-day metrics',{skip:!manifest},()=>{
  for(const w of overview.windows){

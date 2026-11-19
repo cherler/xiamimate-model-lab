@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
+import {existsSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {retrievalMetrics,rrf,percentile,compareQueries,verifyRetrieval} from '../apps/web/retrieval-metrics.js';
 import {resolveRoute} from '../apps/web/case-navigation.js';
@@ -26,22 +27,31 @@ test('retrieval routes retain case selection and canonicalize views',()=>{
  assert.equal(resolveRoute('#retrieve?case=unknown&view=bad').params.get('case'),'unknown');
  assert.equal(resolveRoute('#retrieve?view=bad').params.get('view'),'experience');
 });
-test('all exported retrieval rows recompute and preserve frozen rankings, hashes and attribution',async()=>{
+test('all exported retrieval rows recompute and preserve hashes and attribution',async()=>{
  const root=new URL('../apps/web/retrieval-results/',import.meta.url);
  let manifest;try{manifest=JSON.parse(await readFile(new URL('manifest.json',root)));}catch(e){if(e.code==='ENOENT')throw new Error('Run npm run export:search before retrieval integration tests');throw e;}
  const bytes=await readFile(new URL(manifest.path,root)),p=JSON.parse(bytes);
  const digest=b=>createHash('sha256').update(b).digest('hex');
  assert.equal(digest(bytes),manifest.sha256);verifyRetrieval(p);
  const notice=await readFile(new URL(manifest.notice,root));assert.equal(notice.toString(),p.notice);assert.equal(digest(notice),manifest.notice_sha256);
+ const changed=structuredClone(p);changed.queries[0].metrics.bm25.ndcg_at_10+=.01;assert.throws(()=>verifyRetrieval(changed));
+ const pool=structuredClone(p);[pool.queries[0].rankings.rerank[0],pool.queries[0].rankings.rerank[99]]=[pool.queries[0].rankings.rerank[99],pool.queries[0].rankings.rerank[0]];assert.throws(()=>verifyRetrieval(pool));
+ const sum=structuredClone(p);sum.report.summary.dense.recall_at_10+=.1;assert.throws(()=>verifyRetrieval(sum));
+});
+
+test('retrieval source audit matches frozen local rankings, documents and protocol',{
+ skip:!existsSync(new URL('../artifacts/retrieval-runs/',import.meta.url))?'Requires local training artifacts, not included in the display release':false
+},async()=>{
+ const root=new URL('../apps/web/retrieval-results/',import.meta.url);
+ const manifest=JSON.parse(await readFile(new URL('manifest.json',root)));
+ const p=JSON.parse(await readFile(new URL(manifest.path,root)));
+ const digest=b=>createHash('sha256').update(b).digest('hex');
  const local=new URL(`../artifacts/retrieval-runs/${manifest.run_id}/`,import.meta.url);
  const rankings=await readFile(new URL('rankings.json',local));assert.equal(digest(rankings),p.report.rankings_sha256);
  assert.equal(digest(await readFile(new URL('documents.json',local))),p.report.documents_sha256);
  assert.equal(digest(await readFile(new URL('protocol.json',local))),p.report.protocol_sha256);
  const original=JSON.parse(rankings);assert.equal(original.length,p.queries.length);
  for(let i=0;i<original.length;i++)for(const key of Object.keys(original[i]))assert.deepEqual(original[i][key],p.queries[i][key]);
- const changed=structuredClone(p);changed.queries[0].metrics.bm25.ndcg_at_10+=.01;assert.throws(()=>verifyRetrieval(changed));
- const pool=structuredClone(p);[pool.queries[0].rankings.rerank[0],pool.queries[0].rankings.rerank[99]]=[pool.queries[0].rankings.rerank[99],pool.queries[0].rankings.rerank[0]];assert.throws(()=>verifyRetrieval(pool));
- const sum=structuredClone(p);sum.report.summary.dense.recall_at_10+=.1;assert.throws(()=>verifyRetrieval(sum));
 });
 
 test('missing retrieval results fail visibly and stale routes are not overwritten',async()=>{
