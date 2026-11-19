@@ -4,7 +4,11 @@
 
 独立的公开数据案例项目，服务于定制开发展示与教学。前端、Python 服务、数据和训练产物保持独立；公开静态版挂载在虾米伙伴主站 `/model-lab/`，复用主站 `/chrome/` 页眉与页脚。
 
-访问：[GitHub Pages 展示站](https://cherler.github.io/xiamimate-model-lab/) · [虾米伙伴在线版](https://xiamimate.com/model-lab/) · [公开源码](https://github.com/cherler/xiamimate-model-lab)。Pages 包含九类业务及 M5／Dressipi 的既有展示结果；需要后端的问 AI、Agent 执行与需求对话，通过明确链接前往虾米伙伴，不在 Pages 保存密钥或转发访客草稿。
+访问：[GitHub Pages 展示站（推荐）](https://cherler.github.io/xiamimate-model-lab/) · [虾米伙伴在线版（可能随时停用）](https://xiamimate.com/model-lab/) · [公开源码](https://github.com/cherler/xiamimate-model-lab)。
+
+**服务可用性说明：** 虾米伙伴（xiamimate.com）由作者自行维护，可能随时暂停或关闭，相关导航链接不保证持续可用。问 AI、Agent 执行和在线需求对话依赖该站后端，服务关闭后也将不可用。请优先通过 GitHub Pages 查看案例；Pages 的静态展示、本仓库源码和已发布的展示附件不依赖虾米伙伴服务。
+
+Pages 包含九类业务及 M5／Dressipi 的既有展示结果；在线 AI 功能通过明确链接前往虾米伙伴，不在 Pages 保存密钥或转发访客草稿。
 
 原始数据、模型权重、私密 `.env` 和完整训练产物不进入 Git。展示结果以带 SHA-256 校验值的 Release 附件提供，用于恢复页面证据，不是重新训练或独立重复实验。数据来源、署名、许可状态和评估边界保留在各案例；仓库公开不改变第三方数据与模型的许可。接入与发布见 [部署说明](deploy/README.md)。
 

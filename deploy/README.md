@@ -1,6 +1,8 @@
 # 主站接入与公开部署
 
-源码：[cherler/xiamimate-model-lab](https://github.com/cherler/xiamimate-model-lab)（公开）。访问：[虾米伙伴在线版](https://xiamimate.com/model-lab/) · [GitHub Pages 静态版](https://cherler.github.io/xiamimate-model-lab/)。
+源码：[cherler/xiamimate-model-lab](https://github.com/cherler/xiamimate-model-lab)（公开）。访问：[GitHub Pages 静态版（推荐）](https://cherler.github.io/xiamimate-model-lab/) · [虾米伙伴在线版（可能随时停用）](https://xiamimate.com/model-lab/)。
+
+虾米伙伴（xiamimate.com）由作者自行维护，可能随时暂停或关闭，相关链接及在线 AI 服务不保证持续可用。GitHub Pages 的静态案例展示、源码和已发布的展示附件不依赖该服务；需要后端的问 AI、Agent 执行与在线需求对话在该服务关闭后不可用。
 
 ## GitHub Pages
 
