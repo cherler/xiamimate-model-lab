@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><title>虾米模型工坊 · 宣传封面</title><style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1920px;height:1080px;overflow:hidden;background:#f3f9fb;
+  font-family:"PingFang SC","Hiragino Sans GB",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+/* 底：品牌色调开的浅色渐变 + 一层极淡的网格。不做纯白，纯白在信息流里也会往后退。 */
+.bg{position:absolute;inset:0;background:
+  radial-gradient(120% 90% at 8% 0%, #ffffff 0%, #f3f9fb 42%, #e0edf3 100%)}
+.grid{position:absolute;inset:0;opacity:.5;
+  background-image:linear-gradient(#087f9d0e 1px, transparent 1px),
+                   linear-gradient(90deg, #087f9d0e 1px, transparent 1px);
+  background-size:64px 64px}
+/* 品牌色弧块：垫在界面卡片后面，把那一侧压住，图才不会飘。 */
+.blob{position:absolute;right:-172.79999999999998px;top:-216px;width:1248px;height:1248px;
+  border-radius:50%;
+  background:radial-gradient(circle at 30% 30%, #087f9d26 0%, #087f9d0d 55%, transparent 72%)}
+.bar{position:absolute;left:0;top:0;bottom:0;width:14px;
+  background:linear-gradient(180deg, #087f9d 0%, #4fbeb8 100%)}
+
+/* 界面卡片：圆角 + 描边 + 投影。浅色界面靠描边把边界拉出来。 */
+.shot{position:relative;border-radius:23px;overflow:hidden;
+  border:1px solid #087f9d33;
+  box-shadow:0 48px 110px rgba(10,30,28,.28), 0 8px 24px rgba(10,30,28,.12)}
+.shot i{position:absolute;inset:0;display:block;
+  background:url("./model-lab-forecast.png") 18% top/cover}
+
+.chip{display:inline-flex;align-self:flex-start;align-items:center;
+  background:#087f9d;color:#fff;border-radius:999px;
+  padding:13px 30px;font-size:31px;
+  font-weight:700;letter-spacing:.08em;margin-bottom:30px;
+  box-shadow:0 10px 26px #087f9d44}
+h1{font-size:92px;line-height:1.14;font-weight:800;color:#17324d;letter-spacing:-.035em}
+h1 b{color:#087f9d}
+/* 标题下的重色横杠：短视频封面上这一笔比什么都管用，眼睛会先落在它上面。 */
+.rule{width:186px;height:14px;border-radius:8px;
+  margin:30px 0 26px;
+  background:linear-gradient(90deg, #087f9d 0%, #4fbeb8 100%)}
+.sub{white-space:pre-line;font-size:36px;line-height:1.46;color:#486578;font-weight:500}
+.chips{display:flex;flex-wrap:wrap;gap:14px;margin-top:35px}
+.chips span{background:#fff;border:2px solid #087f9d2e;border-radius:14px;
+  padding:13px 20px;font-size:27px;font-weight:700;color:#17324d;
+  box-shadow:0 6px 18px rgba(10,30,28,.07)}
+.chips span::before{content:"";display:inline-block;width:12px;height:12px;
+  border-radius:50%;background:#087f9d;margin-right:12px;vertical-align:middle}
+/*  脚注放得下就跟在网址后面，放不下整条掉到下一行 —— 不许从中间折断。
+    3:4 的文字栏窄，开源那行网址被劈成「github.com/cherler/xiami-」+「cslab」两行，
+    一个网址断成两截没人会去拼。
+    （这段注释在模板字符串里面：**别用反引号**，会把模板提前收掉。）  */
+.foot{display:flex;align-items:baseline;gap:26px;flex-wrap:wrap}
+.foot .cta{font-size:40px;color:#087f9d;font-weight:800;white-space:nowrap}
+.foot .fine{font-size:27px;color:#486578;opacity:.8;letter-spacing:.04em;white-space:nowrap}
+
+/* 左字右图。文字栏 104–924，卡片从 1041 起，中间留一道空。 */
+.wrap{position:absolute;left:104px;top:0;bottom:0;width:840px;
+  display:flex;flex-direction:column;justify-content:center;z-index:3}
+.shot{position:absolute;right:-60px;top:150px;
+  width:940px;height:780px;transform:rotate(-1.6deg)}
+.foot{position:absolute;left:104px;bottom:75px;z-index:3}
+
+</style></head><body>
+<div class="bg"></div><div class="grid"></div><div class="blob"></div><div class="bar"></div>
+<div class="shot"><i></i></div><div class="wrap">
+    <span class="chip">虾米模型工坊</span>
+    <h1>业务建模与效果评估</h1>
+    <div class="rule"></div>
+    <div class="sub">推荐、预测、检索与决策等九类业务。
+实际模型结果、基线对照与适用条件。</div>
+    <div class="chips"><span>9 类业务案例</span><span>同范围基线对照</span><span>方法 · 成本 · 适用条件</span></div></div><div class="foot"><span class="cta">cherler.github.io/xiamimate-model-lab</span></div>
+</body></html>

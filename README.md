@@ -6,6 +6,8 @@
 
 [在线查看案例](https://cherler.github.io/xiamimate-model-lab/) · [案例导览](docs/case-walkthroughs.md) · [实验与评估文档](docs/README.md) · [部署说明](deploy/README.md)
 
+[![虾米模型工坊：业务建模与效果评估，点击查看在线案例](docs/media/model-lab-cover.png)](https://cherler.github.io/xiamimate-model-lab/)
+
 ## 九类业务，沿着问题看模型
 
 | 业务方向 | 展示重点 |
