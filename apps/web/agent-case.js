@@ -1,4 +1,5 @@
 import {agentProcessHtml,initAgentProcess} from './agent-process.js';
+import {GITHUB_PAGES,onlineServiceHtml} from './online-service.js';
 import {assistantRequest,answerHtml,traceHtml,validationHtml,esc,sourcesHtml} from './assistant.js';
 import {downloadText} from './cooperation.js';
 import {saveSelection} from './navigation-state.js';
@@ -52,6 +53,7 @@ export async function renderAgent(host,current,params,mode='case'){
  if(mode!=='case'){host.insertAdjacentHTML('beforeend',`<div class="agent-reading">${explanation(mode)}</div>`);return;}
  host.insertAdjacentHTML('beforeend',`${agentProcessHtml()}<p class="agent-result-note">本例使用 UCI 已保存的历史预测与模拟订单。固定流程可直接复算；AI Agent 需要接通语言模型，由模型选择工具并解释证据。两者都不产生真实采购订单。</p><section class="agent-workbench"><h2>任务与分析条件</h2><p class="agent-status" id="agent-availability" role="status">正在读取可用场景…</p><div id="agent-form"></div></section><div class="agent-results" id="agent-results" aria-live="polite"></div>`);
  initAgentProcess(host);
+ if(GITHUB_PAGES){host.querySelector('#agent-availability').textContent='工作流、架构与案例说明可在这里查看。';host.querySelector('#agent-form').innerHTML=onlineServiceHtml('#agent?'+params,'打开在线 AI Agent 与固定分析流程');return;}
  const availability=host.querySelector('#agent-availability'),formHost=host.querySelector('#agent-form'),resultHost=host.querySelector('#agent-results');running=new AbortController();
  try{
   const [options,status]=await Promise.all([assistantRequest('options',null,running.signal),assistantRequest('status',null,running.signal)]);if(!current())return;

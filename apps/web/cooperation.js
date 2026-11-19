@@ -1,4 +1,5 @@
 import {assistantRequest} from './assistant-client.js';
+import {GITHUB_PAGES,onlineServiceHtml} from './online-service.js';
 import {deliveryCaseLinks} from './case-reading.js';
 export const BRIEF_FIELDS=[['goal','业务问题','现在需要做什么判断？现有做法遇到了什么问题？'],['output','预期输出','例如：每天的商品补货建议，供采购人员审核。'],['data','现有数据条件','有哪些字段、覆盖多久、更新频率？不确定可写待评估。'],['constraints','业务约束','例如：预算、响应时间、人工审核要求、系统环境。'],['success','验收目标','与什么现有方案比较？希望改善哪项指标？'],['delivery','期望合作范围','可行性评估、模型原型、系统接入或教学辅导。']];
 let draft={},summary='',description='',pending=null,turns=[],reply='',edited=false; // In-memory only; navigating between cases does not upload a brief.
@@ -22,9 +23,11 @@ export function renderCooperation(host,current=()=>true){
  input.oninput=()=>{description=input.value;};form.oninput=()=>{draft=Object.fromEntries(new FormData(form));};area.oninput=()=>{summary=area.value;edited=true;};
  host.querySelectorAll('[data-brief-example]').forEach(b=>b.onclick=()=>{description=b.dataset.briefExample;input.value=description;input.focus();});
  const controller=new AbortController();pending=controller;
- assistantRequest('status',null,controller.signal).then(s=>{if(!current()||controller.signal.aborted)return;available=!!s.configured;ai.disabled=!available;replySend.disabled=!available;local.hidden=available;if(!available&&turns.length)status.textContent='AI 暂未接通，对话和草稿保留，可直接联系。';availability.textContent=s.configured?'点击“AI 帮我梳理”后，将描述发送给已配置的 AI 服务。请勿填写客户明细、密钥或敏感数据。':'AI 暂未接通。可先生成简单草稿，或直接邮件联系，无需填完整表单。';}).catch(()=>{if(current()&&!controller.signal.aborted){availability.textContent='当前未连接 AI 服务。可生成简单草稿或直接联系。';local.hidden=false;if(turns.length)status.textContent='当前未连接 AI 服务。对话和草稿保留，可直接复制草稿联系。';}});
+ if(GITHUB_PAGES){ai.hidden=true;local.hidden=false;availability.textContent='可在这里整理并下载草稿；在线需求对话请前往虾米伙伴，草稿不会自动传送。';entry.insertAdjacentHTML('afterend',onlineServiceHtml('#delivery?section=start','打开在线需求对话'));}
+ else assistantRequest('status',null,controller.signal).then(s=>{if(!current()||controller.signal.aborted)return;available=!!s.configured;ai.disabled=!available;replySend.disabled=!available;local.hidden=available;if(!available&&turns.length)status.textContent='AI 暂未接通，对话和草稿保留，可直接联系。';availability.textContent=s.configured?'点击“AI 帮我梳理”后，将描述发送给已配置的 AI 服务。请勿填写客户明细、密钥或敏感数据。':'AI 暂未接通。可先生成简单草稿，或直接邮件联系，无需填完整表单。';}).catch(()=>{if(current()&&!controller.signal.aborted){availability.textContent='当前未连接 AI 服务。可生成简单草稿或直接联系。';local.hidden=false;if(turns.length)status.textContent='当前未连接 AI 服务。对话和草稿保留，可直接复制草稿联系。';}});
  const setBusy=busy=>{entry.querySelectorAll('textarea,button').forEach(e=>e.disabled=busy);form.querySelectorAll('textarea,button').forEach(e=>e.disabled=busy);replyForm.querySelectorAll('textarea,button').forEach(e=>e.disabled=busy);area.disabled=busy;ai.disabled=busy||!available;replySend.disabled=busy||!available;host.querySelector('#brief-cancel').hidden=!busy;};
  const send=async text=>{
+  if(GITHUB_PAGES)return;
   let request;try{request=briefRequest(text,turns,edited?summary:undefined);}catch(error){status.textContent=error.message;return;}
   pending?.abort();const task=new AbortController();pending=task;setBusy(true);status.textContent='正在结合对话更新草稿…';
   try{const r=await assistantRequest('run',request,task.signal);if(!current()||task.signal.aborted||pending!==task)return;
@@ -33,7 +36,7 @@ export function renderCooperation(host,current=()=>true){
   }catch(error){if(current()&&pending===task)status.textContent=task.signal.aborted?'已取消，本轮回答和上一版草稿保留。':error.message+'。本轮回答和上一版草稿已保留，可以重试。';}
   finally{if(current()&&pending===task){setBusy(false);if(!task.signal.aborted&&turns.length)replyInput.focus();}}
  };
- entry.onsubmit=e=>{e.preventDefault();description=input.value.trim();if(description)void send(description);};
+ entry.onsubmit=e=>{e.preventDefault();if(GITHUB_PAGES){local.click();return;}description=input.value.trim();if(description)void send(description);};
  replyForm.onsubmit=e=>{e.preventDefault();reply=replyInput.value.trim();if(reply)void send(reply);};
  host.querySelector('#brief-cancel').onclick=()=>pending?.abort();
  host.querySelector('#brief-view').onclick=()=>{area.focus();preview.scrollIntoView({block:'center'});};

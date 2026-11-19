@@ -58,3 +58,5 @@
 - 反外挂数值更正：float32 阈值边界原先可能多计一条校准告警，原 v1 保留不覆盖。`services/anticheat/recalibrate.py` 使用原校准集生成 `vizdoom-aim-v1-threshold-fix`，模型／分数不变；属于已知留出更正回放，不是新独立测试。页面强制检查 `threshold-fix-v1` 修订；`verify:anticheat` 以修正版为准。
 
 - 2026-10-28 用户明确要求补上线上缺失的营销增量与游戏反外挂，覆盖此前两案例仅本地的展示范围。`build:showcase` 同时启用 `--competition-showcase --business-showcase`，两新案例只复制当前清单及哈希、范围校验通过的 case.json；不复制旧导出、原始归档或模型权重。默认 `build` 仍排除研究结果。保留来源、许可状态与失败边界，不修改冻结产物或将发布选择解释为额外许可。
+
+- 2026-11-19 用户明确要求将本仓库公开并部署 GitHub Pages。允许公开源码与已经发布的展示结果；结果以带哈希锁定的 Release 附件提供，不提交原始数据、模型权重、私密配置或训练产物到 Git。`build:pages` 显式包含九类业务及 M5／Dressipi，保留所有来源与证据边界；在线 AI 通过链接前往既有虾米伙伴服务，不在 Pages 请求本地 API、嵌入密钥或自动传递访客问题与需求草稿。不改动主站生产服务。

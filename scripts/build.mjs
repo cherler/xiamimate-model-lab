@@ -142,6 +142,8 @@ await verifyInputBuild(root,classificationPayload);
 await verifyCostBuild(root,retrievalPayload);
 if(await readFile(resolve(root,'apps/web/model-readiness.js'),'utf8')!==await readinessModule())throw new Error('模型适配审查展示与来源报告不一致');
 const includeCompetitions=process.argv.includes('--competition-showcase');
+const githubPages=process.argv.includes('--github-pages');
+if(githubPages&&process.argv.includes('--online-ai'))throw new Error('GitHub Pages cannot run the assistant backend');
 const competitionPaths=includeCompetitions?await competitionDisplayPaths(resolve(root,'apps/web')):new Set();
 const includeBusinesses=process.argv.includes('--business-showcase');
 const businessPaths=includeBusinesses?await businessDisplayPaths(resolve(root,'apps/web')):new Set();
@@ -153,6 +155,13 @@ await writeFile(resolve(root,'dist/preview-mode.js'),`export const LOCAL_RESEARC
 await writeFile(resolve(root,'dist/anticheat-mode.js'),`export const ANTICHEAT_RESEARCH = ${includeBusinesses};\n`);
 await writeFile(resolve(root,'dist/uplift-mode.js'),`export const UPLIFT_RESEARCH = ${includeBusinesses};\n`);
 await writeFile(resolve(root,'dist/public-build.js'),`export const PUBLIC_STATIC = ${!process.argv.includes('--online-ai')};\n`);
+await writeFile(resolve(root,'dist/hosting-mode.js'),`export const GITHUB_PAGES = ${githubPages};\n`);
+if(githubPages){
+ const url='https://cherler.github.io/xiamimate-model-lab/';
+ const html=await readFile(resolve(root,'dist/index.html'),'utf8');
+ await writeFile(resolve(root,'dist/index.html'),html.replace(/https:\/\/xiamimate\.com\/model-lab\//g,url));
+ await writeFile(resolve(root,'dist/.nojekyll'),'');
+}
 console.log(includeCompetitions?'M5 and Dressipi: verified display bundles included by explicit publishing choice; original rights metadata retained.':'M5 and Dressipi excluded from standard public build.');
 console.log(includeBusinesses?'Uplift and anti-cheat: verified current display bundles included.':'Uplift and anti-cheat excluded from standard public build.');
 console.log(`Built showcase ${manifest.version}. Ta Feng and UCI use verified static results; no model API is required.`);

@@ -1,10 +1,31 @@
-# 模型工坊 · 推荐与预测
+# 虾米模型工坊
 
-当前开发主线：以潜在客户判断建模能力为首要目标，教学为第二层，深化七个既有场景。见 [主案例深化计划与验收](docs/case-depth-plan.md)。D1 已完成推荐双模型对照与预测误差贡献，继续复用可追溯的保存结果。
+用公开数据、实际训练结果和同范围基线对照，展示业务建模能力。覆盖商品推荐、销量预测、分类与评分、智能检索、异常检测、零售分群、决策优化、营销增量和游戏反外挂九类业务，另有 AI Agent 工作流与架构说明。模型解读、教学拆解和场景扩展分别说明已运行的方法、原理与后续适用场景。
 
 独立的公开数据案例项目，服务于定制开发展示与教学。前端、Python 服务、数据和训练产物保持独立；公开静态版挂载在虾米伙伴主站 `/model-lab/`，复用主站 `/chrome/` 页眉与页脚。
 
-源码仓库：`cherler/xiamimate-model-lab`（私有）。原始数据、模型与展示结果包不入 Git；新 clone 必须恢复经过许可与校验的本地导出包才能构建，缺失会明确失败。静态部署只上传 `dist/`，不包含 `.env` 或训练目录。M5／Dressipi 使用显式 `build:showcase` 发布已核验展示包；在线 AI 使用独立后端和私密配置，可选 `--online-ai` 构建开关，案例结果仍为静态回放。接入与发布见 [部署说明](deploy/README.md)。
+访问：[GitHub Pages 展示站](https://cherler.github.io/xiamimate-model-lab/) · [虾米伙伴在线版](https://xiamimate.com/model-lab/) · [公开源码](https://github.com/cherler/xiamimate-model-lab)。Pages 包含九类业务及 M5／Dressipi 的既有展示结果；需要后端的问 AI、Agent 执行与需求对话，通过明确链接前往虾米伙伴，不在 Pages 保存密钥或转发访客草稿。
+
+原始数据、模型权重、私密 `.env` 和完整训练产物不进入 Git。展示结果以带 SHA-256 校验值的 Release 附件提供，用于恢复页面证据，不是重新训练或独立重复实验。数据来源、署名、许可状态和评估边界保留在各案例；仓库公开不改变第三方数据与模型的许可。接入与发布见 [部署说明](deploy/README.md)。
+
+## 从新环境运行展示站
+
+需要 Node.js 22+、Python 3 和 GitHub CLI；浏览展示站无需这些工具。前端无 npm 依赖，无需下载模型或训练数据。
+
+```sh
+git clone https://github.com/cherler/xiamimate-model-lab.git
+cd xiamimate-model-lab
+tag=$(node -p "require('./deploy/pages-evidence.json').tag")
+asset=$(node -p "require('./deploy/pages-evidence.json').asset")
+gh release download "$tag" --repo cherler/xiamimate-model-lab --pattern "$asset" --dir /tmp/model-lab-evidence
+python3 scripts/pages_evidence.py restore "/tmp/model-lab-evidence/$asset"
+npm run build:pages
+npm run preview
+```
+
+打开 `http://127.0.0.1:5330`。恢复脚本核对归档及每个展示文件的哈希，不覆盖已有的不同实验结果；资源缺失时构建明确失败。也可在对应 [Release](https://github.com/cherler/xiamimate-model-lab/releases) 手动下载附件。推送到 `main` 后，GitHub Actions 恢复锁定证据并发布 Pages，无需 API 密钥。既有案例的深化记录见 [主案例计划与验收](docs/case-depth-plan.md)。
+
+以下章节保留各轮实验的范围与结果；日期较早的开发说明不代表当前部署状态。
 
 当前后续范围已明确为**模型能力与量化统计展示站**，暂不开发客户数据接入。上线缺口、展示架构、增值项和后续轮次见 [展示站上线规划](docs/launch-roadmap.md)。
 
@@ -18,7 +39,7 @@ Ta Feng 新案例已经按 [固定评估协议](docs/evaluation/evaluation-proto
 
 NDCG@10 依次为 0.6605／0.6451／0.6826／0.6841；混合有主要改善，重排较混合仅 +0.0015，P50 耗时从 10.62 ms 增至 442.10 ms。完整协议、来源许可、运行命令及验收见 [检索案例记录](docs/retrieval-plan.md)，后续轮次见 [能力扩展计划](docs/expansion-plan.md)。已有保存运行执行 `npm run export:search` 即可恢复展示；数据和模型不入 Git。公开构建还必须包含经核验的分类与检索导出包，缺失时明确失败。
 
-## M5 主打案例：本地前端预览（2026-10-13）
+## M5 主打案例（首轮 2026-10-13）
 
 打开 <http://127.0.0.1:5328/#m5>。展示 CA_1 全部 3,049 个商品、三个 28 天窗口、LightGBM Tweedie 和三个规则基线。可切换门店／品类／商品、搜索商品编号、比较预测曲线、查看逐日数值、全体指标和 42 项特征说明。模型与窗口选择保存在链接中。手机曲线聚焦未来 28 天，桌面同时显示历史。
 
@@ -26,7 +47,7 @@ NDCG@10 依次为 0.6605／0.6451／0.6826／0.6841；混合有主要改善，�
 
 已有完整首轮运行产物时执行 `npm run export:m5`，再 `npm run dev`。导出器验证保存预测与报告，只读取原始历史至 d_1913；后续实际销量来自已消费保留窗口的保存产物，不重新开窗或训练。按每 100 商品分片加载，清单与资源以 SHA-256 绑定。
 
-**这是本地研究预览。** M5 对外使用范围仍待核实；`npm run build` 默认排除 `m5-results/`，公开构建中的入口会明确显示数据未包含，不回退到虚构结果。训练产物、原始数据与导出包均不入 Git。详见 [竞赛复现记录](docs/competition-reproduction.md)。
+M5 首轮为本地研究预览，后按项目所有者要求发布既有展示结果。`npm run build` 仍默认排除 `m5-results/`，`build:showcase` 与 `build:pages` 显式包含；来源与使用条款状态保留，不声称数据提供方授予额外许可。训练产物、原始数据与导出包均不入 Git。详见 [竞赛复现记录](docs/competition-reproduction.md)。
 
 ## 进阶模型实验（2026-10-13）
 

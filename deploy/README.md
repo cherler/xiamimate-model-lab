@@ -1,6 +1,18 @@
 # 主站接入与公开部署
 
-源码：`https://github.com/cherler/xiamimate-model-lab`（私有）。访问：`https://xiamimate.com/model-lab/`。
+源码：[cherler/xiamimate-model-lab](https://github.com/cherler/xiamimate-model-lab)（公开）。访问：[虾米伙伴在线版](https://xiamimate.com/model-lab/) · [GitHub Pages 静态版](https://cherler.github.io/xiamimate-model-lab/)。
+
+## GitHub Pages
+
+用户于 2026-11-19 明确要求公开源码并部署 Pages。使用 `.github/workflows/pages.yml`，由 `main` 推送或手动启动；仓库 Pages 的 Source 选择 GitHub Actions，不设置自定义域名，不影响既有虾米伙伴服务。
+
+1. 新环境按根 README 下载 `deploy/pages-evidence.json` 锁定的 Release 附件，执行 `scripts/pages_evidence.py restore`。脚本同时验证归档和逐文件哈希、路径与类型，拒绝不完整归档和覆盖不同结果。
+2. 工作流执行语法、前端与恢复脚本测试，再执行 `npm run build:pages`。构建校验全部展示证据，包含九类业务和 M5／Dressipi；Pages 使用独立页眉及项目子路径。
+3. 官方 Pages artifact/deploy Actions 发布 `dist/`；部署任务仅使用 `pages:write` 和 `id-token:write`，读取附件使用自带的只读 GitHub token，无需添加个人令牌或 AI 密钥。
+
+Pages 无法运行本项目 Node AI 后端。该构建禁用 AI 请求，保留 Agent 工作流、架构和方法页面，并提供虾米伙伴在线执行入口；需求可在浏览器本地整理和下载，外链只带公开场景参数，不自动传递问题、顾客选择或需求草稿。主站 `--online-ai` 构建不受影响。
+
+如后续更新展示证据：先使用已保存实验导出并完成 `build:pages` 校验，再运行 `python3 scripts/pages_evidence.py pack <新附件路径> --tag <新发布标签>`；审阅新清单、上传同名 Release 附件后再推送锁文件。归档只收录允许目录内的展示文件，原始归档、模型权重、训练工作目录、密钥与旧导出不随之发布。不要覆盖旧附件或重新训练来补齐已消费的测试结果。
 
 ## 构建与检查
 

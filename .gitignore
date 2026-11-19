@@ -1,5 +1,6 @@
 node_modules/
 dist/
+artifacts/pages-publication/
 .env
 .env.*
 !.env.example

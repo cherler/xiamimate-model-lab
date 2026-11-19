@@ -1,4 +1,5 @@
 import {captureAssistantContext} from './assistant-context.js';
+import {GITHUB_PAGES,onlineServiceHtml} from './online-service.js';
 import {createAssistantSession} from './assistant-session.js';
 export const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 import {assistantRequest} from './assistant-client.js';
@@ -21,6 +22,7 @@ export function initAssistant(){
  };
  document.querySelector('#ask-ai').onclick=async()=>{
   cancel();const token=epoch;context=captureAssistantContext(location.hash);if(!sessions.has(context.id))sessions.set(context.id,createAssistantSession());active=sessions.get(context.id);configured=false;
+  if(GITHUB_PAGES){dialog.innerHTML=`<div class="dialog-heading"><h2 id="ai-heading">问 AI</h2><button class="icon-button" id="ai-close" aria-label="关闭问 AI">×</button></div>${onlineServiceHtml(location.hash,'打开当前案例，继续问 AI')}`;dialog.showModal();dialog.querySelector('#ai-close').onclick=()=>dialog.close();return;}
   dialog.innerHTML=`<div class="dialog-heading"><h2 id="ai-heading">问 AI</h2><button class="icon-button" id="ai-close" aria-label="关闭问 AI">×</button></div><p><strong>本次讨论：${esc(context.title)}</strong></p><p class="small-note">帮助理解案例的方法、效果与适用条件。仅发送本案例问答和公开资料，不读取当前样本或页面参数。关闭后保留，刷新清除；请勿粘贴敏感数据。</p><p id="ai-availability" role="status">正在检查服务…</p><div class="assistant-prompts"><button type="button" class="outline" data-question="请简要解释这个案例的方法、整体效果与限制。">解释案例结论</button><button type="button" class="outline" data-question="这个方法适合什么业务，需要哪些条件？">判断适用条件</button><button type="button" class="outline" id="ai-new">新对话</button></div><div id="ai-answer" aria-label="问 AI 对话记录"></div><form id="ai-form"><label for="ai-question">继续提问</label><textarea id="ai-question" rows="3" maxlength="3000" required></textarea><div class="download-actions"><button class="primary" type="submit" id="ai-send" disabled>发送问题</button><button class="outline" type="button" id="ai-cancel" hidden>取消回答</button></div></form><p id="ai-status" role="status" aria-live="polite"></p><p><a href="#delivery?section=start" id="ai-cooperation">有定制需求？前往方案与合作</a>。在合作页直接描述业务问题，已有需求草稿会保留。</p>`;
   dialog.showModal();draw();dialog.querySelector('#ai-close').onclick=()=>dialog.close();dialog.querySelector('#ai-cooperation').onclick=()=>dialog.close();
   dialog.querySelector('#ai-question').oninput=e=>{active.state.draft=e.target.value;};
